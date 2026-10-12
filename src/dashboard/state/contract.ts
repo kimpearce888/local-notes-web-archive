@@ -33,6 +33,7 @@ import type { AlarmReconcileResult } from '../../background/alarms';
 import type { CommandStatus } from '../../background/api/settings';
 import type { CaptureQueueStatus, DuplicateResolution } from '../../background/capture/queue';
 import type { ConnectionTestResult, LmStudioModel } from '../../background/ai/client';
+import type { AgentTurnResult } from '../../background/ai/agent';
 
 export interface ApiContract {
   /* app */
@@ -290,6 +291,13 @@ export interface ApiContract {
   'ai/list-models': {
     payload: { baseUrl?: string };
     result: { models: LmStudioModel[] };
+  };
+  'ai/chat': {
+    payload: {
+      messages: { role: 'user' | 'assistant'; content: string }[];
+      approvedToolCallIds?: string[];
+    };
+    result: { result: AgentTurnResult };
   };
 
   /* reminders (nextDueAt is engine-computed in the background, never client-supplied) */

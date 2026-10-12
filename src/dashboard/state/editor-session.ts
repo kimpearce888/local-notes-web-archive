@@ -24,6 +24,9 @@ import {
 import { createAttachmentsPanel, type AttachmentsPanel } from '../editor/attachments-panel';
 import { createSnapshotsPanel, type SnapshotsPanel } from '../editor/snapshots-panel';
 import { createRemindersPanel, type RemindersPanel } from '../editor/reminders-panel';
+import { createAiPanel, type AiPanel } from '../ai/ai-panel';
+import type { AiApi } from './ai-client';
+import type { AgentTurnResult } from '../../background/ai/agent';
 import { attachmentIdFromSrc } from '../editor/local-image';
 import { editorDocToPlainText } from '../../core/repo/notes';
 import { detectHttpUrlsInText } from '../../core/util/urls';
@@ -92,6 +95,14 @@ export interface RemindersApi {
   remove(reminderId: EntityId): Promise<boolean>;
 }
 
+/** AI assistant operations the session needs (T-031, RPC-backed). */
+export interface SessionAiApi extends AiApi {
+  chat(input: {
+    messages: { role: 'user' | 'assistant'; content: string }[];
+    approvedToolCallIds?: string[];
+  }): Promise<AgentTurnResult>;
+}
+
 export interface EditorSessionCallbacks {
   /** Revision listing (FR-NOTE-06). */
   getRevisions(noteId: EntityId): Promise<readonly Revision[]>;
@@ -125,6 +136,8 @@ export interface EditorSessionCallbacks {
   snapshots: SnapshotsApi;
   /** Reminder management (T-027, FR-REM-01..03). */
   reminders: RemindersApi;
+  /** AI assistant (T-031, FR-AI-04/07). */
+  ai: SessionAiApi;
   /** URL detection policy call (T-020, FR-CAP-01). Returns null on failure. */
   detectLinks(input: {
     noteId: EntityId;
@@ -156,6 +169,7 @@ export async function openEditorSession(options: {
   const attachmentApi = callbacks.attachments;
   const snapshotsApi = callbacks.snapshots;
   const remindersApi = callbacks.reminders;
+  const aiApi = callbacks.ai;
 
   let current = note;
   let lastRecoveryWrite = 0;
@@ -651,6 +665,40 @@ export async function openEditorSession(options: {
 
   void updateReminderCount();
 
+  /* ---------------------------- AI panel ----------------------------- */
+
+  let aiElement: HTMLElement | null = null;
+  let aiPanelInstance: AiPanel | null = null;
+
+  const aiButton = document.createElement('button');
+  aiButton.type = 'button';
+  aiButton.className = 'btn';
+  aiButton.setAttribute('aria-expanded', 'false');
+  aiButton.textContent = 'AI';
+  aiButton.addEventListener('click', () => void toggleAi());
+
+  async function toggleAi(): Promise<void> {
+    if (aiElement) {
+      aiPanelInstance?.dispose();
+      aiElement.remove();
+      aiElement = null;
+      aiPanelInstance = null;
+      aiButton.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    aiPanelInstance = createAiPanel(
+      {
+        chat: (input) => aiApi.chat(input),
+        isEnabled: () => aiApi.isEnabled(),
+        announce: (message) => callbacks.announce(message),
+      },
+      noteId,
+    );
+    aiElement = aiPanelInstance.element;
+    container.insertBefore(aiElement, header.nextSibling);
+    aiButton.setAttribute('aria-expanded', 'true');
+  }
+
   const closeButton = document.createElement('button');
   closeButton.type = 'button';
   closeButton.className = 'btn';
@@ -659,7 +707,7 @@ export async function openEditorSession(options: {
 
   const header = document.createElement('div');
   header.className = 'editor-session__header';
-  header.append(closeButton, revisionsButton, attachmentsButton, snapshotsButton, remindersButton);
+  header.append(closeButton, revisionsButton, attachmentsButton, snapshotsButton, remindersButton, aiButton);
   container.prepend(header);
   mount.append(container);
 
@@ -681,6 +729,9 @@ export async function openEditorSession(options: {
       remindersPanelInstance?.dispose();
       remindersElement = null;
       remindersPanelInstance = null;
+      aiPanelInstance?.dispose();
+      aiElement = null;
+      aiPanelInstance = null;
       revokeObjectUrls();
       container.remove();
     },

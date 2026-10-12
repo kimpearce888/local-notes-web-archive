@@ -171,6 +171,15 @@ function makeCallbacks(announce: (message: string) => void = () => undefined): E
     },
     snapshots: createSnapshotsApi(client()),
     reminders: createRemindersApi(client()),
+    ai: {
+      chat: async () => ({
+        reply: '',
+        toolCalls: [],
+        error: { code: 'disabled', message: 'AI is off in this test' },
+        model: null,
+      }),
+      isEnabled: async () => false,
+    },
   };
 }
 
