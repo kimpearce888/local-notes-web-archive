@@ -90,3 +90,10 @@ Push Status (ai/rule.md §8).
 - **Commit Hash:** (this commit)
 - **Push Status:** pushed to origin/main
 - **Notes:** PRD §4.1 top-to-bottom order (New Note → search+filters → toolbar with active-filters/sort/view-toggle → results); single-stylesheet design system with custom properties, light/dark/system themes, WCAG-AA-minded tokens, :focus-visible, reduced motion, no colour-only status; semantic HTML with skip link, labelled controls, radiogroup view toggle; live region + save-state label (Saving/Saved/Save failed) and loading/empty/error region states with retry; keyboard shortcuts (Ctrl+K, /); theme engine with live system tracking; ui-intent new-note handling (tab message + ?new=1); shell event API for the state manager (T-015) and views (T-016). HTML entry moved to repo root for correct dist/dashboard.html output.
+
+## T-015 Dashboard state manager + messaging client
+- **Completion Timestamp:** 2026-10-12T09:28:00Z
+- **Validation Result:** tsc strict green; eslint green; vitest 252/252 (24 new: client envelope/error/coded-failure/malformed-response/concurrency, store patch+notify semantics, controller end-to-end over the REAL router + fake-indexeddb: load/retry, optimistic create+rollback, live search requery, save flow Saving→Saved, conflict rollback + Save failed labelling, beforeunload guard engage/release, sort wiring)
+- **Commit Hash:** (this commit)
+- **Push Status:** pushed to origin/main
+- **Notes:** typed ApiContract shared between dashboard client and background router (payload+result per message, no drift possible); client wraps chrome.runtime.sendMessage with correlation ids and coded RpcClientError; store with subscription model and change-only notifications; controller = single writer wiring shell events (newNote/search/sort/view) to RPC, optimistic UI with truthful rollback, save-state indicator mirrored to the shell, beforeunload guard while saving; new-note intents (button, tab message, ?new=1) now create real persisted notes; minimal accessible result list until card views (T-016).

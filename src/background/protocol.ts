@@ -103,6 +103,20 @@ export function isRpcRequest(value: unknown): value is RpcRequest {
   return 'payload' in value;
 }
 
+/** Structural response check used by the dashboard-side client. */
+export function isRpcResponse(value: unknown): value is RpcResponse {
+  if (!isPlainObject(value)) return false;
+  if (value['kind'] !== RPC_KIND) return false;
+  if (typeof value['id'] !== 'string' || value['id'].length === 0) return false;
+  if (value['ok'] === true) return 'result' in value;
+  if (value['ok'] === false) {
+    const error = value['error'];
+    if (!isPlainObject(error)) return false;
+    return typeof error['code'] === 'string' && typeof error['message'] === 'string';
+  }
+  return false;
+}
+
 /** Fresh correlation id for a new request (caller side). */
 export function newCorrelationId(): string {
   const bytes = new Uint8Array(16);
