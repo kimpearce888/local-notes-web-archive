@@ -27,3 +27,9 @@ Push Status (ai/rule.md §8).
 - Validation Result: tsc strict green (app+node), eslint green, vitest 11/11 green; all PRD §6 entities typed with branded ids/ISO timestamps/local reminder dates; per-artifact capture states and FR-SET-01 settings surface covered
 - Commit Hash: (this commit)
 - Push Status: pushed with this commit
+---
+### T-005 Utility foundations
+- Completion Timestamp: 2026-10-12T07:25:33Z
+- Validation Result: tsc strict green, eslint green, vitest 34/34; UUID v4 gen+validation, UTC/IANA/leap-year time utils, SHA-256 WebCrypto (verified against reference vector), bounded-string helpers, URL normalize/dedup/redact + full FR-CAP-04 eligibility gate matrix (14 reject cases), deepFreeze
+- Commit Hash: (this commit)
+- Push Status: pushed with this commit
