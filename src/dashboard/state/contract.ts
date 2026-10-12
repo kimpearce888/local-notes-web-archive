@@ -32,6 +32,7 @@ import type { GrantedOriginInfo } from '../../background/api/permissions';
 import type { AlarmReconcileResult } from '../../background/alarms';
 import type { CommandStatus } from '../../background/api/settings';
 import type { CaptureQueueStatus, DuplicateResolution } from '../../background/capture/queue';
+import type { ConnectionTestResult, LmStudioModel } from '../../background/ai/client';
 
 export interface ApiContract {
   /* app */
@@ -280,6 +281,16 @@ export interface ApiContract {
   'settings/get-onboarding-complete': { payload: Record<string, never>; result: { complete: boolean } };
   'settings/set-onboarding-complete': { payload: { complete: boolean }; result: { complete: boolean } };
   'commands/status': { payload: Record<string, never>; result: CommandStatus };
+
+  /* AI (T-029: LM Studio connection test and model listing, FR-AI-01..03) */
+  'ai/test-connection': {
+    payload: { baseUrl?: string };
+    result: { result: ConnectionTestResult };
+  };
+  'ai/list-models': {
+    payload: { baseUrl?: string };
+    result: { models: LmStudioModel[] };
+  };
 
   /* reminders (nextDueAt is engine-computed in the background, never client-supplied) */
   'reminders/create': {

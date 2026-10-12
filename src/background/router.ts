@@ -23,6 +23,7 @@ import { ReminderNotFoundError } from '../core/repo/reminders';
 import { InvalidUrlError, LinkNotFoundError } from '../core/repo/links';
 import { SnapshotNotFoundError } from '../core/repo/snapshots';
 import { InvalidRecurrenceError } from './reminders/engine';
+import { AiClientError } from './ai/client';
 import {
   AttachmentNotFoundError,
   AttachmentTooLargeError,
@@ -70,6 +71,13 @@ export function toRpcError(error: unknown): RpcError {
       code: 'invalid-request',
       message: error.message,
     };
+  }
+  if (error instanceof AiClientError) {
+    if (error.code === 'invalid-base-url') {
+      return { code: 'invalid-request', message: error.message };
+    }
+    // FR-AI-10: LM Studio unavailable/timeout/format — truthful, contained.
+    return { code: 'unsupported', message: error.message };
   }
   if (error instanceof AttachmentNotFoundError) {
     return { code: 'not-found', message: error.message };
