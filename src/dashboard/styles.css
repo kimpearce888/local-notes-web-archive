@@ -1157,3 +1157,99 @@ dialog::backdrop {
   margin: var(--space-2) 0;
   padding-left: var(--space-5);
 }
+
+/* -------------------------- Editor session ----------------------------- */
+
+.editor-session {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.editor-session__header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.card__title-button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.card__title-button:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------ Revision history ----------------------------- */
+
+.revision-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.revision-panel__hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.revision-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 24rem;
+  overflow: auto;
+}
+
+.revision-panel__item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.revision-panel__meta {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.revision-panel__preview {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+/* --------------------------- Conflict dialog --------------------------- */
+
+.conflict__side {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.conflict__side h3 {
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-1) 0;
+}

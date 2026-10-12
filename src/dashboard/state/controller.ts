@@ -21,6 +21,8 @@ import {
   type DashboardState,
 } from './store';
 import type { EntityId, Note } from '../../core/types';
+import type { RpcErrorCode } from '../../background/protocol';
+import { openEditorSession, type EditorSession, type SaveOutcome } from './editor-session';
 
 export interface DashboardController {
   readonly store: DashboardStore;
@@ -41,6 +43,20 @@ export interface DashboardController {
     expectedRevisionId: EntityId | null;
     changeSummary: string;
   }): Promise<Note | null>;
+  /** Save with a coded failure outcome (conflict-aware editor flow). */
+  saveNoteDetailed(input: {
+    noteId: EntityId;
+    title: string;
+    subtitle: string;
+    editorDoc: object | null;
+    plainText: string;
+    expectedRevisionId: EntityId | null;
+    changeSummary: string;
+  }): Promise<SaveOutcome>;
+  /** Opens the note editor screen (T-018). */
+  openEditor(noteId: EntityId): Promise<void>;
+  /** Flushes pending autosave and returns to the results list. */
+  closeEditor(): Promise<void>;
   /** Re-runs the current query (filters/sort/page changes). */
   requery(): Promise<void>;
   /** Applies a bulk action to the current selection. */
@@ -71,6 +87,23 @@ export function createDashboardController(options: {
     onClearSelection: () => store.setState({ selection: new Set<EntityId>() }),
   });
   shell.elements.bulkBarMount.append(bulkBar.element);
+
+  /* --------------------------- editor route -------------------------- */
+
+  let editorSession: EditorSession | null = null;
+  const editorMount = document.createElement('div');
+  editorMount.className = 'editor-mount';
+  editorMount.hidden = true;
+  shell.elements.resultsRegion.parentElement?.appendChild(editorMount);
+
+  function showView(view: 'list' | 'editor'): void {
+    const editing = view === 'editor';
+    shell.elements.resultsRegion.hidden = editing;
+    shell.elements.resultsHeading.hidden = editing;
+    shell.elements.paginationPrev.parentElement?.toggleAttribute('hidden', editing);
+    editorMount.hidden = !editing;
+    store.setState({ view });
+  }
 
   /* --------------------------- rendering ---------------------------- */
 
@@ -129,6 +162,7 @@ export function createDashboardController(options: {
         viewMode: state.viewMode,
         selected: state.selection.has(note.id),
         onToggleSelect: (noteId) => toggleSelection(noteId),
+        onOpen: (noteId) => void openEditor(noteId),
       });
       const wrapper = document.createElement('div');
       wrapper.className = 'results-item';
@@ -324,6 +358,11 @@ export function createDashboardController(options: {
   }
 
   async function saveNote(input: Parameters<DashboardController['saveNote']>[0]): Promise<Note | null> {
+    const outcome = await saveNoteDetailed(input);
+    return outcome.ok ? outcome.note : null;
+  }
+
+  async function saveNoteDetailed(input: Parameters<DashboardController['saveNote']>[0]): Promise<SaveOutcome> {
     store.setState({ saveState: 'saving' });
     const before = store.getState().notes;
     const previous = before.find((note) => note.id === input.noteId) ?? null;
@@ -343,26 +382,80 @@ export function createDashboardController(options: {
     }
     try {
       const { note } = await client.request('notes/save', input);
-      if (disposed) return null;
+      if (disposed) return { ok: false, code: 'internal-error' as RpcErrorCode };
       store.setState({
         saveState: 'saved',
         notes: store.getState().notes.map((n) => (n.id === note.id ? note : n)),
       });
       shell.announce('Note saved.');
-      return note;
+      return { ok: true, note };
     } catch (error) {
-      if (disposed) return null;
+      if (disposed) return { ok: false, code: 'internal-error' as RpcErrorCode };
+      const code: RpcErrorCode = error instanceof RpcClientError ? error.code : 'internal-error';
       store.setState({
         saveState: 'save-failed',
         notes: store.getState().notes.map((n) => (n.id === input.noteId ? (previous ?? n) : n)),
       });
       shell.announce(
-        error instanceof RpcClientError && error.code === 'conflict'
+        code === 'conflict'
           ? 'Save failed: this note changed in another tab. Reload or save as a duplicate.'
           : 'Save failed. Your latest edit was not written.',
       );
-      return null;
+      return { ok: false, code };
     }
+  }
+
+  async function openEditor(noteId: EntityId): Promise<void> {
+    if (editorSession) await closeEditor();
+    try {
+      const { note } = await client.request('notes/get', { noteId });
+      if (disposed) return;
+      editorSession = await openEditorSession({
+        mount: editorMount,
+        note,
+        callbacks: {
+          getRevisions: async (id) => (await client.request('notes/revisions', { noteId: id })).revisions,
+          saveNoteDetailed,
+          getNote: async (id) => (await client.request('notes/get', { noteId: id })).note,
+          duplicateWithContent: async (input) => {
+            try {
+              const { note: duplicate } = await client.request('notes/duplicate', {
+                noteId: input.sourceNoteId,
+              });
+              await client.request('notes/save', {
+                noteId: duplicate.id,
+                title: input.title,
+                subtitle: input.subtitle,
+                editorDoc: input.editorDoc,
+                plainText: input.plainText,
+                expectedRevisionId: duplicate.revisionId,
+                changeSummary: 'saved as duplicate after conflict',
+              });
+              return duplicate.id;
+            } catch {
+              return null;
+            }
+          },
+          announce: (message) => shell.announce(message),
+          onOpenLink: (url) => window.open(url, '_blank', 'noopener,noreferrer'),
+        },
+      });
+      showView('editor');
+      store.setState({ editingNoteId: noteId });
+      shell.announce(`Editing ${note.title.trim().length > 0 ? note.title : 'untitled note'}.`);
+    } catch (error) {
+      shell.announce(
+        `Opening the note failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+    }
+  }
+
+  async function closeEditor(): Promise<void> {
+    await editorSession?.close();
+    editorSession = null;
+    showView('list');
+    store.setState({ editingNoteId: null });
+    await requery();
   }
 
   /* ------------------------- selection / bulk ----------------------- */
@@ -553,10 +646,15 @@ export function createDashboardController(options: {
     refresh,
     createNote,
     saveNote,
+    saveNoteDetailed,
+    openEditor,
+    closeEditor,
     requery,
     applyBulkAction,
     dispose(): void {
       disposed = true;
+      void editorSession?.close();
+      editorMount.remove();
       for (const dispose of disposers) dispose();
       bulkBar.element.remove();
     },

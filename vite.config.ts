@@ -21,6 +21,11 @@ export default defineConfig({
     emptyOutDir: true,
     target: 'es2022',
     sourcemap: true,
+    // The dashboard bundle carries Tiptap + lowlight (~775 kB min / ~245 kB
+    // gzip). For an unpacked extension every byte loads from local disk —
+    // there is no network latency — and PRD §11 asks for the size to be
+    // measured and explained, not minimised at the cost of features.
+    chunkSizeWarningLimit: 1024,
     rollupOptions: {
       input: {
         background: here('./src/background/index.ts'),

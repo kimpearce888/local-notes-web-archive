@@ -130,6 +130,8 @@ export interface RenderCardOptions {
   readonly selected: boolean;
   /** Selection checkbox toggle callback. */
   readonly onToggleSelect: (noteId: EntityId) => void;
+  /** Open the note in the editor (title activation). */
+  readonly onOpen?: (noteId: EntityId) => void;
 }
 
 export function renderCard(model: CardViewModel, options: RenderCardOptions): HTMLElement {
@@ -164,9 +166,19 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
     favorite.setAttribute('title', 'Favorite note');
     heading.append(favorite);
   }
-  const titleText = document.createElement('span');
-  titleText.textContent = model.title;
-  heading.append(titleText);
+  if (options.onOpen) {
+    const titleButton = document.createElement('button');
+    titleButton.type = 'button';
+    titleButton.className = 'card__title-button';
+    titleButton.textContent = model.title;
+    titleButton.setAttribute('aria-label', `Open ${model.title} for editing`);
+    titleButton.addEventListener('click', () => options.onOpen?.(model.noteId));
+    heading.append(titleButton);
+  } else {
+    const titleText = document.createElement('span');
+    titleText.textContent = model.title;
+    heading.append(titleText);
+  }
 
   if (model.subtitle.trim().length > 0) {
     const subtitle = document.createElement('p');

@@ -42,6 +42,9 @@ export interface DashboardState {
   readonly viewMode: 'grid' | 'list';
   /** Active smart list (PRD §4.2). */
   readonly smartList: SmartListId;
+  /** Screen currently shown: the results list or the note editor. */
+  readonly view: 'list' | 'editor';
+  readonly editingNoteId: EntityId | null;
   /** 1-based results page. */
   readonly page: number;
   readonly pageSize: number;
@@ -69,6 +72,8 @@ export const INITIAL_DASHBOARD_STATE: DashboardState = {
   sort: { field: 'modified', direction: 'desc' },
   viewMode: 'grid',
   smartList: 'all',
+  view: 'list',
+  editingNoteId: null,
   page: 1,
   pageSize: PAGE_SIZE,
   selection: new Set<EntityId>(),
