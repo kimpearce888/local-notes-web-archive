@@ -2,11 +2,12 @@
  * Chrome API mock for service-worker unit tests. Installs a minimal,
  * in-memory implementation of the APIs the background modules touch:
  * runtime (id/getURL/listeners), action, commands, tabs, windows,
- * contextMenus, alarms, storage.local and permissions. Tests control tab
- * listeners, storage contents and permission grants directly.
+ * pageCapture, contextMenus, alarms, storage.local and permissions. Tests
+ * control tab listeners, MHTML responses, storage contents and permission
+ * grants directly.
  */
 
-import { vi } from 'vitest';
+import { vi, type Mock } from 'vitest';
 
 export interface MockTab {
   id: number;
@@ -42,6 +43,12 @@ export interface InstalledMock {
   /** chrome.tabs.onUpdated / onRemoved listeners (capture tab driver). */
   tabUpdated: Array<(tabId: number, changeInfo: { status?: string; url?: string }, tab: MockTab) => void>;
   tabRemoved: Array<(tabId: number) => void>;
+  /** chrome.pageCapture.saveAsMHTML mock (T-023). */
+  pageCapture: {
+    saveAsMHTML: Mock;
+    /** Per-tab archive override: a Blob to return or an Error to throw. */
+    mhtmlForTab: Map<number, Blob | Error>;
+  };
   /** chrome.permissions state: granted origin patterns + gesture model. */
   permissions: {
     /** Granted origin match patterns (e.g. "https://example.com/*"). */
@@ -66,6 +73,19 @@ export function installChromeMock(): InstalledMock {
   let removeAllMenusCalls = 0;
   const tabUpdated: InstalledMock['tabUpdated'] = [];
   const tabRemoved: InstalledMock['tabRemoved'] = [];
+  const mhtmlForTab = new Map<number, Blob | Error>();
+  const DEFAULT_MHTML = new Blob(
+    ['MIME-Version: 1.0\r\nContent-Type: multipart/related; boundary="----mock-mhtml"\r\n\r\n<html><body>Mock archived page</body></html>'],
+    { type: 'multipart/related' },
+  );
+  const saveAsMHTML = vi.fn(async (details: { tabId: number }): Promise<Blob> => {
+    const preset = mhtmlForTab.get(details.tabId);
+    if (preset instanceof Error) throw preset;
+    if (preset) return preset;
+    const tab = tabs.get(details.tabId);
+    if (!tab) throw new Error(`pageCapture.saveAsMHTML: no tab ${details.tabId}`);
+    return DEFAULT_MHTML;
+  });
   const grantedPatterns = new Set<string>();
   const requestCalls: string[][] = [];
   let gestureActive = false;
@@ -163,6 +183,9 @@ export function installChromeMock(): InstalledMock {
     windows: {
       update: vi.fn(async (_windowId: number, _updateInfo: { focused?: boolean }) => ({})),
     },
+    pageCapture: {
+      saveAsMHTML,
+    },
     contextMenus: {
       create: (options: { id?: string | number; title: string; contexts: string[]; documentUrlPatterns?: string[] }) => {
         createdMenus.push({
@@ -245,6 +268,7 @@ export function installChromeMock(): InstalledMock {
     createdMenus,
     tabUpdated,
     tabRemoved,
+    pageCapture: { saveAsMHTML, mhtmlForTab },
     permissions: {
       grantedPatterns,
       get gestureActive() {

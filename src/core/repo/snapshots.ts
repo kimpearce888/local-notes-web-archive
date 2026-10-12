@@ -19,9 +19,11 @@ import { blobKeyFor, getBlob, putBlob, removeBlobIfUnreferenced } from './blobs'
  * verified blobs, recapture chains.
  *
  * Status derivation (FR-CAP-07): complete = all three artifacts saved;
- * partial = at least one saved and one not; failed = none saved; canceled is
- * explicit. A failed artifact never overwrites a previously successful one —
- * artifact updates are per-field and blobs are content-addressed.
+ * partial = at least one saved with the rest terminal; failed = nothing
+ * saved and a step actually failed; canceled = nothing saved and the user
+ * stopped the job. A failed artifact never overwrites a previously
+ * successful one — artifact updates are per-field and blobs are
+ * content-addressed.
  */
 
 export class SnapshotNotFoundError extends Error {
@@ -81,19 +83,20 @@ function deriveStatus(
   png: CaptureArtifactState,
   text: CaptureArtifactState,
 ): CaptureStatus {
-  const saved = [mhtml, png, text].filter((s) => s === 'saved').length;
-  const terminal = [mhtml, png, text].filter(
-    (s) => s === 'failed' || s === 'canceled' || s === 'not-attempted',
-  ).length;
+  const states: readonly CaptureArtifactState[] = [mhtml, png, text];
+  const saved = states.filter((s) => s === 'saved').length;
   if (saved === 3) return 'complete';
-  // FR-CAP-07: an all-canceled capture is *canceled*, not failed — the user
-  // stopped it; nothing was lost.
-  if (saved === 0 && mhtml === 'canceled' && png === 'canceled' && text === 'canceled') {
-    return 'canceled';
+  if (states.some((s) => s === 'pending')) return 'capturing';
+  if (saved >= 1) {
+    // Something was saved; the rest failed, was canceled or never ran.
+    return 'partial';
   }
-  if (saved >= 1 && terminal >= 1) return 'partial';
-  if (saved === 0 && terminal === 3) return 'failed';
-  return 'capturing';
+  // Nothing was saved. A real failure dominates a user cancellation — but a
+  // capture the user stopped (with steps that never ran) is *canceled*, not
+  // failed: nothing was lost (FR-CAP-07).
+  if (states.includes('failed')) return 'failed';
+  if (states.includes('canceled')) return 'canceled';
+  return 'failed';
 }
 
 async function patchSnapshot(

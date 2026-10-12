@@ -12,9 +12,16 @@ import { registerAllApi } from './api';
 import { openOrFocusDashboard } from './dashboard-tab';
 import { registerContextMenus, handleContextMenuClick } from './context-menus';
 import { handleBrowserStartup, handleRuntimeInstalled, handleWorkerStartup } from './lifecycle';
+import { getCaptureQueue } from './capture/pipeline';
 
 const router = new MessageRouter();
 registerAllApi(router);
+
+// Capture pipeline (T-023): the single queue with the production artifact
+// steps, subscribed to link-queued notifications. Initialized at top level so
+// the queue exists before any event can fire; startup requeue happens in
+// handleWorkerStartup.
+getCaptureQueue();
 
 /* ----------------------------- Messaging ----------------------------- */
 

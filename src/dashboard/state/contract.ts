@@ -30,6 +30,7 @@ import type { LinkDetectionResult } from '../../background/api/links';
 import type { GrantedOriginInfo } from '../../background/api/permissions';
 import type { AlarmReconcileResult } from '../../background/alarms';
 import type { CommandStatus } from '../../background/api/settings';
+import type { CaptureQueueStatus, DuplicateResolution } from '../../background/capture/queue';
 
 export interface ApiContract {
   /* app */
@@ -183,6 +184,24 @@ export interface ApiContract {
   'permissions/revoke': {
     payload: { origin: string };
     result: { revoked: boolean; demotedLinks: number };
+  };
+
+  /* capture control (T-023: the dashboard's handle on the single queue) */
+  'capture/status': {
+    payload: Record<string, never>;
+    result: { status: CaptureQueueStatus };
+  };
+  'capture/cancel': {
+    payload: { linkId: EntityId };
+    result: { canceled: boolean };
+  };
+  'capture/retry': {
+    payload: { linkId: EntityId };
+    result: { retried: boolean };
+  };
+  'capture/resolve-duplicate': {
+    payload: { linkId: EntityId; resolution: DuplicateResolution };
+    result: { resolved: boolean };
   };
 
   /* attachments (T-019: images and files, structured-cloneable Blobs) */

@@ -124,6 +124,40 @@ describe('snapshots repository', () => {
     expect(complete.pngSize).toBe(pngBlob.size);
   });
 
+  it('derives canceled (not failed) when nothing saved and the user stopped the job', async () => {
+    const note = await createNote(ctx, {});
+    const snapshot = await createSnapshot(ctx, {
+      noteId: note.id,
+      linkId: null,
+      sourceUrl: 'https://example.com/stopped',
+      finalUrl: 'https://example.com/stopped',
+      title: 'X',
+    });
+    // Mid-capture cancel: MHTML pending→canceled, the steps that never ran
+    // stay not-attempted (T-023 production steps mark them after the MHTML).
+    // While one artifact is still pending the record stays `capturing`.
+    await markMhtmlArtifact(ctx, snapshot.id, 'canceled');
+    expect((await markTextArtifact(ctx, snapshot.id, 'not-attempted')).status).toBe('capturing');
+    const stopped = await markPngArtifact(ctx, snapshot.id, 'not-attempted');
+    expect(stopped.status).toBe('canceled');
+  });
+
+  it('derives partial for a saved artifact with steps not attempted (T-023 MHTML-only captures)', async () => {
+    const note = await createNote(ctx, {});
+    const snapshot = await createSnapshot(ctx, {
+      noteId: note.id,
+      linkId: null,
+      sourceUrl: 'https://example.com/mhtml-only',
+      finalUrl: 'https://example.com/mhtml-only',
+      title: 'X',
+    });
+    await saveMhtmlArtifact(ctx, snapshot.id, new Blob(['MIME'], { type: 'message/rfc822' }));
+    expect((await markTextArtifact(ctx, snapshot.id, 'not-attempted')).status).toBe('capturing');
+    const partial = await markPngArtifact(ctx, snapshot.id, 'not-attempted');
+    expect(partial.status).toBe('partial');
+    expect(partial.mhtml).toBe('saved');
+  });
+
   it('marks all artifacts failed → status failed', async () => {
     const note = await createNote(ctx, {});
     const snapshot = await createSnapshot(ctx, {

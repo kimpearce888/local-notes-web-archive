@@ -76,6 +76,11 @@ async function waitFor<T>(probe: () => T | Promise<T>, timeoutMs = 4000): Promis
   }
 }
 
+/** The finally-path tab cleanup is async — wait for it before asserting. */
+async function waitForTabCleanup(closeTab: { mock: { calls: unknown[][] } }): Promise<void> {
+  await waitFor(() => closeTab.mock.calls.length > 0);
+}
+
 /** Outcome shape the fake artifact steps return. */
 interface StepsOutcome {
   snapshotId: EntityId | null;
@@ -174,6 +179,7 @@ describe('sequential capture (FR-CAP-03)', () => {
     expect(call0.job.linkId).toBe(link.id);
     expect(call0.job.origin).toBe(GRANTED_ORIGIN);
     // The temporary tab is always cleaned up.
+    await waitForTabCleanup(closeTab);
     expect(closeTab).toHaveBeenCalledWith(777);
 
     const phases = events.map((e) => e.phase);
@@ -259,6 +265,7 @@ describe('pre-flight failures (FR-CAP-02/04)', () => {
     queue.enqueue(link);
     await waitFor(async () => (await linkById(link.id))?.captureState === 'failed');
     expect(controller.run).not.toHaveBeenCalled(); // extraction stopped before any artifact
+    await waitForTabCleanup(closeTab);
     expect(closeTab).toHaveBeenCalledWith(888); // the tab still gets cleaned up
     expect(events.some((e) => e.phase === 'failed' && e.detail.includes('evil.example'))).toBe(true);
     const audits = await listAuditEvents(await repo(), { limit: 50 });
@@ -323,6 +330,7 @@ describe('budgets and cancellation (FR-CAP-03)', () => {
 
     queue.enqueue(link);
     await waitFor(async () => (await linkById(link.id))?.captureState === 'failed');
+    await waitForTabCleanup(closeTab);
     expect(closeTab).toHaveBeenCalledWith(777);
     expect(events.some((e) => e.phase === 'failed' && e.detail.includes('time budget'))).toBe(true);
     const audits = await listAuditEvents(await repo(), { limit: 50 });
@@ -358,6 +366,7 @@ describe('budgets and cancellation (FR-CAP-03)', () => {
     await waitFor(async () => (await linkById(link.id))?.captureState === 'capturing');
     expect(await queue.cancel(link.id)).toBe(true);
     await waitFor(async () => (await linkById(link.id))?.captureState === 'detected');
+    await waitForTabCleanup(closeTab);
     expect(closeTab).toHaveBeenCalledWith(777);
     const audits = await listAuditEvents(await repo(), { limit: 50 });
     expect(audits.some((e) => e.action === 'capture/job-canceled' && e.detail.includes('canceled by the user'))).toBe(true);

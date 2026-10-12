@@ -132,7 +132,7 @@ export interface ActiveJobStatus {
   readonly startedAt: UtcTimestamp;
 }
 
-export interface QueueStatus {
+export interface CaptureQueueStatus {
   /** True while the single worker is processing a job. */
   readonly busy: boolean;
   readonly active: ActiveJobStatus | null;
@@ -153,7 +153,7 @@ export interface CaptureQueue {
   retry(linkId: EntityId): Promise<boolean>;
   /** Resolve a parked duplicate decision (FR-CAP-08 `ask` policy). */
   resolveDuplicate(linkId: EntityId, resolution: DuplicateResolution): Promise<boolean>;
-  status(): QueueStatus;
+  status(): CaptureQueueStatus;
   onProgress(listener: (event: CaptureProgressEvent) => void): () => void;
 }
 
@@ -478,7 +478,7 @@ export function createCaptureQueue(options: CaptureQueueOptions): CaptureQueue {
           detail: `origin ${job.origin} access was revoked while the capture was running; snapshot=${outcome.snapshotId ?? 'none'} kept unlinked`,
         });
         report(job, 'permission-required', 'site access was revoked during capture — allow access again to retry');
-      } else if (outcome.snapshotId !== null) {
+      } else if (outcome.snapshotId !== null && outcome.status !== 'failed') {
         await setLinkSnapshot(await repo(), job.linkId, outcome.snapshotId);
         await auditCapture('capture/job-succeeded', {
           targetId: job.linkId,
@@ -488,7 +488,14 @@ export function createCaptureQueue(options: CaptureQueueOptions): CaptureQueue {
         });
         report(job, 'succeeded', `capture ${outcome.status}${outcome.warnings.length > 0 ? ` (${outcome.warnings.length} warning${outcome.warnings.length === 1 ? '' : 's'})` : ''}`);
       } else {
-        await failJob(job, `no snapshot was saved (${outcome.status}); ${outcome.detail}`, outcome);
+        // A failed capture never links its snapshot: the link keeps any
+        // previous success (FR-CAP-05) and the failed record stays
+        // discoverable by linkId for the history UI.
+        const reason =
+          outcome.snapshotId !== null
+            ? `the capture failed (${outcome.status}); ${outcome.detail}`
+            : `no snapshot was saved (${outcome.status}); ${outcome.detail}`;
+        await failJob(job, reason, outcome);
       }
     } catch (error) {
       if (error instanceof CaptureAbortError && error.kind === 'canceled') {
@@ -595,7 +602,9 @@ export function createCaptureQueue(options: CaptureQueueOptions): CaptureQueue {
     async retry(linkId: EntityId): Promise<boolean> {
       const link = await getLink(await repo(), linkId);
       if (!link) return false;
-      const retryable: LinkCaptureState[] = ['failed', 'detected', 'permission-required'];
+      // `captured` is retryable on purpose: retrying a captured link is the
+      // recapture entry point (fresh revision, FR-CAP-08).
+      const retryable: LinkCaptureState[] = ['failed', 'detected', 'permission-required', 'captured'];
       if (!retryable.includes(link.captureState)) return false;
       const updated = await setLinkCaptureState(await repo(), linkId, 'queued');
       await auditCapture('capture/job-retry', {
@@ -625,7 +634,7 @@ export function createCaptureQueue(options: CaptureQueueOptions): CaptureQueue {
       return true;
     },
 
-    status(): QueueStatus {
+    status(): CaptureQueueStatus {
       return {
         busy: active !== null,
         active: active

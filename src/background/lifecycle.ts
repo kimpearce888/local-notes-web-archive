@@ -11,6 +11,7 @@
 import { openAppDatabase, repo } from './db';
 import { openOrFocusDashboard } from './dashboard-tab';
 import { reconcileReminderAlarms } from './alarms';
+import { getCaptureQueue } from './capture/pipeline';
 import { setOnboardingComplete } from '../core/repo/settings';
 import { appendLog } from '../core/repo/logs';
 import { APP_VERSION } from '../core/version';
@@ -91,6 +92,18 @@ export async function handleWorkerStartup(): Promise<void> {
   } catch {
     // Reconciliation failures are already visible through the RPC surface
     // (database-unavailable / migration-failed); retry on next start.
+  }
+  try {
+    // Capture queue restart recovery (FR-CAP-03): links left `queued` by a
+    // worker suspension resume on the next cold start.
+    const requeued = await getCaptureQueue().requeueQueuedLinks();
+    if (requeued > 0) {
+      await logLifecycle('worker-startup', 'capture-requeued', `requeued ${requeued} capture job(s)`);
+    }
+  } catch {
+    // A database hiccup at requeue time leaves links `queued`; the next
+    // worker start retries. The queue itself fails links truthfully when
+    // the database is unavailable mid-job.
   }
 }
 
