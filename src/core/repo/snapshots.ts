@@ -86,6 +86,11 @@ function deriveStatus(
     (s) => s === 'failed' || s === 'canceled' || s === 'not-attempted',
   ).length;
   if (saved === 3) return 'complete';
+  // FR-CAP-07: an all-canceled capture is *canceled*, not failed — the user
+  // stopped it; nothing was lost.
+  if (saved === 0 && mhtml === 'canceled' && png === 'canceled' && text === 'canceled') {
+    return 'canceled';
+  }
   if (saved >= 1 && terminal >= 1) return 'partial';
   if (saved === 0 && terminal === 3) return 'failed';
   return 'capturing';

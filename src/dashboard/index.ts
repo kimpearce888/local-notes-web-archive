@@ -10,8 +10,19 @@ import { createThemeManager, type ThemeManager } from './theme';
 import { showEmpty } from './states';
 import { createApiClient } from './state/client';
 import { createDashboardController, type DashboardController } from './state/controller';
+import type { CaptureProgressEvent, CaptureProgressPhase } from '../background/capture/queue';
 
 const THEME_STORAGE_KEY = 'lnwa-theme-preference';
+
+/** Capture outcomes worth a live-region announcement (FR-CAP-03/07). */
+const ANNOUNCED_CAPTURE_PHASES: readonly CaptureProgressPhase[] = [
+  'succeeded',
+  'reused',
+  'failed',
+  'canceled',
+  'permission-required',
+  'waiting-dedup',
+];
 
 export interface DashboardApp {
   readonly shell: DashboardShell;
@@ -42,16 +53,22 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
   const controller = createDashboardController({ shell, theme, client });
 
   /* Service-worker intents: a focused dashboard tab receives the
-     create-note command as a tab message (dashboard-tab.ts). */
+     create-note command as a tab message (dashboard-tab.ts). Capture
+     progress from the background queue arrives the same way; terminal
+     phases are announced, the full stream feeds the snapshot UI (T-026). */
   const onRuntimeMessage = (message: unknown): void => {
-    if (
-      typeof message === 'object' &&
-      message !== null &&
-      (message as { kind?: unknown }).kind === 'ui-intent' &&
-      (message as { intent?: unknown }).intent === 'new-note'
-    ) {
+    if (typeof message !== 'object' || message === null) return;
+    const kind = (message as { kind?: unknown }).kind;
+    if (kind === 'ui-intent' && (message as { intent?: unknown }).intent === 'new-note') {
       shell.elements.newNoteButton.focus();
       void controller.createNote();
+      return;
+    }
+    if (kind === 'capture-progress') {
+      const event = message as CaptureProgressEvent;
+      if (ANNOUNCED_CAPTURE_PHASES.includes(event.phase)) {
+        shell.announce(`Capture ${event.phase.replace('-', ' ')}: ${event.detail}`);
+      }
     }
   };
   if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {

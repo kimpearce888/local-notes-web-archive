@@ -116,6 +116,18 @@ export async function listLinksByOrigin(ctx: RepoContext, origin: string): Promi
   return links.map(normalizeLink).sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
 }
 
+/** Links sharing a dedup key across all notes (duplicate-capture policy). */
+export async function listLinksByDedupKey(ctx: RepoContext, key: string): Promise<Link[]> {
+  const links = await ctx.getByIndex<Link>(Store.Links, 'dedupKey', key);
+  return links.map(normalizeLink);
+}
+
+/** Links in a given capture state (queue restart recovery — full scan). */
+export async function listLinksInState(ctx: RepoContext, state: LinkCaptureState): Promise<Link[]> {
+  const links = await ctx.getAll<Link>(Store.Links);
+  return links.map(normalizeLink).filter((l) => l.captureState === state);
+}
+
 /**
  * Permission-driven capture-lifecycle transitions (FR-CAP-02).
  *

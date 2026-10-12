@@ -3,7 +3,6 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-022 Capture queue and orchestration
 - [ ] T-023 MHTML capture and snapshot persistence
 - [ ] T-024 Text extraction
 - [ ] T-025 CDP full-page PNG

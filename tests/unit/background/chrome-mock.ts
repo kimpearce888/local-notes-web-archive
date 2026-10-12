@@ -13,6 +13,8 @@ export interface MockTab {
   url: string;
   active: boolean;
   windowId: number;
+  title: string;
+  status: 'loading' | 'complete';
 }
 
 export interface InstalledMock {
@@ -37,6 +39,9 @@ export interface InstalledMock {
   tabsWithListeners: Set<number>;
   createdMenus: Array<{ id: string | number; title: string; contexts: string[]; documentUrlPatterns?: string[] }>;
   removeAllMenusCalls: number;
+  /** chrome.tabs.onUpdated / onRemoved listeners (capture tab driver). */
+  tabUpdated: Array<(tabId: number, changeInfo: { status?: string; url?: string }, tab: MockTab) => void>;
+  tabRemoved: Array<(tabId: number) => void>;
   /** chrome.permissions state: granted origin patterns + gesture model. */
   permissions: {
     /** Granted origin match patterns (e.g. "https://example.com/*"). */
@@ -59,6 +64,8 @@ export function installChromeMock(): InstalledMock {
   const tabsWithListeners = new Set<number>();
   const createdMenus: InstalledMock['createdMenus'] = [];
   let removeAllMenusCalls = 0;
+  const tabUpdated: InstalledMock['tabUpdated'] = [];
+  const tabRemoved: InstalledMock['tabRemoved'] = [];
   const grantedPatterns = new Set<string>();
   const requestCalls: string[][] = [];
   let gestureActive = false;
@@ -110,8 +117,15 @@ export function installChromeMock(): InstalledMock {
           url: createInfo.url,
           active: createInfo.active ?? false,
           windowId: 1,
+          title: '',
+          status: 'loading',
         };
         tabs.set(tab.id, tab);
+        return tab;
+      }),
+      get: vi.fn(async (tabId: number) => {
+        const tab = tabs.get(tabId);
+        if (!tab) throw new Error(`tabs.get: no tab ${tabId}`);
         return tab;
       }),
       update: vi.fn(async (tabId: number, updateInfo: { active?: boolean; url?: string }) => {
@@ -121,6 +135,25 @@ export function installChromeMock(): InstalledMock {
         if (updateInfo.active !== undefined) tab.active = updateInfo.active;
         return tab;
       }),
+      remove: vi.fn(async (tabId: number) => {
+        if (!tabs.delete(tabId)) throw new Error(`tabs.remove: no tab ${tabId}`);
+        for (const listener of tabRemoved) listener(tabId);
+      }),
+      onUpdated: {
+        addListener: (fn: (tabId: number, changeInfo: { status?: string; url?: string }, tab: MockTab) => void) =>
+          void tabUpdated.push(fn),
+        removeListener: (fn: (tabId: number, changeInfo: { status?: string; url?: string }, tab: MockTab) => void) => {
+          const index = tabUpdated.indexOf(fn);
+          if (index >= 0) tabUpdated.splice(index, 1);
+        },
+      },
+      onRemoved: {
+        addListener: (fn: (tabId: number) => void) => void tabRemoved.push(fn),
+        removeListener: (fn: (tabId: number) => void) => {
+          const index = tabRemoved.indexOf(fn);
+          if (index >= 0) tabRemoved.splice(index, 1);
+        },
+      },
       sendMessage: vi.fn(async (tabId: number, _message: unknown) => {
         if (!tabsWithListeners.has(tabId)) {
           throw new Error('Could not establish connection. Receive end does not exist.');
@@ -210,6 +243,8 @@ export function installChromeMock(): InstalledMock {
     storage,
     tabsWithListeners,
     createdMenus,
+    tabUpdated,
+    tabRemoved,
     permissions: {
       grantedPatterns,
       get gestureActive() {
@@ -239,6 +274,6 @@ export function installChromeMock(): InstalledMock {
 let fakeTabCounter = 1000;
 export function addTab(installed: InstalledMock, url: string): number {
   const id = fakeTabCounter++;
-  installed.tabs.set(id, { id, url, active: false, windowId: 1 });
+  installed.tabs.set(id, { id, url, active: false, windowId: 1, title: '', status: 'complete' });
   return id;
 }

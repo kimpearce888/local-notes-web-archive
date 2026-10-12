@@ -31,6 +31,7 @@ import { checkCaptureEligibility, redactUrlForLog } from '../../core/util/urls';
 import type { EntityId, Link } from '../../core/types';
 import { PayloadValidationError } from '../protocol';
 import { originPattern, hasOriginPermission, listGrantedCaptureOrigins, removeOriginPermission, requestOriginPermission } from '../permissions';
+import { notifyLinkQueued } from '../capture/queue';
 import { asId, asObject, asString } from './validate';
 
 /** Audit metadata only: origins are not secrets, URLs stay redacted (FR-LOG-03). */
@@ -96,6 +97,7 @@ export function registerPermissionApi(router: MessageRouter): void {
     // only resumes a link that was waiting on permission.
     const next = nextCaptureStateOnPermissionEvent(link.captureState, granted ? 'grant' : 'decline');
     const updated: Link = next ? await setLinkCaptureState(await repo(), linkId, next) : link;
+    if (updated.captureState === 'queued') notifyLinkQueued(updated);
 
     if (granted && !alreadyGranted) {
       // Mirror the grant in settings.allowedOrigins (FR-SET-01 bookkeeping).

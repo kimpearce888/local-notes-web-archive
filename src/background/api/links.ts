@@ -27,6 +27,7 @@ import { getSettings } from '../../core/repo/settings';
 import { appendAuditEvent } from '../../core/repo/audit';
 import { checkCaptureEligibility, originOf, redactUrlForLog } from '../../core/util/urls';
 import { hasOriginPermission } from '../permissions';
+import { notifyLinkQueued } from '../capture/queue';
 import type { EntityId, Link, LinkCaptureState, Note } from '../../core/types';
 import { PayloadValidationError } from '../protocol';
 import { asEnum, asId, asObject, asOptionalString, asString, asStringArray } from './validate';
@@ -164,6 +165,7 @@ export function registerLinkApi(router: MessageRouter): void {
       ) {
         link = await setLinkCaptureState(await repo(), link.id, createdState);
       }
+      if (link.captureState === 'queued') notifyLinkQueued(link);
       results.push({
         url,
         outcome: linkResult.created ? 'created' : 'existing',
@@ -215,6 +217,7 @@ export function registerLinkApi(router: MessageRouter): void {
     const granted = await hasOriginPermission(link.origin);
     const target: LinkCaptureState = granted ? 'queued' : 'permission-required';
     const updated = await setLinkCaptureState(await repo(), linkId, target);
+    if (updated.captureState === 'queued') notifyLinkQueued(updated);
     const note = await getNoteOrFail(await repo(), link.noteId);
     await indexNote(note);
     await auditLinkAction(ctx, {
