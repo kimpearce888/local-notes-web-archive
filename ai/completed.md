@@ -57,3 +57,9 @@ Push Status (ai/rule.md §8).
 - Validation Result: tsc strict green, eslint green, vitest 85/85; content-addressed blob store with reference-aware GC; per-note link dedup + cross-note duplicate lookup; snapshot per-artifact states with FR-CAP-07 status derivation, recapture chains, integrity verification detecting tampering; magic-byte MIME verification with strict-UTF-8 text heuristic; attachment size limits and hash dedup
 - Commit Hash: (this commit)
 - Push Status: pushed with this commit
+---
+### T-010 Repository: reminders, audit, logs, settings
+- Completion Timestamp: 2026-10-12T07:59:22Z
+- Validation Result: tsc strict green, eslint green, vitest 98/98 (15 consecutive clean full-suite runs); canonical reminder records with state transitions and due queries for reconciliation; audit trail with hashes-not-bodies, pagination and retention; structured logs with secret sanitization (bearer-before-kv ordering), rolling byte budget rotation; settings with defaults/merge/validation incl. loopback-only AI endpoint enforcement; fixed a real nondeterministic-sort bug (partial comparator) found by stress testing
+- Commit Hash: (this commit)
+- Push Status: pushed with this commit

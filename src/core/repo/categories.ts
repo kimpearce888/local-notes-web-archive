@@ -33,23 +33,38 @@ export async function createCategory(
     const parent = await ctx.get<Category>(Store.Categories, parentId);
     if (!parent) throw new CategoryNotFoundError(parentId);
   }
-  const siblings = parentId
-    ? await ctx.getByIndex<Category>(Store.Categories, 'parentId', parentId)
-    : (await ctx.getAll<Category>(Store.Categories)).filter((c) => c.parentId === null);
-  const order = siblings.length;
   const now = nowUtc();
-  const category: Category = {
-    id: newId(),
-    name,
-    parentId,
-    order,
-    createdAt: now,
-    updatedAt: now,
-  };
+  let created: Category | null = null;
+  // Sibling scan and write share one transaction: the assigned order is
+  // atomic against concurrent category writes (no stale sibling counts).
   await ctx.transaction([Store.Categories], 'readwrite', (stores) => {
-    stores[Store.Categories]?.put(category);
+    const store = stores[Store.Categories];
+    if (!store) throw new Error('categories store unavailable');
+    const parentKey = parentId ?? null;
+    const scan = parentKey === null
+      ? store.getAll()
+      : store.index('parentId').getAll(parentKey);
+    scan.onsuccess = () => {
+      const siblings = (scan.result as Category[]).filter(
+        (c) => (c.parentId ?? null) === parentKey,
+      );
+      const order = siblings.reduce((max, c) => Math.max(max, c.order + 1), 0);
+      created = {
+        id: newId(),
+        name,
+        parentId,
+        order,
+        createdAt: now,
+        updatedAt: now,
+      };
+      store.put(created);
+    };
+    scan.onerror = () => {
+      /* surfaced through transaction onerror */
+    };
   });
-  return category;
+  if (!created) throw new Error('category creation produced no record');
+  return created;
 }
 
 export async function getCategory(
@@ -61,11 +76,18 @@ export async function getCategory(
 
 export async function listCategories(ctx: RepoContext): Promise<Category[]> {
   const categories = await ctx.getAll<Category>(Store.Categories);
-  return categories.sort((a, b) =>
-    a.parentId === b.parentId
-      ? a.order - b.order || a.name.localeCompare(b.name)
-      : 0,
-  );
+  // Total order: (parent, order, name, id). A consistent comparator is
+  // required — partial comparators make Array#sort engine-dependent and can
+  // invert same-parent pairs depending on the store's return order.
+  return categories.sort((a, b) => {
+    const pa = a.parentId ?? '';
+    const pb = b.parentId ?? '';
+    if (pa !== pb) return pa < pb ? -1 : 1;
+    if (a.order !== b.order) return a.order - b.order;
+    const byName = a.name.localeCompare(b.name);
+    if (byName !== 0) return byName;
+    return (a.id as string) < (b.id as string) ? -1 : 1;
+  });
 }
 
 export interface CategoryNode {
