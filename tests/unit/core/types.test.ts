@@ -175,6 +175,7 @@ describe('domain types', () => {
   it('app metadata is defined', () => {
     expect(APP_NAME).toBe('Local Notes & Web Archive');
     expect(APP_VERSION).toBe('1.0.0');
-    expect(SCHEMA_VERSION).toBe(1);
+    // v2 adds the links.origin index (T-021 permission bookkeeping).
+    expect(SCHEMA_VERSION).toBe(2);
   });
 });

@@ -8,6 +8,7 @@ import {
 import { clearRecoveryJournal } from '../../../src/dashboard/editor/recovery';
 import { MessageRouter } from '../../../src/background/router';
 import { registerAllApi } from '../../../src/background/api';
+import { installChromeMock, type InstalledMock } from '../background/chrome-mock';
 import { closeWorkerResources } from '../../../src/background/db';
 import { DB_NAME } from '../../../src/core/version';
 import type { Link, Note } from '../../../src/core/types';
@@ -22,6 +23,7 @@ type Transport = Parameters<typeof createApiClient>[0];
 
 let root: HTMLElement;
 let router: MessageRouter;
+let installed: InstalledMock;
 
 const transport: Transport = async (message) => router.dispatch(message);
 const client = () => createApiClient(transport);
@@ -41,6 +43,7 @@ async function waitFor<T>(probe: () => T | Promise<T>, timeoutMs = 4000): Promis
 }
 
 beforeEach(() => {
+  installed = installChromeMock();
   (window as unknown as { matchMedia: unknown }).matchMedia = (query: string): MediaQueryList =>
     ({
       matches: false,
@@ -58,6 +61,7 @@ beforeEach(() => {
 afterEach(async () => {
   clearRecoveryJournal();
   root.remove();
+  installed.uninstall();
   await closeWorkerResources();
   await new Promise<void>((resolve) => {
     const request = indexedDB.deleteDatabase(DB_NAME);
@@ -138,6 +142,8 @@ describe('pasted URL detection (FR-CAP-01)', () => {
   it('queues capture for pasted eligible URLs by default and announces it', async () => {
     const note = await seedNote('Paste link note');
     const { messages, announce } = announceRecorder();
+    // The origin is granted (T-021): pasted URLs queue for capture.
+    installed.permissions.grantedPatterns.add('https://example.com/*');
     const session = await openEditorSession({ mount: root, note, callbacks: makeCallbacks(announce) });
 
     pasteText(session, 'read this: https://example.com/article/9 great stuff');

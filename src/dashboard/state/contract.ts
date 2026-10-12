@@ -27,6 +27,7 @@ import type {
 import type { CategoryNode } from '../../core/repo/categories';
 import type { CreateLinkResult } from '../../core/repo/links';
 import type { LinkDetectionResult } from '../../background/api/links';
+import type { GrantedOriginInfo } from '../../background/api/permissions';
 import type { AlarmReconcileResult } from '../../background/alarms';
 import type { CommandStatus } from '../../background/api/settings';
 
@@ -163,11 +164,25 @@ export interface ApiContract {
   };
   'links/queue-capture': {
     payload: { linkId: EntityId };
-    result: { link: Link };
+    result: { link: Link; permissionRequired: boolean };
+  };
+  'links/request-capture-permission': {
+    payload: { linkId: EntityId };
+    result: { granted: boolean; alreadyGranted: boolean; link: Link };
   };
   'links/set-capture-state': {
     payload: { linkId: EntityId; captureState: Link['captureState'] };
     result: { link: Link };
+  };
+
+  /* permissions (T-021: origin access, FR-CAP-02/FR-SET-03) */
+  'permissions/list-granted': {
+    payload: Record<string, never>;
+    result: { origins: readonly GrantedOriginInfo[] };
+  };
+  'permissions/revoke': {
+    payload: { origin: string };
+    result: { revoked: boolean; demotedLinks: number };
   };
 
   /* attachments (T-019: images and files, structured-cloneable Blobs) */

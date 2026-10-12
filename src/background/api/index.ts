@@ -12,6 +12,7 @@ import { registerAttachmentApi } from './attachments';
 import { registerSearchApi } from './search';
 import { registerSettingsApi } from './settings';
 import { registerReminderApi } from './reminders';
+import { registerPermissionApi } from './permissions';
 
 export function registerAllApi(router: MessageRouter): void {
   registerNoteApi(router);
@@ -21,4 +22,5 @@ export function registerAllApi(router: MessageRouter): void {
   registerSearchApi(router);
   registerSettingsApi(router);
   registerReminderApi(router);
+  registerPermissionApi(router);
 }

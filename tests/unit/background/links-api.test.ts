@@ -73,6 +73,11 @@ async function setAutoCapture(enabled: boolean): Promise<void> {
   await ok('settings/patch', { patch: { autoCaptureOnPaste: enabled } });
 }
 
+/** Pre-grant an origin in the chrome mock (queue-time access check, T-021). */
+function grantOrigin(origin: string): void {
+  installed.permissions.grantedPatterns.add(`${origin}/*`);
+}
+
 beforeEach(() => {
   installed = installChromeMock();
   router = new MessageRouter();
@@ -92,6 +97,7 @@ afterEach(async () => {
 
 describe('links/detect-and-queue (FR-CAP-01 policy)', () => {
   it('queues pasted eligible URLs when auto-capture is enabled (default)', async () => {
+    grantOrigin('https://example.com');
     const note = await seedNote('Queue note');
     const results = await detect(note.id, ['https://example.com/post/123'], 'paste');
     expect(results[0]!.outcome).toBe('created');
@@ -113,6 +119,7 @@ describe('links/detect-and-queue (FR-CAP-01 policy)', () => {
   });
 
   it('keeps capture-ineligible http(s) URLs as links with the gate reason', async () => {
+    grantOrigin('https://example.com');
     const note = await seedNote('Ineligible note');
     const results = await detect(
       note.id,
@@ -142,6 +149,7 @@ describe('links/detect-and-queue (FR-CAP-01 policy)', () => {
   });
 
   it('deduplicates and never downgrades queue progress', async () => {
+    grantOrigin('https://example.com');
     const note = await seedNote('Dedup note');
     await detect(note.id, ['https://example.com/dup'], 'paste');
     // Second paste with auto-capture OFF: existing queued link stays queued.
@@ -173,6 +181,7 @@ describe('links/detect-and-queue (FR-CAP-01 policy)', () => {
   });
 
   it('records audited detection summaries with counts only', async () => {
+    grantOrigin('https://example.com');
     const note = await seedNote('Audit note');
     await detect(note.id, ['https://example.com/audited', 'javascript:x'], 'paste');
     const events = await listAuditEvents(await repo(), { limit: 20 });
@@ -186,6 +195,7 @@ describe('links/detect-and-queue (FR-CAP-01 policy)', () => {
 
 describe('links/queue-capture and state transitions', () => {
   it('queues an existing detected link on explicit user request', async () => {
+    grantOrigin('https://example.com');
     const note = await seedNote('Explicit note');
     await setAutoCapture(false);
     await detect(note.id, ['https://example.com/want-it'], 'paste');

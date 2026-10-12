@@ -2,8 +2,8 @@
  * Chrome API mock for service-worker unit tests. Installs a minimal,
  * in-memory implementation of the APIs the background modules touch:
  * runtime (id/getURL/listeners), action, commands, tabs, windows,
- * contextMenus, alarms and storage.local. Tests control tab listeners and
- * storage contents directly.
+ * contextMenus, alarms, storage.local and permissions. Tests control tab
+ * listeners, storage contents and permission grants directly.
  */
 
 import { vi } from 'vitest';
@@ -37,6 +37,17 @@ export interface InstalledMock {
   tabsWithListeners: Set<number>;
   createdMenus: Array<{ id: string | number; title: string; contexts: string[]; documentUrlPatterns?: string[] }>;
   removeAllMenusCalls: number;
+  /** chrome.permissions state: granted origin patterns + gesture model. */
+  permissions: {
+    /** Granted origin match patterns (e.g. "https://example.com/*"). */
+    grantedPatterns: Set<string>;
+    /** Simulates the dashboard user-gesture window permissions.request needs. */
+    gestureActive: boolean;
+    /** Forces the next request() to resolve false (user clicked Block). */
+    forceNextDecline: boolean;
+    /** Origins arrays passed to every request() call. */
+    requestCalls: string[][];
+  };
   uninstall(): void;
 }
 
@@ -48,6 +59,10 @@ export function installChromeMock(): InstalledMock {
   const tabsWithListeners = new Set<number>();
   const createdMenus: InstalledMock['createdMenus'] = [];
   let removeAllMenusCalls = 0;
+  const grantedPatterns = new Set<string>();
+  const requestCalls: string[][] = [];
+  let gestureActive = false;
+  let forceNextDecline = false;
 
   const listeners: InstalledMock['listeners'] = {
     installed: [],
@@ -156,6 +171,34 @@ export function installChromeMock(): InstalledMock {
         },
       },
     },
+    permissions: {
+      // Chrome's real API: contains() needs no gesture; request() resolves
+      // false without one (or when the user declines the prompt).
+      contains: vi.fn(async (perms: { origins?: string[] }) =>
+        (perms.origins ?? []).every((pattern) => grantedPatterns.has(pattern)),
+      ),
+      request: vi.fn(async (perms: { origins?: string[] }) => {
+        const origins = perms.origins ?? [];
+        requestCalls.push([...origins]);
+        if (!gestureActive || forceNextDecline) {
+          forceNextDecline = false;
+          return false;
+        }
+        for (const pattern of origins) grantedPatterns.add(pattern);
+        return true;
+      }),
+      remove: vi.fn(async (perms: { origins?: string[] }) => {
+        let removed = false;
+        for (const pattern of perms.origins ?? []) {
+          if (grantedPatterns.delete(pattern)) removed = true;
+        }
+        return removed;
+      }),
+      getAll: vi.fn(async () => ({
+        permissions: ['storage', 'unlimitedStorage', 'alarms', 'notifications', 'scripting', 'pageCapture', 'debugger', 'contextMenus'],
+        origins: ['http://127.0.0.1/*', 'http://localhost/*', ...grantedPatterns],
+      })),
+    },
   };
 
   (globalThis as Record<string, unknown>)['chrome'] = mock;
@@ -167,6 +210,22 @@ export function installChromeMock(): InstalledMock {
     storage,
     tabsWithListeners,
     createdMenus,
+    permissions: {
+      grantedPatterns,
+      get gestureActive() {
+        return gestureActive;
+      },
+      set gestureActive(value: boolean) {
+        gestureActive = value;
+      },
+      get forceNextDecline() {
+        return forceNextDecline;
+      },
+      set forceNextDecline(value: boolean) {
+        forceNextDecline = value;
+      },
+      requestCalls,
+    },
     get removeAllMenusCalls() {
       return removeAllMenusCalls;
     },

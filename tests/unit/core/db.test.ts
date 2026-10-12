@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { openDatabase, withStores, DatabaseUnavailableError, MigrationFailedError } from '../../../src/core/db/open';
 import { SCHEMA_V1, Store, DB_VERSION } from '../../../src/core/db/schema';
-import { latestVersion, MIGRATIONS, type Migration } from '../../../src/core/db/migrations';
+import { applyMigrations, latestVersion, MIGRATIONS, type Migration } from '../../../src/core/db/migrations';
 import { newId } from '../../../src/core/util/ids';
 
 /**
@@ -60,8 +60,57 @@ describe('database open and schema', () => {
     ]);
     const noteTags = db.transaction([Store.NoteTags], 'readonly').objectStore(Store.NoteTags);
     expect(noteTags.keyPath).toEqual(['noteId', 'tagId']);
+    const links = db.transaction([Store.Links], 'readonly').objectStore(Store.Links);
+    // v2 adds the origin index on top of the v1 layout (fresh installs run
+    // v1 then v2 inside the same upgrade transaction).
+    expect(Array.from(links.indexNames).sort()).toEqual(['dedupKey', 'noteId', 'note_dedup', 'origin']);
     const settings = db.transaction([Store.Settings], 'readonly').objectStore(Store.Settings);
     expect(settings.keyPath).toBe('key');
+  });
+
+  it('upgrades a v1 database to v2: adds links.origin and preserves records (FR-DATA-06)', async () => {
+    const name = `upgrade-${newId()}`;
+    // Build a genuine v1 database: full v1 layout, no links.origin index.
+    const v1 = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = indexedDB.open(name, 1);
+      req.onupgradeneeded = () => {
+        applyMigrations(req.result, req.transaction!, 0, 1);
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    const linkId = newId();
+    await withStores(v1, [Store.Links], 'readwrite', (stores) => {
+      stores[Store.Links]?.put({
+        id: linkId,
+        noteId: newId(),
+        originalUrl: 'https://example.com/a',
+        dedupKey: 'https://example.com/a',
+        anchorText: '',
+        origin: 'https://example.com',
+        createdAt: '2026-10-12T08:00:00.000Z',
+        snapshotId: null,
+        captureState: 'detected',
+      });
+    });
+    expect(
+      Array.from(v1.transaction([Store.Links], 'readonly').objectStore(Store.Links).indexNames),
+    ).not.toContain('origin');
+    v1.close();
+
+    // Canonical open applies migrationV2 and preserves the v1 record.
+    const upgraded = await openDatabase({ name });
+    dbs.push(upgraded);
+    expect(upgraded.version).toBe(2);
+    const store = upgraded.transaction([Store.Links], 'readonly').objectStore(Store.Links);
+    expect(Array.from(store.indexNames)).toContain('origin');
+    const viaIndex = await new Promise<unknown[]>((resolve, reject) => {
+      const req = store.index('origin').getAll('https://example.com');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    expect(viaIndex).toHaveLength(1);
+    expect(viaIndex[0]).toMatchObject({ id: linkId, originalUrl: 'https://example.com/a' });
   });
 
   it('reopens at the same version without re-migrating', async () => {

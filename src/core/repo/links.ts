@@ -110,6 +110,44 @@ export async function findLinksByUrl(ctx: RepoContext, url: string): Promise<Lin
   return links.map(normalizeLink);
 }
 
+/** Every link on an origin (v2 `origin` index) — revocation bookkeeping. */
+export async function listLinksByOrigin(ctx: RepoContext, origin: string): Promise<Link[]> {
+  const links = await ctx.getByIndex<Link>(Store.Links, 'origin', origin);
+  return links.map(normalizeLink).sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+}
+
+/**
+ * Permission-driven capture-lifecycle transitions (FR-CAP-02).
+ *
+ * Pure state machine — the single source of truth for how origin-permission
+ * events move a link between capture states:
+ *
+ * - `grant`: only a link waiting on permission resumes capture (`permission-required`
+ *   → `queued`). Detected links were never asked for; failed links failed for
+ *   capture reasons, not access; captured archives are already saved locally.
+ * - `decline`: the user said no — nothing changes and nothing retries without
+ *   another explicit user action (PRD: "do not retry without another user action").
+ * - `revoke`: pending capture work returns to `permission-required` (queued or
+ *   actively capturing); finished archives stay `captured`, and `detected`/
+ *   `failed` links are untouched.
+ *
+ * Returns the next state, or null when the event does not move this state.
+ */
+export type PermissionEvent = 'grant' | 'decline' | 'revoke';
+
+const PERMISSION_TRANSITIONS: Readonly<Record<PermissionEvent, Partial<Record<LinkCaptureState, LinkCaptureState>>>> = {
+  grant: { 'permission-required': 'queued' },
+  decline: {},
+  revoke: { queued: 'permission-required', capturing: 'permission-required' },
+};
+
+export function nextCaptureStateOnPermissionEvent(
+  current: LinkCaptureState,
+  event: PermissionEvent,
+): LinkCaptureState | null {
+  return PERMISSION_TRANSITIONS[event][current] ?? null;
+}
+
 export async function setLinkSnapshot(
   ctx: RepoContext,
   linkId: EntityId,

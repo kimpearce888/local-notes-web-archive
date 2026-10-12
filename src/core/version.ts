@@ -8,7 +8,7 @@
 export const APP_NAME = 'Local Notes & Web Archive';
 export const APP_ID = 'local-notes-web-archive';
 export const APP_VERSION = '1.0.0';
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 export const DB_NAME = 'local-notes-web-archive';
 export const MIN_CHROME_VERSION = 120;
 

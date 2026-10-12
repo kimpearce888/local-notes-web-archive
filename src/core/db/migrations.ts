@@ -1,4 +1,4 @@
-import { SCHEMA_V1, type StoreSpec } from './schema';
+import { LINKS_ORIGIN_INDEX, SCHEMA_V1, Store, type StoreSpec } from './schema';
 
 /**
  * Versioned, idempotent migrations (FR-DATA-06).
@@ -47,10 +47,33 @@ const migrationV1: Migration = {
 };
 
 /**
+ * v2: `links.origin` index — per-origin permission bookkeeping so revoking
+ * an origin's site access (FR-CAP-02/FR-SET-03) resolves every affected link
+ * through the index instead of a full scan. Idempotent per step.
+ */
+const migrationV2: Migration = {
+  toVersion: 2,
+  description: 'links.origin index for per-origin permission bookkeeping (FR-CAP-02)',
+  apply: (context) => {
+    const { db, transaction } = context;
+    if (!db.objectStoreNames.contains(Store.Links)) {
+      // v1 creates the store; a v2 upgrade on a database without it is corrupt.
+      throw new Error('links store missing before v2 migration');
+    }
+    const store = transaction.objectStore(Store.Links);
+    if (!store.indexNames.contains(LINKS_ORIGIN_INDEX.name)) {
+      store.createIndex(LINKS_ORIGIN_INDEX.name, LINKS_ORIGIN_INDEX.keyPath as string, {
+        unique: false,
+      });
+    }
+  },
+};
+
+/**
  * Registered migrations, ascending. Future schema changes append here —
  * existing entries are immutable once released.
  */
-export const MIGRATIONS: readonly Migration[] = [migrationV1];
+export const MIGRATIONS: readonly Migration[] = [migrationV1, migrationV2];
 
 export function migrationsUpTo(version: number): readonly Migration[] {
   return MIGRATIONS.filter((m) => m.toVersion <= version);

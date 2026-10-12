@@ -3,7 +3,10 @@
  * dedup keys and a capture lifecycle. T-020 adds paste/manual detection
  * with queue policy (auto-capture only when the setting is enabled and the
  * FR-CAP-04 gate passes) plus the explicit user-driven queue entry point.
- * The capture queue processor itself lands in T-022.
+ * T-021 adds the queue-time origin-permission check: an unauthorized origin
+ * parks the link in permission-required (FR-CAP-02) until the user grants
+ * access via links/request-capture-permission (api/permissions.ts). The
+ * capture queue processor itself lands in T-022.
  */
 
 import type { MessageRouter, RpcDispatchContext } from '../router';
@@ -22,7 +25,8 @@ import {
 import { getNoteOrFail } from '../../core/repo/notes';
 import { getSettings } from '../../core/repo/settings';
 import { appendAuditEvent } from '../../core/repo/audit';
-import { checkCaptureEligibility, redactUrlForLog } from '../../core/util/urls';
+import { checkCaptureEligibility, originOf, redactUrlForLog } from '../../core/util/urls';
+import { hasOriginPermission } from '../permissions';
 import type { EntityId, Link, LinkCaptureState, Note } from '../../core/types';
 import { PayloadValidationError } from '../protocol';
 import { asEnum, asId, asObject, asOptionalString, asString, asStringArray } from './validate';
@@ -108,6 +112,18 @@ export function registerLinkApi(router: MessageRouter): void {
     const shouldQueue = source === 'paste' && autoCaptureOnPaste;
     const note = await getNoteOrFail(await repo(), noteId);
 
+    // Origin-permission cache for the loop: an unauthorized origin queues as
+    // permission-required instead of queued (FR-CAP-02) — the link is kept
+    // and the dashboard shows the "Allow access and capture" action.
+    const originGranted = new Map<string, boolean>();
+    const isOriginGranted = async (origin: string): Promise<boolean> => {
+      const cached = originGranted.get(origin);
+      if (cached !== undefined) return cached;
+      const granted = await hasOriginPermission(origin);
+      originGranted.set(origin, granted);
+      return granted;
+    };
+
     const results: LinkDetectionResult[] = [];
     for (const url of urls) {
       const gate = checkCaptureEligibility(url);
@@ -124,7 +140,11 @@ export function registerLinkApi(router: MessageRouter): void {
       }
       // http(s) URL: always preserved as a link (even when capture-ineligible
       // — e.g. localhost — the link itself is safe to keep and click).
-      const createdState: LinkCaptureState = shouldQueue && gate.ok ? 'queued' : 'detected';
+      const origin = gate.ok ? gate.parts.origin : originOf(url);
+      const wantsCapture = shouldQueue && gate.ok;
+      const createdState: LinkCaptureState = wantsCapture
+        ? (origin !== null && (await isOriginGranted(origin)) ? 'queued' : 'permission-required')
+        : 'detected';
       let linkResult: CreateLinkResult;
       try {
         linkResult = await createLink(await repo(), noteId, url, '', createdState);
@@ -133,14 +153,16 @@ export function registerLinkApi(router: MessageRouter): void {
         continue;
       }
       // Never downgrade progress: an existing queued/capturing/captured link
-      // keeps its state; a detected link may be promoted to queued now.
+      // keeps its state; detected or permission-required links adopt the
+      // queue decision now (a paste re-queue after a grant or revocation
+      // moves the link to the state the current access verdict implies).
       let link = linkResult.link;
       if (
         !linkResult.created &&
-        createdState === 'queued' &&
-        link.captureState === 'detected'
+        (link.captureState === 'detected' || link.captureState === 'permission-required') &&
+        createdState !== link.captureState
       ) {
-        link = await setLinkCaptureState(await repo(), link.id, 'queued');
+        link = await setLinkCaptureState(await repo(), link.id, createdState);
       }
       results.push({
         url,
@@ -152,12 +174,13 @@ export function registerLinkApi(router: MessageRouter): void {
     }
     await indexNote(note);
     const queued = results.filter((r) => r.link?.captureState === 'queued').length;
+    const permissionRequired = results.filter((r) => r.link?.captureState === 'permission-required').length;
     await auditLinkAction(ctx, {
       action: 'links/detect-and-queue',
       targetId: null,
       noteId,
       outcome: 'succeeded',
-      detail: `source=${source} urls=${results.length} queued=${queued} rejected=${
+      detail: `source=${source} urls=${results.length} queued=${queued} permission-required=${permissionRequired} rejected=${
         results.filter((r) => r.outcome === 'rejected').length
       }`,
     });
@@ -185,7 +208,13 @@ export function registerLinkApi(router: MessageRouter): void {
         `capture is not allowed for this URL (${gate.reason}: ${gate.detail})`,
       );
     }
-    const updated = await setLinkCaptureState(await repo(), linkId, 'queued');
+    // Queue-time access check (FR-CAP-02): an unauthorized origin parks the
+    // link in permission-required — kept, explained, and resumable via the
+    // user-clicked "Allow access and capture" action. The capture queue
+    // (T-022) re-checks access before driving the tab.
+    const granted = await hasOriginPermission(link.origin);
+    const target: LinkCaptureState = granted ? 'queued' : 'permission-required';
+    const updated = await setLinkCaptureState(await repo(), linkId, target);
     const note = await getNoteOrFail(await repo(), link.noteId);
     await indexNote(note);
     await auditLinkAction(ctx, {
@@ -193,9 +222,11 @@ export function registerLinkApi(router: MessageRouter): void {
       targetId: linkId,
       noteId: link.noteId,
       outcome: 'succeeded',
-      detail: `queued ${redactUrlForLog(link.originalUrl)}`,
+      detail: granted
+        ? `queued ${redactUrlForLog(link.originalUrl)}`
+        : `permission-required ${redactUrlForLog(link.originalUrl)} (origin not authorized)`,
     });
-    return { link: updated };
+    return { link: updated, permissionRequired: !granted };
   });
 
   router.register('links/set-capture-state', async (payload, ctx) => {
