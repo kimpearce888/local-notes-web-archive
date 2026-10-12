@@ -37,6 +37,7 @@ import type { AgentTurnResult } from '../../background/ai/agent';
 import type { BackupExportResult } from '../../background/backup/export';
 import type { BackupPreview } from '../../background/backup/restore';
 import type { NoteExportFile } from '../../background/api/note-transfer';
+import type { StorageHealthReport } from '../../background/api/storage-health';
 
 export interface ApiContract {
   /* app */
@@ -295,6 +296,13 @@ export interface ApiContract {
     payload: { baseUrl?: string };
     result: { models: LmStudioModel[] };
   };
+  /* storage health (T-036, FR-DATA-02/07) */
+  'storage/health': { payload: Record<string, never>; result: { report: StorageHealthReport } };
+  'storage/request-persistence': {
+    payload: Record<string, never>;
+    result: { requested: boolean; persisted: boolean | null };
+  };
+  'storage/data-loss-warning': { payload: Record<string, never>; result: { warning: string } };
   /* note-level transfer (T-035, FR-DATA-05) */
   'notes/export-file': {
     payload: { noteId: EntityId };
