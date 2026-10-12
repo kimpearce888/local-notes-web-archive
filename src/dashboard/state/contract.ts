@@ -7,6 +7,7 @@
 
 import type {
   AppSettings,
+  Attachment,
   Category,
   EntityId,
   Filters,
@@ -155,6 +156,34 @@ export interface ApiContract {
     result: { updated: boolean };
   };
   'links/delete': { payload: { linkId: EntityId }; result: { deleted: boolean } };
+
+  /* attachments (T-019: images and files, structured-cloneable Blobs) */
+  'attachments/add': {
+    payload: {
+      noteId: EntityId;
+      filename: string;
+      declaredMimeType: string;
+      /** Structured-cloneable Blob survives the runtime message channel. */
+      data: Blob;
+    };
+    result: { attachment: Attachment; deduplicated: boolean };
+  };
+  'attachments/list-for-note': {
+    payload: { noteId: EntityId };
+    result: { attachments: Attachment[] };
+  };
+  'attachments/get-blob': {
+    payload: { attachmentId: EntityId };
+    result: { attachment: Attachment; blob: Blob | null };
+  };
+  'attachments/rename': {
+    payload: { attachmentId: EntityId; filename: string };
+    result: { updated: boolean };
+  };
+  'attachments/delete': {
+    payload: { attachmentId: EntityId };
+    result: { deleted: boolean };
+  };
 
   /* search */
   'search/query': {

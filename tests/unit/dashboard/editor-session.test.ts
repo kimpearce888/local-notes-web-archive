@@ -103,6 +103,34 @@ function makeCallbacks(overrides: Partial<EditorSessionCallbacks> = {}): EditorS
     },
     announce: () => undefined,
     onOpenLink: () => undefined,
+    attachments: {
+      add: async (input) =>
+        client().request('attachments/add', {
+          noteId: input.noteId,
+          filename: input.filename,
+          declaredMimeType: input.declaredMimeType,
+          data: input.data,
+        }),
+      list: async (noteId) => (await client().request('attachments/list-for-note', { noteId })).attachments,
+      getBlob: async (attachmentId) =>
+        (await client().request('attachments/get-blob', { attachmentId })).blob,
+      rename: async (attachmentId, filename) => {
+        try {
+          await client().request('attachments/rename', { attachmentId, filename });
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      remove: async (attachmentId) => {
+        try {
+          await client().request('attachments/delete', { attachmentId });
+          return true;
+        } catch {
+          return false;
+        }
+      },
+    },
     ...overrides,
   };
 }
@@ -130,8 +158,11 @@ describe('autosave through the real save pipeline', () => {
     expect(saved.plainText).toContain('typed words');
     expect(saved.revisionId).not.toBe(note.revisionId);
 
-    // Successful autosave clears the crash journal for this note.
+    // Successful autosave clears the crash journal for this note. The
+    // clear happens in the same async continuation that observed the
+    // committed save, so wait for it rather than racing the microtask.
     const { readRecoveryEntry } = await import('../../../src/dashboard/editor/recovery');
+    await waitFor(() => readRecoveryEntry(note.id, '2020-01-01T00:00:00.000Z' as never) === null);
     expect(readRecoveryEntry(note.id, '2020-01-01T00:00:00.000Z' as never)).toBeNull();
 
     // The save is recorded in the revision history (first revision).

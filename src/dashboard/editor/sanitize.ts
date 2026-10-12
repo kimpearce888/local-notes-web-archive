@@ -28,6 +28,7 @@ const ALLOWED_ATTRS: readonly string[] = [
   'style',
   'type', 'checked', 'disabled',
   'data-language', 'language', 'class',
+  'data-caption', 'data-width',
 ];
 
 /**
@@ -38,10 +39,21 @@ const ALLOWED_ATTRS: readonly string[] = [
 const URI_SAFE_ATTRS: readonly string[] = [
   'title', 'target', 'rel', 'colspan', 'rowspan', 'align', 'alt', 'width',
   'height', 'color', 'face', 'size', 'type', 'checked', 'disabled',
-  'data-language', 'language', 'class',
+  'data-language', 'language', 'class', 'data-caption', 'data-width',
 ];
 
-const ALLOWED_URI_REGEXP = /^(?:https?:|mailto:|data:image\/(?:png|jpeg|gif|webp);base64,)/i;
+/**
+ * `attachment:<uuid>` is the durable in-document reference to blob-store
+ * images (T-019). The browser cannot fetch the scheme and the node view
+ * resolves it locally, so admitting it here is safe — and it keeps image
+ * references alive through the HTML source view round-trip.
+ */
+const ATTACHMENT_URI = 'attachment:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
+
+const ALLOWED_URI_REGEXP = new RegExp(
+  `^(?:https?:|mailto:|data:image/(?:png|jpeg|gif|webp);base64,|${ATTACHMENT_URI})`,
+  'i',
+);
 
 /** The editor's inline CSS vocabulary — anything else is dropped. */
 const ALLOWED_CSS_PROPERTIES: readonly string[] = [

@@ -17,7 +17,7 @@ import { Superscript } from '@tiptap/extension-superscript';
 import { TaskList } from '@tiptap/extension-task-list';
 import { TaskItem } from '@tiptap/extension-task-item';
 import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table';
-import { Image } from '@tiptap/extension-image';
+import { LocalImage, type ImageSrcResolver } from './local-image';
 import { Placeholder } from '@tiptap/extension-placeholder';
 import { CharacterCount } from '@tiptap/extension-character-count';
 import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
@@ -53,7 +53,12 @@ export const TEXT_COLORS: readonly string[] = [
 
 export const PLACEHOLDER_TEXT = 'Start writing… use the toolbar above, or paste anything.';
 
-export function createEditorExtensions(): Extensions {
+export interface EditorExtensionsOptions {
+  /** Resolves `attachment:` image references to displayable object URLs. */
+  resolveImageSrc?: ImageSrcResolver;
+}
+
+export function createEditorExtensions(options: EditorExtensionsOptions = {}): Extensions {
   return [
     StarterKit.configure({
       // Replaced by CodeBlockLowlight for language labels (§4.4).
@@ -90,8 +95,11 @@ export function createEditorExtensions(): Extensions {
     TableRow,
     TableHeader,
     TableCell,
-    // Media.
-    Image.configure({ inline: false, allowBase64: true }),
+    // Media: local-binary images with caption + resize controls (T-019);
+    // attachment references resolve through the session's resolver.
+    LocalImage.configure({
+      resolveImageSrc: options.resolveImageSrc ?? (async () => null),
+    }),
     // Chrome.
     Placeholder.configure({ placeholder: PLACEHOLDER_TEXT }),
     CharacterCount,

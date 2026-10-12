@@ -30,8 +30,28 @@ console.log('[release] building dist/ ...');
 execFileSync('npx', ['vite', 'build'], { cwd: root, stdio: 'inherit' });
 
 // 2. Static release gate: no remote runtime URLs, no dynamic code in shipped JS.
+// Inert literal constants embedded by bundled dependencies — never fetched
+// at runtime (the E2E network privacy test, FR-SET-04, proves this):
+//   - W3C XML namespace identifiers carried by DOMPurify/ProseMirror
+//     (http://www.w3.org/2000/svg etc. are namespace URIs, not endpoints)
+//   - documentation links inside dependency error/deprecation messages
+//     (prosemirror.net/docs, github.com/highlightjs|markedjs issues)
+const INERT_URL_ALLOWLIST = [
+  /https?:\/\/www\.w3\.org\//g,
+  /https?:\/\/prosemirror\.net\/docs\//g,
+  /https?:\/\/github\.com\/(?:highlightjs|markedjs)\//g,
+];
 const forbiddenUrl = /https?:\/\/(?!127\.0\.0\.1|localhost)[\w.-]+/;
 const dynamicCode = /\beval\s*\(|\bnew\s+Function\s*\(/;
+
+/** Remove allowlisted inert literals, then test the remainder. */
+function hasForbiddenRemoteUrl(content) {
+  let remaining = content;
+  for (const pattern of INERT_URL_ALLOWLIST) {
+    remaining = remaining.replace(pattern, '');
+  }
+  return forbiddenUrl.test(remaining);
+}
 const files = [];
 (function walk(dir) {
   for (const entry of readdirSync(dir)) {
@@ -50,7 +70,7 @@ for (const file of jsFiles) {
   const content = readFileSync(file, 'utf8');
   const rel = relative(distDir, file);
   if (dynamicCode.test(content)) fail(`dynamic code pattern in ${rel}`);
-  if (forbiddenUrl.test(content)) fail(`remote runtime URL in ${rel}`);
+  if (hasForbiddenRemoteUrl(content)) fail(`remote runtime URL in ${rel}`);
 }
 console.log(`[release] static gate passed (${files.length} files, ${jsFiles.length} JS files scanned)`);
 

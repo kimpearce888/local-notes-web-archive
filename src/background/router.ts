@@ -21,6 +21,10 @@ import { TagNotFoundError, DuplicateTagError } from '../core/repo/tags';
 import { CategoryNotFoundError } from '../core/repo/categories';
 import { ReminderNotFoundError } from '../core/repo/reminders';
 import { InvalidUrlError } from '../core/repo/links';
+import {
+  AttachmentNotFoundError,
+  AttachmentTooLargeError,
+} from '../core/repo/attachments';
 import { DatabaseUnavailableError, MigrationFailedError } from '../core/db/open';
 
 export interface RpcDispatchContext {
@@ -57,6 +61,13 @@ export function toRpcError(error: unknown): RpcError {
       code: 'invalid-url',
       message: 'The URL is not an allowed absolute http(s) address (FR-CAP-04).',
     };
+  }
+  if (error instanceof AttachmentNotFoundError) {
+    return { code: 'not-found', message: error.message };
+  }
+  if (error instanceof AttachmentTooLargeError) {
+    // The message carries the actual size and limit so the UI can be truthful.
+    return { code: 'attachment-too-large', message: error.message };
   }
   if (error instanceof DatabaseUnavailableError) {
     return { code: 'database-unavailable', message: error.message };

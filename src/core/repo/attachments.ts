@@ -19,6 +19,13 @@ export class AttachmentTooLargeError extends Error {
   }
 }
 
+export class AttachmentNotFoundError extends Error {
+  constructor(readonly attachmentId: EntityId) {
+    super(`attachment ${attachmentId} was not found`);
+    this.name = 'AttachmentNotFoundError';
+  }
+}
+
 /** Default per-attachment ceiling; configurable downward (FR-SET-01). */
 export const DEFAULT_MAX_ATTACHMENT_BYTES = 50 * 1024 * 1024;
 
@@ -179,5 +186,22 @@ export async function findDuplicateAttachment(
 
 /** Clamp helper re-export for size-limit UIs. */
 export { clamp };
+
+/**
+ * Delete one attachment record and return it (the caller re-indexes the
+ * note and garbage-collects the blob when unreferenced). Throws
+ * AttachmentNotFoundError for unknown ids — never a silent no-op.
+ */
+export async function deleteAttachment(
+  ctx: RepoContext,
+  id: EntityId,
+): Promise<Attachment> {
+  const existing = await getAttachment(ctx, id);
+  if (!existing) throw new AttachmentNotFoundError(id);
+  await ctx.transaction([Store.Attachments], 'readwrite', (stores) => {
+    stores[Store.Attachments]?.delete(id);
+  });
+  return existing;
+}
 
 export { blobKeyFor };

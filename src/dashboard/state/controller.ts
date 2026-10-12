@@ -438,6 +438,34 @@ export function createDashboardController(options: {
           },
           announce: (message) => shell.announce(message),
           onOpenLink: (url) => window.open(url, '_blank', 'noopener,noreferrer'),
+          attachments: {
+            add: async (input) =>
+              client.request('attachments/add', {
+                noteId: input.noteId,
+                filename: input.filename,
+                declaredMimeType: input.declaredMimeType,
+                data: input.data,
+              }),
+            list: async (id) => (await client.request('attachments/list-for-note', { noteId: id })).attachments,
+            getBlob: async (attachmentId) =>
+              (await client.request('attachments/get-blob', { attachmentId })).blob,
+            rename: async (attachmentId, filename) => {
+              try {
+                await client.request('attachments/rename', { attachmentId, filename });
+                return true;
+              } catch {
+                return false;
+              }
+            },
+            remove: async (attachmentId) => {
+              try {
+                await client.request('attachments/delete', { attachmentId });
+                return true;
+              } catch {
+                return false;
+              }
+            },
+          },
         },
       });
       showView('editor');

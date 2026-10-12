@@ -7,6 +7,7 @@
  */
 
 import { Editor } from '@tiptap/core';
+import { NodeSelection } from '@tiptap/pm/state';
 import { createEditorExtensions, PLACEHOLDER_TEXT } from './extensions';
 import { createEditorToolbar, type EditorToolbar } from './toolbar';
 import { sanitizeEditorHtml, isSafeLinkHref } from './sanitize';
@@ -19,6 +20,16 @@ export interface EditorPanelCallbacks {
   onChange(input: { title: string; subtitle: string }): void;
   /** Link activation must go through the app's safe-open policy. */
   onOpenLink(url: string): void;
+  /** Store an image file and return its durable in-document reference. */
+  onAttachImage(file: File): Promise<
+    { ok: true; src: string; deduplicated: boolean } | { ok: false; message: string }
+  >;
+  /** Store a non-image file as a note attachment (never inserted inline). */
+  onAttachFile(file: File): Promise<
+    { ok: true; filename: string; deduplicated: boolean } | { ok: false; message: string }
+  >;
+  /** Surface upload outcomes to screen readers and the visible status line. */
+  onNotify(message: string, kind: 'info' | 'error'): void;
 }
 
 export interface EditorPanelOptions {
@@ -27,6 +38,8 @@ export interface EditorPanelOptions {
     subtitle?: string;
     editorDoc?: object | null;
   };
+  /** Resolves `attachment:` image references for display (T-019). */
+  resolveImageSrc?: (src: string) => Promise<string | null>;
 }
 
 export interface EditorPanel {
@@ -76,7 +89,9 @@ export function createEditorPanel(
 
   const editor = new Editor({
     element: editorHost,
-    extensions: createEditorExtensions(),
+    extensions: createEditorExtensions({
+      resolveImageSrc: options.resolveImageSrc ?? (async () => null),
+    }),
     content: options.initial?.editorDoc ?? { type: 'doc', content: [{ type: 'paragraph' }] },
     editorProps: {
       // Rich paste is retained (ProseMirror parses the clipboard HTML
@@ -93,12 +108,83 @@ export function createEditorPanel(
         }
         return false;
       },
+      // Local image files pasted straight into the note (PRD §4.4): store
+      // the binary through the attachment pipeline and insert the durable
+      // reference. Non-image files become note attachments instead.
+      handlePaste: (view, event) => {
+        const files = filesFromTransfer(event.clipboardData);
+        if (files.length === 0) return false;
+        event.preventDefault();
+        void ingestFiles(files);
+        return true;
+      },
+      handleDrop: (view, event) => {
+        const files = filesFromTransfer(event.dataTransfer);
+        if (files.length === 0) return false;
+        event.preventDefault();
+        const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
+        void ingestFiles(files, pos);
+        return true;
+      },
     },
     onUpdate: () => {
       markDirty();
       callbacks.onChange({ title: titleInput.value, subtitle: subtitleInput.value });
     },
   });
+
+  /** Extract real Files from a clipboard/drag transfer, bounded per call. */
+  function filesFromTransfer(transfer: DataTransfer | null): readonly File[] {
+    if (!transfer) return [];
+    const files = Array.from(transfer.files ?? []);
+    return files.slice(0, 20);
+  }
+
+  /** Store and insert/drop-attach a batch of local files (T-019). */
+  async function ingestFiles(files: readonly File[], pos?: number): Promise<void> {
+    for (const file of files) {
+      if (file.type.startsWith('image/')) {
+        const outcome = await callbacks.onAttachImage(file);
+        if (outcome.ok) {
+          const alt = file.name.replace(/\.[^.]+$/, '');
+          // A NodeSelection (e.g. the image just inserted) would make plain
+          // insertContent REPLACE the selected node — target the position
+          // right after it instead so repeated pastes insert repeatedly.
+          const selection = editor.state.selection;
+          const target =
+            typeof pos === 'number'
+              ? pos
+              : selection instanceof NodeSelection
+                ? selection.to
+                : null;
+          const imageNode = { type: 'image', attrs: { src: outcome.src, alt } };
+          if (typeof target === 'number') {
+            editor.chain().focus().insertContentAt(target, imageNode).run();
+          } else {
+            editor.chain().focus().insertContent(imageNode).run();
+          }
+          callbacks.onNotify(
+            outcome.deduplicated
+              ? `Inserted ${file.name} (already stored — duplicate content reused).`
+              : `Inserted ${file.name}.`,
+            'info',
+          );
+        } else {
+          callbacks.onNotify(outcome.message, 'error');
+        }
+      } else {
+        const outcome = await callbacks.onAttachFile(file);
+        callbacks.onNotify(
+          outcome.ok
+            ? outcome.deduplicated
+              ? `Attached ${outcome.filename} (duplicate content reused).`
+              : `Attached ${outcome.filename}.`
+            : outcome.message,
+          outcome.ok ? 'info' : 'error',
+        );
+      }
+    }
+  }
 
   titleInput.addEventListener('input', () => {
     markDirty();
@@ -311,12 +397,21 @@ export function createEditorPanel(
     const { dialog, body, actions } = dialogShell('Insert image');
     const srcField = document.createElement('label');
     srcField.className = 'dialog__field';
-    srcField.textContent = 'Image source (data: URL or local file in T-019)';
+    srcField.textContent = 'Choose a local image file';
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/png,image/jpeg,image/gif,image/webp,image/bmp,image/svg+xml';
+    fileInput.className = 'dialog__file';
+    fileInput.setAttribute('aria-label', 'Image file');
+    srcField.append(fileInput);
+    const orField = document.createElement('label');
+    orField.className = 'dialog__field';
+    orField.textContent = '…or paste a data:image URL';
     const srcInput = document.createElement('input');
     srcInput.type = 'text';
     srcInput.className = 'search-input';
     srcInput.placeholder = 'data:image/png;base64,…';
-    srcField.append(srcInput);
+    orField.append(srcInput);
     const altField = document.createElement('label');
     altField.className = 'dialog__field';
     altField.textContent = 'Alt text (describe the image)';
@@ -326,12 +421,48 @@ export function createEditorPanel(
     altField.append(altInput);
     const captionField = document.createElement('label');
     captionField.className = 'dialog__field';
-    captionField.textContent = 'Caption (optional)';
+    captionField.textContent = 'Caption (optional — editable under the image)';
     const captionInput = document.createElement('input');
     captionInput.type = 'text';
     captionInput.className = 'search-input';
     captionField.append(captionInput);
-    body.append(srcField, altField, captionField);
+    body.append(srcField, orField, altField, captionField);
+
+    const insertFromOutcome = (attrs: { src: string; alt: string; caption: string }): void => {
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'image',
+          attrs: { src: attrs.src, alt: attrs.alt, caption: attrs.caption },
+        })
+        .run();
+    };
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      void (async () => {
+        const outcome = await callbacks.onAttachImage(file);
+        if (outcome.ok) {
+          insertFromOutcome({
+            src: outcome.src,
+            alt: altInput.value.trim() || file.name.replace(/\.[^.]+$/, ''),
+            caption: captionInput.value,
+          });
+          dialog.close();
+          callbacks.onNotify(
+            outcome.deduplicated
+              ? `Inserted ${file.name} (already stored — duplicate content reused).`
+              : `Inserted ${file.name}.`,
+            'info',
+          );
+        } else {
+          callbacks.onNotify(outcome.message, 'error');
+          fileInput.value = '';
+        }
+      })();
+    });
 
     const cancel = document.createElement('button');
     cancel.type = 'button';
@@ -344,8 +475,14 @@ export function createEditorPanel(
     apply.textContent = 'Insert';
     apply.addEventListener('click', () => {
       const src = srcInput.value.trim();
-      if (!src.startsWith('data:image/')) return; // files arrive with T-019
-      editor.chain().focus().setImage({ src, alt: altInput.value }).run();
+      if (!src.startsWith('data:image/')) {
+        callbacks.onNotify(
+          'Use the file picker for local images, or a data:image URL.',
+          'error',
+        );
+        return;
+      }
+      insertFromOutcome({ src, alt: altInput.value, caption: captionInput.value });
       dialog.close();
     });
     actions.append(cancel, apply);

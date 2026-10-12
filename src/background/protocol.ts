@@ -37,6 +37,8 @@ export type RpcErrorCode =
   | 'denied'
   /** Feature unavailable in this environment. */
   | 'unsupported'
+  /** Attachment exceeds the configured byte limit (PRD §10). */
+  | 'attachment-too-large'
   /** Unexpected internal failure. */
   | 'internal-error';
 
