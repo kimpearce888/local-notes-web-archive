@@ -10,6 +10,7 @@ import { createThemeManager, type ThemeManager } from './theme';
 import { showEmpty } from './states';
 import { createApiClient } from './state/client';
 import { createDashboardController, type DashboardController } from './state/controller';
+import { createDuplicateDecisionMonitor, type DuplicateDecisionMonitor } from './views/duplicate-dialog';
 import type { CaptureProgressEvent, CaptureProgressPhase } from '../background/capture/queue';
 
 const THEME_STORAGE_KEY = 'lnwa-theme-preference';
@@ -52,10 +53,26 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
   const client = createApiClient();
   const controller = createDashboardController({ shell, theme, client });
 
+  // Duplicate-capture decisions (FR-CAP-08 `ask` policy): parked links get
+  // a user-visible confirmation, presented one at a time.
+  const duplicates: DuplicateDecisionMonitor = createDuplicateDecisionMonitor({
+    status: async () => (await client.request('capture/status', {})).status,
+    resolveDuplicate: async (linkId, resolution) => {
+      try {
+        return (await client.request('capture/resolve-duplicate', { linkId, resolution })).resolved;
+      } catch {
+        return false;
+      }
+    },
+    announce: (message) => shell.announce(message),
+  });
+  void duplicates.refresh();
+
   /* Service-worker intents: a focused dashboard tab receives the
      create-note command as a tab message (dashboard-tab.ts). Capture
      progress from the background queue arrives the same way; terminal
-     phases are announced, the full stream feeds the snapshot UI (T-026). */
+     phases are announced, every event re-checks parked duplicate
+     decisions, and the snapshot UI refreshes on demand (T-026). */
   const onRuntimeMessage = (message: unknown): void => {
     if (typeof message !== 'object' || message === null) return;
     const kind = (message as { kind?: unknown }).kind;
@@ -69,6 +86,7 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
       if (ANNOUNCED_CAPTURE_PHASES.includes(event.phase)) {
         shell.announce(`Capture ${event.phase.replace('-', ' ')}: ${event.detail}`);
       }
+      void duplicates.refresh();
     }
   };
   if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
@@ -98,6 +116,7 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
       if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
         chrome.runtime.onMessage.removeListener(onRuntimeMessage);
       }
+      duplicates.dispose();
       controller.dispose();
       theme.dispose();
       shell.dispose();

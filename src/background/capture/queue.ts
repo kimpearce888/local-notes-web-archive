@@ -132,12 +132,25 @@ export interface ActiveJobStatus {
   readonly startedAt: UtcTimestamp;
 }
 
+/** A parked duplicate decision awaiting the user (FR-CAP-08 `ask` policy). */
+export interface WaitingDedupEntry {
+  readonly linkId: EntityId;
+  readonly noteId: EntityId;
+  /** URL as entered — the dashboard shows it in the decision dialog. */
+  readonly url: string;
+  /** Where the existing capture lives (shown for context). */
+  readonly duplicateUrl: string;
+  readonly enqueuedAt: UtcTimestamp;
+}
+
 export interface CaptureQueueStatus {
   /** True while the single worker is processing a job. */
   readonly busy: boolean;
   readonly active: ActiveJobStatus | null;
   readonly pendingCount: number;
   readonly waitingDedupCount: number;
+  /** Parked duplicate decisions, oldest first (the dashboard's prompt queue). */
+  readonly waitingDedup: readonly WaitingDedupEntry[];
 }
 
 export type DuplicateResolution = 'reuse' | 'new';
@@ -635,13 +648,23 @@ export function createCaptureQueue(options: CaptureQueueOptions): CaptureQueue {
     },
 
     status(): CaptureQueueStatus {
+      const waiting = pending
+        .filter((p) => p.phase === 'waiting-dedup')
+        .map((p) => ({
+          linkId: p.job.linkId,
+          noteId: p.job.noteId,
+          url: p.job.url,
+          duplicateUrl: p.duplicateUrl ?? p.job.url,
+          enqueuedAt: p.job.enqueuedAt,
+        }));
       return {
         busy: active !== null,
         active: active
           ? { job: active.job, phase: active.phase, startedAt: active.startedAt }
           : null,
         pendingCount: pending.filter((p) => p.phase === 'queued').length,
-        waitingDedupCount: pending.filter((p) => p.phase === 'waiting-dedup').length,
+        waitingDedupCount: waiting.length,
+        waitingDedup: waiting,
       };
     },
 

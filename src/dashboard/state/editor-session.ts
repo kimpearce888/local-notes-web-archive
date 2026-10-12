@@ -22,10 +22,11 @@ import {
   type ConflictSnapshot,
 } from '../editor/revisions';
 import { createAttachmentsPanel, type AttachmentsPanel } from '../editor/attachments-panel';
+import { createSnapshotsPanel, type SnapshotsPanel } from '../editor/snapshots-panel';
 import { attachmentIdFromSrc } from '../editor/local-image';
 import { editorDocToPlainText } from '../../core/repo/notes';
 import { detectHttpUrlsInText } from '../../core/util/urls';
-import type { Attachment, EntityId, Note, Revision } from '../../core/types';
+import type { Attachment, EntityId, Note, Revision, Snapshot } from '../../core/types';
 import type { RpcErrorCode } from '../../background/protocol';
 
 export type SaveOutcome = { ok: true; note: Note } | { ok: false; code: RpcErrorCode };
@@ -42,6 +43,18 @@ export interface AttachmentApi {
   getBlob(attachmentId: EntityId): Promise<Blob | null>;
   rename(attachmentId: EntityId, filename: string): Promise<boolean>;
   remove(attachmentId: EntityId): Promise<boolean>;
+}
+
+/** Snapshot operations the session needs (T-026, backed by the RPC client). */
+export interface SnapshotsApi {
+  listForNote(noteId: EntityId): Promise<readonly Snapshot[]>;
+  getPng(snapshotId: EntityId): Promise<Blob | null>;
+  exportArtifact(
+    snapshotId: EntityId,
+    format: 'mhtml' | 'png' | 'text',
+  ): Promise<{ blob: Blob; filename: string }>;
+  rename(snapshotId: EntityId, title: string): Promise<boolean>;
+  remove(snapshotId: EntityId): Promise<boolean>;
 }
 
 export interface EditorSessionCallbacks {
@@ -73,6 +86,8 @@ export interface EditorSessionCallbacks {
   onOpenLink(url: string): void;
   /** Attachment pipeline (T-019). */
   attachments: AttachmentApi;
+  /** Snapshot management (T-026, FR-CAP-06/07/08). */
+  snapshots: SnapshotsApi;
   /** URL detection policy call (T-020, FR-CAP-01). Returns null on failure. */
   detectLinks(input: {
     noteId: EntityId;
@@ -102,6 +117,7 @@ export async function openEditorSession(options: {
   const presentConflict = options.conflictPresenter ?? presentConflictDialog;
   const noteId = note.id;
   const attachmentApi = callbacks.attachments;
+  const snapshotsApi = callbacks.snapshots;
 
   let current = note;
   let lastRecoveryWrite = 0;
@@ -498,6 +514,54 @@ export async function openEditorSession(options: {
 
   void updateAttachmentCount();
 
+  /* ------------------------- Snapshots panel ------------------------ */
+
+  let snapshotsElement: HTMLElement | null = null;
+  let snapshotsPanelInstance: SnapshotsPanel | null = null;
+
+  const snapshotsButton = document.createElement('button');
+  snapshotsButton.type = 'button';
+  snapshotsButton.className = 'btn';
+  snapshotsButton.setAttribute('aria-expanded', 'false');
+  snapshotsButton.textContent = 'Snapshots';
+  snapshotsButton.addEventListener('click', () => void toggleSnapshots());
+
+  async function toggleSnapshots(): Promise<void> {
+    if (snapshotsElement) {
+      snapshotsPanelInstance?.dispose();
+      snapshotsElement.remove();
+      snapshotsElement = null;
+      snapshotsPanelInstance = null;
+      snapshotsButton.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    snapshotsPanelInstance = createSnapshotsPanel(noteId, {
+      listForNote: (id) => snapshotsApi.listForNote(id),
+      getPng: (id) => snapshotsApi.getPng(id),
+      exportArtifact: (id, format) => snapshotsApi.exportArtifact(id, format),
+      rename: (id, title) => snapshotsApi.rename(id, title),
+      remove: (id) => snapshotsApi.remove(id),
+      announce: (message) => callbacks.announce(message),
+    });
+    snapshotsElement = snapshotsPanelInstance.element;
+    container.insertBefore(snapshotsElement, header.nextSibling);
+    snapshotsButton.setAttribute('aria-expanded', 'true');
+    await snapshotsPanelInstance.refresh();
+    await updateSnapshotCount();
+  }
+
+  async function updateSnapshotCount(): Promise<void> {
+    try {
+      const snapshots = await snapshotsApi.listForNote(noteId);
+      snapshotsButton.textContent =
+        snapshots.length > 0 ? `Snapshots (${snapshots.length})` : 'Snapshots';
+    } catch {
+      snapshotsButton.textContent = 'Snapshots';
+    }
+  }
+
+  void updateSnapshotCount();
+
   const closeButton = document.createElement('button');
   closeButton.type = 'button';
   closeButton.className = 'btn';
@@ -506,7 +570,7 @@ export async function openEditorSession(options: {
 
   const header = document.createElement('div');
   header.className = 'editor-session__header';
-  header.append(closeButton, revisionsButton, attachmentsButton);
+  header.append(closeButton, revisionsButton, attachmentsButton, snapshotsButton);
   container.prepend(header);
   mount.append(container);
 
@@ -522,6 +586,9 @@ export async function openEditorSession(options: {
       attachmentsPanelInstance?.dispose();
       attachmentsElement = null;
       attachmentsPanelInstance = null;
+      snapshotsPanelInstance?.dispose();
+      snapshotsElement = null;
+      snapshotsPanelInstance = null;
       revokeObjectUrls();
       container.remove();
     },

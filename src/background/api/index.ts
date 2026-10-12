@@ -14,6 +14,7 @@ import { registerSettingsApi } from './settings';
 import { registerReminderApi } from './reminders';
 import { registerPermissionApi } from './permissions';
 import { registerCaptureApi } from './capture';
+import { registerSnapshotApi } from './snapshots';
 
 export function registerAllApi(router: MessageRouter): void {
   registerNoteApi(router);
@@ -25,4 +26,5 @@ export function registerAllApi(router: MessageRouter): void {
   registerReminderApi(router);
   registerPermissionApi(router);
   registerCaptureApi(router);
+  registerSnapshotApi(router);
 }

@@ -18,6 +18,7 @@ import type {
   Reminder,
   Revision,
   SearchResult,
+  Snapshot,
   SortDirection,
   SortField,
   Tag,
@@ -202,6 +203,32 @@ export interface ApiContract {
   'capture/resolve-duplicate': {
     payload: { linkId: EntityId; resolution: DuplicateResolution };
     result: { resolved: boolean };
+  };
+
+  /* snapshots (T-026: management UI, FR-CAP-06/07/08) */
+  'snapshots/list-for-note': {
+    payload: { noteId: EntityId };
+    result: { snapshots: readonly Snapshot[] };
+  };
+  'snapshots/list-for-link': {
+    payload: { linkId: EntityId };
+    result: { snapshots: readonly Snapshot[] };
+  };
+  'snapshots/rename': {
+    payload: { snapshotId: EntityId; title: string };
+    result: { snapshot: Snapshot };
+  };
+  'snapshots/delete': {
+    payload: { snapshotId: EntityId };
+    result: { deleted: boolean; link: Link | null };
+  };
+  'snapshots/get-png': {
+    payload: { snapshotId: EntityId };
+    result: { png: Blob | null };
+  };
+  'snapshots/export': {
+    payload: { snapshotId: EntityId; format: 'mhtml' | 'png' | 'text' };
+    result: { blob: Blob; filename: string };
   };
 
   /* attachments (T-019: images and files, structured-cloneable Blobs) */

@@ -1429,3 +1429,205 @@ dialog::backdrop {
 .dialog__file {
   font-size: var(--text-sm);
 }
+
+/* Snapshots panel (T-026, FR-CAP-06/07/08) */
+
+.snapshots-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin: 0 0 var(--space-3) 0;
+  background: var(--color-surface);
+}
+
+.snapshots-panel__heading {
+  font-size: var(--text-base);
+  margin: 0;
+  display: inline;
+}
+
+.snapshots-panel__count {
+  margin-left: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.snapshots-panel__list {
+  list-style: none;
+  margin: var(--space-2) 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.snapshots-panel__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.snapshots-panel__title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.snapshots-panel__meta {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.snapshots-panel__actions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.snapshots-panel__empty {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: var(--space-2) 0;
+}
+
+.snapshots-panel__status {
+  font-size: var(--text-sm);
+  margin: var(--space-1) 0 0 0;
+}
+
+.snapshots-panel__status--error {
+  color: var(--color-danger, #a4262c);
+}
+
+/* Capture status chips carry text, never color alone (FR-CAP-07). */
+.snapshot-status {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-raised, rgba(127, 127, 127, 0.12));
+}
+
+.snapshot-status--complete {
+  border-color: var(--color-success, #107c10);
+  color: var(--color-success, #107c10);
+}
+
+.snapshot-status--partial {
+  border-color: var(--color-warning, #8a6116);
+  color: var(--color-warning, #8a6116);
+}
+
+.snapshot-status--failed {
+  border-color: var(--color-danger, #a4262c);
+  color: var(--color-danger, #a4262c);
+}
+
+/* Snapshot preview (FR-CAP-06: PNG + extracted text, never MHTML). */
+.snapshot-preview__meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-2);
+  margin: var(--space-2) 0;
+  font-size: var(--text-sm);
+}
+
+.snapshot-preview__meta dt {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.snapshot-preview__meta dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.snapshot-preview__mhtml-note {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  border-left: 3px solid var(--color-border);
+  padding-left: var(--space-2);
+  margin: var(--space-2) 0;
+}
+
+.snapshot-preview__image {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: block;
+  margin-top: var(--space-1);
+}
+
+.snapshot-preview__text-block {
+  max-height: 18rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+/* Snapshot comparison (side-by-side, timeline order). */
+.snapshot-compare__columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin: var(--space-2) 0;
+}
+
+.snapshot-compare__column {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  min-width: 0;
+}
+
+.snapshot-compare__meta {
+  list-style: none;
+  margin: var(--space-1) 0 0 0;
+  padding: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.snapshot-compare__meta li {
+  overflow-wrap: anywhere;
+}
+
+.snapshot-compare__image {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: block;
+  margin-top: var(--space-2);
+}
+
+.snapshot-compare__excerpt {
+  font-size: var(--text-sm);
+  margin: var(--space-2) 0 0 0;
+  overflow-wrap: anywhere;
+  max-height: 10rem;
+  overflow: hidden;
+}
+
+@media (max-width: 720px) {
+  .snapshot-compare__columns {
+    grid-template-columns: 1fr;
+  }
+}

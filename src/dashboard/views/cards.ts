@@ -41,6 +41,8 @@ export interface CardViewModel {
   readonly archivedCount: number;
   /** Links waiting for the capture queue (T-020 surfacing). */
   readonly queuedCount: number;
+  /** Links whose capture failed (T-026 indicator, FR-CAP-07). */
+  readonly failedCaptureCount: number;
   readonly reminderChip: ReminderChipState;
   readonly pinned: boolean;
   readonly favorite: boolean;
@@ -107,6 +109,7 @@ export function cardViewModel(
     hasLinks: related.links.length > 0,
     archivedCount: related.links.filter((link) => link.snapshotId !== null).length,
     queuedCount: related.links.filter((link) => link.captureState === 'queued').length,
+    failedCaptureCount: related.links.filter((link) => link.captureState === 'failed').length,
     reminderChip: reminderChipFor(related.reminders, now),
     pinned: note.pinned,
     favorite: note.favorite,
@@ -229,6 +232,17 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
         'indicator',
       ),
     );
+    chipsRow.append(item);
+  }
+  if (model.failedCaptureCount > 0) {
+    const item = document.createElement('li');
+    item.append(
+      chip(
+        `Capture failed · ${model.failedCaptureCount} link${model.failedCaptureCount === 1 ? '' : 's'}`,
+        'indicator',
+      ),
+    );
+    item.title = 'A capture attempt failed — open the note to retry from its snapshots panel.';
     chipsRow.append(item);
   }
   if (model.reminderChip.kind !== 'none') {

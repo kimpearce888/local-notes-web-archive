@@ -21,6 +21,7 @@ import { TagNotFoundError, DuplicateTagError } from '../core/repo/tags';
 import { CategoryNotFoundError } from '../core/repo/categories';
 import { ReminderNotFoundError } from '../core/repo/reminders';
 import { InvalidUrlError, LinkNotFoundError } from '../core/repo/links';
+import { SnapshotNotFoundError } from '../core/repo/snapshots';
 import {
   AttachmentNotFoundError,
   AttachmentTooLargeError,
@@ -64,6 +65,9 @@ export function toRpcError(error: unknown): RpcError {
     };
   }
   if (error instanceof AttachmentNotFoundError) {
+    return { code: 'not-found', message: error.message };
+  }
+  if (error instanceof SnapshotNotFoundError) {
     return { code: 'not-found', message: error.message };
   }
   if (error instanceof AttachmentTooLargeError) {
