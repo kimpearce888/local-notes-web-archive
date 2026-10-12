@@ -25,6 +25,11 @@ import { createAttachmentsPanel, type AttachmentsPanel } from '../editor/attachm
 import { createSnapshotsPanel, type SnapshotsPanel } from '../editor/snapshots-panel';
 import { createRemindersPanel, type RemindersPanel } from '../editor/reminders-panel';
 import { createAiPanel, type AiPanel } from '../ai/ai-panel';
+import {
+  noteMarkdownExport,
+  noteHtmlExport,
+  exportFileStem,
+} from '../editor/note-transfer';
 import type { AiApi } from './ai-client';
 import type { AgentTurnResult } from '../../background/ai/agent';
 import { attachmentIdFromSrc } from '../editor/local-image';
@@ -95,6 +100,11 @@ export interface RemindersApi {
   remove(reminderId: EntityId): Promise<boolean>;
 }
 
+/** Note file transfer (T-035, FR-DATA-05): JSON export via the RPC. */
+export interface TransferApi {
+  exportFile(noteId: EntityId): Promise<{ blob: Blob; filename: string }>;
+}
+
 /** AI assistant operations the session needs (T-031, RPC-backed). */
 export interface SessionAiApi extends AiApi {
   chat(input: {
@@ -138,6 +148,8 @@ export interface EditorSessionCallbacks {
   reminders: RemindersApi;
   /** AI assistant (T-031, FR-AI-04/07). */
   ai: SessionAiApi;
+  /** Note file export (T-035, FR-DATA-05). */
+  transfer: TransferApi;
   /** URL detection policy call (T-020, FR-CAP-01). Returns null on failure. */
   detectLinks(input: {
     noteId: EntityId;
@@ -170,6 +182,7 @@ export async function openEditorSession(options: {
   const snapshotsApi = callbacks.snapshots;
   const remindersApi = callbacks.reminders;
   const aiApi = callbacks.ai;
+  const transferApi = callbacks.transfer;
 
   let current = note;
   let lastRecoveryWrite = 0;
@@ -665,6 +678,92 @@ export async function openEditorSession(options: {
 
   void updateReminderCount();
 
+  /* --------------------------- File menu ----------------------------- */
+
+  const fileButton = document.createElement('button');
+  fileButton.type = 'button';
+  fileButton.className = 'btn';
+  fileButton.textContent = 'File';
+  fileButton.addEventListener('click', () => openFileMenu());
+
+  function triggerFileDownload(filename: string, blob: Blob): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  }
+
+  function openFileMenu(): void {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'dialog';
+    const heading = document.createElement('h2');
+    heading.textContent = 'Export this note';
+    const body = document.createElement('p');
+    body.textContent = 'Note-level files download to your computer. Nothing is uploaded.';
+    const actions = document.createElement('div');
+    actions.className = 'dialog__actions';
+
+    const addOption = (label: string, run: () => void): void => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn';
+      button.textContent = label;
+      button.addEventListener('click', () => {
+        dialog.close();
+        run();
+      });
+      actions.append(button);
+    };
+
+    addOption('Note file (JSON)', () => {
+      void (async () => {
+        try {
+          const { blob, filename } = await transferApi.exportFile(noteId);
+          triggerFileDownload(filename, blob);
+          callbacks.announce(`Exported ${filename}.`);
+        } catch (error) {
+          callbacks.announce(
+            `Exporting the note failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+          );
+        }
+      })();
+    });
+    addOption('Markdown (.md)', () => {
+      
+      const blob = new Blob(
+        [noteMarkdownExport(panel.getTitle(), panel.getSubtitle(), panel.editor.getHTML())],
+        { type: 'text/markdown' },
+      );
+      triggerFileDownload(`${exportFileStem(panel.getTitle())}.md`, blob);
+      callbacks.announce(`Exported ${exportFileStem(panel.getTitle())}.md.`);
+    });
+    addOption('Sanitized HTML (.html)', () => {
+      
+      const blob = new Blob(
+        [noteHtmlExport(panel.getTitle(), panel.getSubtitle(), panel.editor.getHTML())],
+        { type: 'text/html' },
+      );
+      triggerFileDownload(`${exportFileStem(panel.getTitle())}.html`, blob);
+      callbacks.announce(`Exported ${exportFileStem(panel.getTitle())}.html.`);
+    });
+
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'btn btn--primary';
+    cancel.textContent = 'Close';
+    cancel.addEventListener('click', () => dialog.close());
+    actions.append(cancel);
+
+    dialog.append(heading, body, actions);
+    document.body.append(dialog);
+    dialog.showModal();
+    dialog.addEventListener('close', () => dialog.remove());
+  }
+
   /* ---------------------------- AI panel ----------------------------- */
 
   let aiElement: HTMLElement | null = null;
@@ -707,7 +806,15 @@ export async function openEditorSession(options: {
 
   const header = document.createElement('div');
   header.className = 'editor-session__header';
-  header.append(closeButton, revisionsButton, attachmentsButton, snapshotsButton, remindersButton, aiButton);
+  header.append(
+    closeButton,
+    revisionsButton,
+    attachmentsButton,
+    snapshotsButton,
+    remindersButton,
+    aiButton,
+    fileButton,
+  );
   container.prepend(header);
   mount.append(container);
 

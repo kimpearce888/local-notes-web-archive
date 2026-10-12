@@ -16,6 +16,8 @@ import { SMART_LISTS, type SmartListId } from './views/smart-lists';
 export interface ShellEvents {
   /** New Note action activated (button click or ui-intent). */
   newNote: () => void;
+  /** Import a note file (JSON/Markdown/HTML) as a new note (FR-DATA-05). */
+  importNote: (file: File) => void;
   /** Search input changed (raw value; parsing belongs to the store). */
   searchInput: (query: string) => void;
   /** Search submitted (Enter). */
@@ -118,7 +120,24 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   newNoteButton.dataset['action'] = 'new-note';
   newNoteButton.textContent = 'New Note';
 
-  headerRow.append(title, newNoteButton);
+  const importNoteButton = document.createElement('button');
+  importNoteButton.type = 'button';
+  importNoteButton.className = 'btn';
+  importNoteButton.dataset['action'] = 'import-note';
+  importNoteButton.textContent = 'Import note…';
+  importNoteButton.setAttribute('aria-label', 'Import a note file (JSON, Markdown or HTML)');
+  importNoteButton.addEventListener('click', () => {
+    const picker = document.createElement('input');
+    picker.type = 'file';
+    picker.accept = '.json,.md,.markdown,.txt,.html,.htm';
+    picker.addEventListener('change', () => {
+      const file = picker.files?.[0];
+      if (file) emit('importNote', file);
+    });
+    picker.click();
+  });
+
+  headerRow.append(title, importNoteButton, newNoteButton);
 
   /* -------------------------- Search row ---------------------------- */
 
@@ -334,6 +353,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   type EventKey = keyof ShellEvents;
   const listeners: { [K in EventKey]: Array<ShellEvents[K]> } = {
     newNote: [],
+    importNote: [],
     searchInput: [],
     searchSubmit: [],
     sortChange: [],

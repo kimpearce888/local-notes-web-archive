@@ -36,6 +36,7 @@ import type { ConnectionTestResult, LmStudioModel } from '../../background/ai/cl
 import type { AgentTurnResult } from '../../background/ai/agent';
 import type { BackupExportResult } from '../../background/backup/export';
 import type { BackupPreview } from '../../background/backup/restore';
+import type { NoteExportFile } from '../../background/api/note-transfer';
 
 export interface ApiContract {
   /* app */
@@ -293,6 +294,11 @@ export interface ApiContract {
   'ai/list-models': {
     payload: { baseUrl?: string };
     result: { models: LmStudioModel[] };
+  };
+  /* note-level transfer (T-035, FR-DATA-05) */
+  'notes/export-file': {
+    payload: { noteId: EntityId };
+    result: { blob: Blob; filename: string; file?: NoteExportFile };
   };
   /* backup (T-033/T-034, FR-DATA-03/04/05) */
   'backup/export': { payload: Record<string, never>; result: BackupExportResult };

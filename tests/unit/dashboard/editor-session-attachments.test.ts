@@ -171,6 +171,11 @@ function makeCallbacks(announce: (message: string) => void = () => undefined): E
     },
     snapshots: createSnapshotsApi(client()),
     reminders: createRemindersApi(client()),
+    transfer: {
+      exportFile: async () => {
+        throw new Error('export not exercised in this test');
+      },
+    },
     ai: {
       chat: async () => ({
         reply: '',

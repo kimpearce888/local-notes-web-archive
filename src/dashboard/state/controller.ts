@@ -17,6 +17,8 @@ import { RpcClientError } from './client';
 import { createSnapshotsApi } from './snapshot-client';
 import { createRemindersApi } from './reminders-client';
 import { createAiApi } from './ai-client';
+import { parseNoteFile, exportFileStem } from '../editor/note-transfer';
+import { noteMarkdownExport, noteHtmlExport } from '../editor/note-transfer';
 import {
   createDashboardStore,
   INITIAL_DASHBOARD_STATE,
@@ -33,6 +35,10 @@ export interface DashboardController {
   refresh(): Promise<void>;
   /** Creates a note (New Note action). Optimistic with truthful rollback. */
   createNote(): Promise<EntityId | null>;
+  /** Import a note file (JSON/Markdown/HTML) as a NEW note (FR-DATA-05). */
+  importNoteFile(file: File): Promise<EntityId | null>;
+  /** Export the note currently open in the editor as a file download. */
+  exportOpenNote(format: 'json' | 'markdown' | 'html'): Promise<boolean>;
   /**
    * Saves note content transactionally through the service worker with a
    * visible save flow (Saving → Saved / Save failed + rollback).
@@ -408,6 +414,117 @@ export function createDashboardController(options: {
     }
   }
 
+  async function importNoteFile(file: File): Promise<EntityId | null> {
+    let text: string;
+    try {
+      text = await file.text();
+    } catch {
+      shell.announce('Reading the file failed — nothing was imported.');
+      return null;
+    }
+    const parsed = parseNoteFile(file.name, text);
+    if (!parsed.ok) {
+      shell.announce(`Import failed: ${parsed.error}`);
+      return null;
+    }
+    const draft = parsed.file;
+    try {
+      const { note } = await client.request('notes/create', {
+        title: draft.title,
+        editorDoc: draft.editorDoc,
+        plainText: draft.plainText,
+      });
+      // Recreate tags/categories by name (best effort, truthful report).
+      for (const name of draft.tags) {
+        try {
+          const { tag } = await client.request('tags/create', { name });
+          await client.request('tags/set-note-tags', { noteId: note.id, tagIds: [tag.id] });
+        } catch {
+          // A duplicate name just means the tag exists; assignment below.
+        }
+      }
+      for (const name of draft.categories) {
+        try {
+          const { category } = await client.request('categories/create', { name });
+          await client.request('categories/set-note-categories', {
+            noteId: note.id,
+            categoryIds: [category.id],
+          });
+        } catch {
+          // Same tolerance as tags.
+        }
+      }
+      await openEditor(note.id);
+      // Rich body (Markdown/HTML imports): load the sanitized HTML into the
+      // freshly opened editor; the session's autosave persists it.
+      if (parsed.file.bodyHtml !== null && editorSession) {
+        editorSession.editor.commands.setContent(parsed.file.bodyHtml);
+      }
+      const removalNote =
+        parsed.file.removed.length > 0
+          ? ` ${parsed.file.removed.length} unsafe element(s) were removed during import.`
+          : '';
+      shell.announce(`Imported "${draft.title}" as a new note.${removalNote}`);
+      await refresh();
+      return note.id;
+    } catch (error) {
+      shell.announce(
+        `Creating the imported note failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+      return null;
+    }
+  }
+
+  async function exportOpenNote(format: 'json' | 'markdown' | 'html'): Promise<boolean> {
+    const noteId = store.getState().editingNoteId;
+    if (noteId === null || editorSession === null) {
+      shell.announce('Open a note in the editor before exporting it.');
+      return false;
+    }
+    const title = editorSession.editor.getText().length > 0 ? store.getState().notes.find((n) => n.id === noteId)?.title ?? 'Untitled note' : 'Untitled note';
+    const subtitle = '';
+    const stem = exportFileStem(title);
+    try {
+      if (format === 'json') {
+        const { blob, filename } = await client.request('notes/export-file', { noteId });
+        triggerDownload(filename, blob);
+        shell.announce(`Exported ${filename}.`);
+        return true;
+      }
+      const editorHtml = editorSession.editor.getHTML();
+      if (format === 'markdown') {
+        const blob = new Blob([noteMarkdownExport(title, subtitle, editorHtml)], {
+          type: 'text/markdown',
+        });
+        triggerDownload(`${stem}.md`, blob);
+        shell.announce(`Exported ${stem}.md.`);
+        return true;
+      }
+      const blob = new Blob([noteHtmlExport(title, subtitle, editorHtml)], {
+        type: 'text/html',
+      });
+      triggerDownload(`${stem}.html`, blob);
+      shell.announce(`Exported ${stem}.html.`);
+      return true;
+    } catch (error) {
+      shell.announce(
+        `Exporting the note failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+      return false;
+    }
+  }
+
+  function triggerDownload(filename: string, blob: Blob): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  }
+
   async function openEditor(noteId: EntityId): Promise<void> {
     if (editorSession) await closeEditor();
     try {
@@ -489,6 +606,9 @@ export function createDashboardController(options: {
           snapshots: createSnapshotsApi(client),
           reminders: createRemindersApi(client),
           ai: createAiApi(client),
+          transfer: {
+            exportFile: async (noteId) => client.request('notes/export-file', { noteId }),
+          },
         },
       });
       showView('editor');
@@ -628,6 +748,7 @@ export function createDashboardController(options: {
   /* --------------------------- shell wiring ------------------------- */
 
   disposers.push(shell.on('newNote', () => void createNote()));
+  disposers.push(shell.on('importNote', (file) => void importNoteFile(file)));
   disposers.push(shell.on('searchInput', (query) => {
     store.setState({ query, page: 1 });
     void requery();
@@ -696,6 +817,8 @@ export function createDashboardController(options: {
     store,
     refresh,
     createNote,
+    importNoteFile,
+    exportOpenNote,
     saveNote,
     saveNoteDetailed,
     openEditor,

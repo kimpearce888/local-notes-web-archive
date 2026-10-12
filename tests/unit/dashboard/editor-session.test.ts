@@ -152,6 +152,11 @@ function makeCallbacks(overrides: Partial<EditorSessionCallbacks> = {}): EditorS
     },
     snapshots: createSnapshotsApi(client()),
     reminders: createRemindersApi(client()),
+    transfer: {
+      exportFile: async () => {
+        throw new Error('export not exercised in this test');
+      },
+    },
     ai: {
       chat: async () => ({
         reply: '',
