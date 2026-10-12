@@ -11,6 +11,7 @@
 
 import type { EntityId } from '../../core/types';
 import type { AgentTurnResult } from '../../background/ai/agent';
+import { MCP_DISCLOSURE } from '../../background/ai/hygiene';
 
 export interface AiPanelCallbacks {
   /** One agent turn over ai/chat. Approved ids continue a pending turn. */
@@ -73,7 +74,8 @@ export function createAiPanel(callbacks: AiPanelCallbacks, noteId: EntityId | nu
   const disclosure = document.createElement('p');
   disclosure.className = 'ai-panel__disclosure';
   disclosure.textContent =
-    'Runs entirely on your machine through LM Studio — nothing is sent to any cloud service. This is an internal tool contract, not an MCP server. AI proposals apply only after you approve them.';
+    'Runs entirely on your machine through LM Studio — nothing is sent to any cloud service. AI proposals apply only after you approve them. ' +
+    MCP_DISCLOSURE;
 
   const status = document.createElement('p');
   status.className = 'ai-panel__status';

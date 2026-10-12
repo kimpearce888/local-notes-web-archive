@@ -151,8 +151,8 @@ describe('AI panel', () => {
     expect(harness.panel.element.textContent).toContain('needs your approval');
     expect(harness.panel.element.textContent).toContain('nothing is applied until you approve');
     expect(harness.panel.element.textContent).toContain('AI draft');
-    // Failed and succeeded calls render their own affordances.
-    expect(harness.panel.element.textContent).toContain('MCP server');
+    // The disclosure paragraph renders the honest MCP limitation.
+    expect(harness.panel.element.textContent).toContain('Model Context Protocol');
   });
 
   it('approving re-invokes the turn with exactly that tool-call id', async () => {
@@ -280,7 +280,11 @@ describe('AI panel', () => {
     const harness = mountPanel(true);
     const text = harness.panel.element.textContent ?? '';
     expect(text).toContain('LM Studio');
-    expect(text).toContain('not an MCP server');
+    expect(text).toContain('not the Model Context Protocol');
+    expect(text).toContain('no server is bound');
+    expect(text).toContain('external MCP clients cannot call these tools');
     expect(text).toContain('only after you approve');
+    // FR-MCP-03: never a fake server-connection status.
+    expect(text).not.toContain('MCP server connected');
   });
 });

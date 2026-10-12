@@ -3,7 +3,6 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-032 Prompt hygiene and disclosure
 - [ ] T-033 Backup export
 - [ ] T-034 Backup restore
 - [ ] T-035 Note-level and snapshot export/import
