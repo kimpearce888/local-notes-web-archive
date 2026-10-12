@@ -51,3 +51,9 @@ Push Status (ai/rule.md §8).
 - Validation Result: tsc strict green, eslint green, vitest 70/70; normalized unique tag keys with duplicate/collision rejection; merge with join reassignment + dedup; nested categories with cycle prevention on move/merge; delete-with-reassignment semantics; transactional join replacement; bulk additive assignment
 - Commit Hash: (this commit)
 - Push Status: pushed with this commit
+---
+### T-009 Repository: links, snapshots, attachments
+- Completion Timestamp: 2026-10-12T07:41:51Z
+- Validation Result: tsc strict green, eslint green, vitest 85/85; content-addressed blob store with reference-aware GC; per-note link dedup + cross-note duplicate lookup; snapshot per-artifact states with FR-CAP-07 status derivation, recapture chains, integrity verification detecting tampering; magic-byte MIME verification with strict-UTF-8 text heuristic; attachment size limits and hash dedup
+- Commit Hash: (this commit)
+- Push Status: pushed with this commit

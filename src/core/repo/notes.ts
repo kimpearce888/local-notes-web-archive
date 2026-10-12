@@ -317,7 +317,6 @@ export async function permanentlyDeleteNote(
     Store.Links,
     Store.Reminders,
     Store.Attachments,
-    Store.Blobs,
   ] as const;
   await ctx.transaction([...storesNeeded], 'readwrite', (stores) => {
     const notes = stores[Store.Notes];
@@ -327,8 +326,7 @@ export async function permanentlyDeleteNote(
     const links = stores[Store.Links];
     const reminders = stores[Store.Reminders];
     const attachments = stores[Store.Attachments];
-    const blobs = stores[Store.Blobs];
-    if (!notes || !revisions || !noteTags || !noteCategories || !links || !reminders || !attachments || !blobs) {
+    if (!notes || !revisions || !noteTags || !noteCategories || !links || !reminders || !attachments) {
       throw new Error('stores unavailable for permanent deletion');
     }
     const noteId = input.noteId;
@@ -347,18 +345,13 @@ export async function permanentlyDeleteNote(
     deleteByIndex(reminders, 'noteId');
     deleteByIndex(links, 'noteId');
 
-    // Attachments: delete rows and their blobs together.
+    // Attachments are deleted; their content-addressed blobs are left for
+    // reference-aware garbage collection (blobs.ts collectGarbageBlobs) so
+    // identical content shared with other notes is never destroyed here.
     const attachmentReq = attachments.index('noteId').getAllKeys(noteId);
     attachmentReq.onsuccess = () => {
       for (const attachmentId of attachmentReq.result) {
-        const getReq = attachments.get(attachmentId);
-        getReq.onsuccess = () => {
-          const attachment = getReq.result as { id: IDBValidKey; blobKey: string } | undefined;
-          if (attachment) {
-            attachments.delete(attachment.id);
-            blobs.delete(attachment.blobKey);
-          }
-        };
+        attachments.delete(attachmentId);
       }
     };
   });
