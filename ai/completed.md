@@ -63,3 +63,9 @@ Push Status (ai/rule.md §8).
 - Validation Result: tsc strict green, eslint green, vitest 98/98 (15 consecutive clean full-suite runs); canonical reminder records with state transitions and due queries for reconciliation; audit trail with hashes-not-bodies, pagination and retention; structured logs with secret sanitization (bearer-before-kv ordering), rolling byte budget rotation; settings with defaults/merge/validation incl. loopback-only AI endpoint enforcement; fixed a real nondeterministic-sort bug (partial comparator) found by stress testing
 - Commit Hash: (this commit)
 - Push Status: pushed with this commit
+---
+### T-011 Search engine
+- Completion Timestamp: 2026-10-12T08:06:21Z
+- Validation Result: tsc strict green, eslint green, vitest 114/114 across 3 consecutive runs; FR-SEARCH-04 query syntax with inline error explanations (dates, unknown flags, impossible ranges, unclosed quotes); MiniSearch projections over all FR-SEARCH-01 fields; phrase matching with post-verification; optional fuzzy; exclusions; field scopes; has:/is:/tag:/category: filters incl. category descendants, overdue reminders, source domain, capture windows; sort by relevance/title/created/modified/reminder/capture with pagination; persisted index with corruption-triggered canonical rebuild; incremental doc add/discard/remove consistency
+- Commit Hash: (this commit)
+- Push Status: pushed with this commit
