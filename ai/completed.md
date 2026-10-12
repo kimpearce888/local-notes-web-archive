@@ -33,3 +33,9 @@ Push Status (ai/rule.md §8).
 - Validation Result: tsc strict green, eslint green, vitest 34/34; UUID v4 gen+validation, UTC/IANA/leap-year time utils, SHA-256 WebCrypto (verified against reference vector), bounded-string helpers, URL normalize/dedup/redact + full FR-CAP-04 eligibility gate matrix (14 reject cases), deepFreeze
 - Commit Hash: (this commit)
 - Push Status: pushed with this commit
+---
+### T-006 IndexedDB schema and migrations
+- Completion Timestamp: 2026-10-12T07:29:29Z
+- Validation Result: tsc strict green, eslint green, vitest 42/42; 15 canonical stores with full index layout incl. composite keys; versioned idempotent migrations; MigrationFailedError rollback proven to preserve data; versionchange step-aside and lower-version rejection tested
+- Commit Hash: (this commit)
+- Push Status: pushed with this commit
