@@ -1,12 +1,19 @@
 /**
- * Production artifact steps for the capture queue (FR-CAP-05/07/08).
+ * Production artifact steps for the capture queue (FR-CAP-05/07/08/09).
  *
- * T-023 scope: the snapshot record (source URL, validated final URL, title,
+ * T-023: the snapshot record (source URL, validated final URL, title,
  * timestamp, content hash, format, per-artifact states, warnings) plus the
  * MHTML archive itself — `chrome.pageCapture.saveAsMHTML` on the queue's
- * temporary tab, stored as a content-addressed blob. Text extraction
- * (T-024) and the CDP PNG (T-025) extend this module; until they land their
- * artifacts carry the honest `not-attempted` state, never fake success.
+ * temporary tab, stored as a content-addressed blob.
+ * T-024: the extracted visible text — a narrowly scoped, self-contained
+ * extractor injected through `chrome.scripting` after a brief post-load
+ * settle, its untrusted result re-validated field by field, stored
+ * separately from the archive so search never parses MHTML (FR-CAP-09);
+ * the page-declared canonical URL and a refined title ride along, and the
+ * note's search projection is re-indexed after artifacts land
+ * (FR-SEARCH-01/05).
+ * The CDP PNG (T-025) extends this module next; until it lands the PNG
+ * carries the honest `not-attempted` state, never fake success.
  *
  * Truthfulness rules this module guarantees:
  *
@@ -23,7 +30,7 @@
  *   a partial capture rather than discarding data.
  */
 
-import { repo } from '../db';
+import { repo, searchEngine } from '../db';
 import type { CaptureSteps, CaptureRunContext, CaptureStepOutcome } from './queue';
 import type { DrivenTab } from './tab-driver';
 import {
@@ -33,11 +40,27 @@ import {
   markMhtmlArtifact,
   markPngArtifact,
   markTextArtifact,
+  renameSnapshot,
   saveMhtmlArtifact,
+  saveTextArtifact,
+  setSnapshotCanonicalUrl,
 } from '../../core/repo/snapshots';
-import type { CaptureWarning, Snapshot } from '../../core/types';
+import { getNote } from '../../core/repo/notes';
+import { extractReadableTextInPage, MAX_TEXT_CHARS } from './extract-core';
+import type { CaptureWarning, EntityId, Snapshot } from '../../core/types';
 
 const MAX_RECORDED_WARNING_DETAIL = 300;
+
+/** Post-load settle before text extraction (late hydration/lazy layout). */
+const SETTLE_MS = 300;
+
+/** Title refinement bound — pages can carry enormous <title> junk. */
+const TITLE_MAX = 500;
+
+export interface ProductionCaptureStepsOptions {
+  /** Settle override (tests use 0 to keep the suite fast). */
+  readonly settleMs?: number;
+}
 
 /** Warnings keep their detail bounded even when Chrome hands us a novel error. */
 function boundedDetail(detail: string): string {
@@ -119,7 +142,161 @@ async function captureMhtml(
   }
 }
 
-export function createProductionCaptureSteps(): CaptureSteps {
+const EXTRACTION_WARNING_KINDS: readonly CaptureWarning['kind'][] = [
+  'resource-failure',
+  'unsupported-frame',
+  'lazy-content',
+  'oversized',
+  'access-restricted',
+  'redirect',
+  'screenshot-limits',
+];
+
+/** Extraction result after allowlist validation — kinds are narrowed here. */
+interface ValidatedExtraction {
+  readonly text: string;
+  readonly title: string;
+  readonly canonicalUrl: string | null;
+  readonly warnings: CaptureWarning[];
+}
+
+/**
+ * Re-validate the in-page extraction result: page content is untrusted
+ * input (prompt-injection surface, PRD §9) — every field is bounded and
+ * allowlisted before it reaches storage.
+ */
+function validateExtraction(raw: unknown): ValidatedExtraction | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const candidate = raw as Record<string, unknown>;
+  if (typeof candidate['text'] !== 'string' || candidate['text'].length > MAX_TEXT_CHARS + 1024) return null;
+  if (typeof candidate['title'] !== 'string' || candidate['title'].length > TITLE_MAX + 1024) return null;
+  const canonical = candidate['canonicalUrl'];
+  if (canonical !== null && typeof canonical !== 'string') return null;
+  if (typeof canonical === 'string' && (!/^https?:\/\//i.test(canonical) || canonical.length > 2000)) return null;
+  const rawWarnings = candidate['warnings'];
+  if (!Array.isArray(rawWarnings) || rawWarnings.length > 32) return null;
+  const warnings: Array<{ kind: CaptureWarning['kind']; detail: string }> = [];
+  for (const entry of rawWarnings) {
+    if (typeof entry !== 'object' || entry === null) continue;
+    const kind = (entry as Record<string, unknown>)['kind'];
+    const detail = (entry as Record<string, unknown>)['detail'];
+    if (typeof kind !== 'string' || !EXTRACTION_WARNING_KINDS.includes(kind as CaptureWarning['kind'])) continue;
+    if (typeof detail !== 'string') continue;
+    warnings.push({ kind: kind as CaptureWarning['kind'], detail: boundedDetail(detail) });
+  }
+  return {
+    text: candidate['text'],
+    title: candidate['title'].slice(0, TITLE_MAX),
+    canonicalUrl: typeof canonical === 'string' ? canonical : null,
+    warnings,
+  } as ValidatedExtraction;
+}
+
+/** Injected-script failure text (Chrome error shapes vary). */
+function scriptFailureDetail(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * Extract the visible readable text from the driven tab (FR-CAP-09):
+ * settle briefly after load, inject the self-contained extractor through
+ * chrome.scripting in the page's ISOLATED world, validate the untrusted
+ * result and store it separately from the archive so search never parses
+ * MHTML. Title refinement and the page-declared canonical URL ride along.
+ */
+async function extractText(
+  context: CaptureRunContext,
+  tab: DrivenTab,
+  snapshotId: Snapshot['id'],
+  settleMs: number,
+): Promise<{ saved: boolean; warnings: CaptureWarning[]; details: string[] }> {
+  const warnings: CaptureWarning[] = [];
+  const details: string[] = [];
+
+  // Post-load settle, always inside the remaining job budget.
+  const settle = Math.min(settleMs, Math.max(context.remainingMs() - 2000, 0));
+  if (settle > 0) {
+    await new Promise<void>((resolve) => setTimeout(resolve, settle));
+    if (context.isCanceled()) return { saved: false, warnings, details: ['text extraction skipped (canceled)'] };
+  }
+
+  let extraction: ValidatedExtraction | null;
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId: tab.tabId },
+      func: extractReadableTextInPage,
+      args: [MAX_TEXT_CHARS],
+    });
+    extraction = validateExtraction(results[0]?.result);
+    if (extraction === null) {
+      details.push('the page returned an unusable extraction result');
+    }
+  } catch (error) {
+    const reason = scriptFailureDetail(error);
+    await markIfPending(snapshotId, 'text', 'failed');
+    warnings.push({ kind: 'resource-failure', detail: boundedDetail(`text extraction failed: ${reason}`) });
+    details.push(`text extraction failed (${boundedDetail(reason)})`);
+    return { saved: false, warnings, details };
+  }
+
+  if (extraction === null) {
+    await markIfPending(snapshotId, 'text', 'failed');
+    warnings.push({ kind: 'resource-failure', detail: 'the extraction result failed validation' });
+    return { saved: false, warnings, details };
+  }
+
+  for (const warning of extraction.warnings) warnings.push(warning);
+
+  try {
+    await saveTextArtifact(await repo(), snapshotId, extraction.text);
+    details.push(`extracted text saved (${extraction.text.length} characters)`);
+  } catch (error) {
+    const reason = scriptFailureDetail(error);
+    await markIfPending(snapshotId, 'text', 'failed');
+    warnings.push({ kind: 'resource-failure', detail: boundedDetail(`storing the extracted text failed: ${reason}`) });
+    details.push(`storing the extracted text failed (${boundedDetail(reason)})`);
+    return { saved: false, warnings, details };
+  }
+
+  // Canonical URL and title refinement are metadata refinements — their
+  // failure must never fail the text artifact itself.
+  if (extraction.canonicalUrl !== null) {
+    try {
+      await setSnapshotCanonicalUrl(await repo(), snapshotId, extraction.canonicalUrl);
+    } catch (error) {
+      console.error('[capture] recording the canonical URL failed', error);
+    }
+  }
+  const refinedTitle = extraction.title.trim();
+  if (refinedTitle.length > 0) {
+    try {
+      const current = await getSnapshot(await repo(), snapshotId);
+      if (current !== null && current.title !== refinedTitle) {
+        await renameSnapshot(await repo(), snapshotId, refinedTitle);
+      }
+    } catch (error) {
+      console.error('[capture] refining the snapshot title failed', error);
+    }
+  }
+
+  return { saved: true, warnings, details };
+}
+
+/** Keep the search projection consistent with the saved snapshot (FR-SEARCH-05). */
+async function reindexNote(noteId: EntityId): Promise<void> {
+  try {
+    const note = await getNote(await repo(), noteId);
+    if (note !== null) {
+      const engine = await searchEngine();
+      await engine.indexNote(note);
+    }
+  } catch (error) {
+    console.error('[capture] re-indexing the note after capture failed', error);
+  }
+}
+
+export function createProductionCaptureSteps(options: ProductionCaptureStepsOptions = {}): CaptureSteps {
+  const settleMs = options.settleMs ?? SETTLE_MS;
   return {
     async run(context: CaptureRunContext, tab: DrivenTab): Promise<CaptureStepOutcome> {
       let snapshot: Snapshot | null = null;
@@ -142,17 +319,21 @@ export function createProductionCaptureSteps(): CaptureSteps {
         context.snapshotCreated(snapshot.id);
         context.report('capturing', 'saving the MHTML archive');
 
-        // 2. MHTML artifact (T-023). Text (T-024) and PNG (T-025) extend the
-        //    step list here; marking them not-attempted AFTER the MHTML step
-        //    keeps a mid-capture cancel mapping `pending` → `canceled`.
+        // 2. MHTML artifact (T-023).
         const mhtml = await captureMhtml(context, tab, snapshot.id);
         details.push(mhtml.detail);
         if (mhtml.warning) warnings.push(mhtml.warning);
 
-        await markIfPending(snapshot.id, 'text', 'not-attempted');
+        // 3. Extracted visible text (T-024, FR-CAP-09) — stored separately
+        //    so search never parses the MHTML archive.
+        const text = await extractText(context, tab, snapshot.id, settleMs);
+        details.push(...text.details);
+        warnings.push(...text.warnings);
+
+        // 4. The CDP PNG (T-025) extends here; honest not-attempted until then.
         await markIfPending(snapshot.id, 'png', 'not-attempted');
 
-        // 3. Warnings belong to the record (FR-CAP-05) — appended after the
+        // 5. Warnings belong to the record (FR-CAP-05) — appended after the
         //    artifacts so a partial record is never left warning-less.
         for (const warning of warnings) {
           try {
@@ -162,7 +343,11 @@ export function createProductionCaptureSteps(): CaptureSteps {
           }
         }
 
-        // 4. The outcome mirrors the persisted record — the source of truth.
+        // 6. Snapshot text is searchable (FR-SEARCH-01/05): keep the note's
+        //    search projection consistent with what was just saved.
+        if (text.saved || mhtml.saved) await reindexNote(context.job.noteId);
+
+        // 7. The outcome mirrors the persisted record — the source of truth.
         const final = await getSnapshot(await repo(), snapshot.id);
         const status = final
           ? final.status === 'complete'

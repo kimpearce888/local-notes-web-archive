@@ -49,6 +49,14 @@ export interface InstalledMock {
     /** Per-tab archive override: a Blob to return or an Error to throw. */
     mhtmlForTab: Map<number, Blob | Error>;
   };
+  /** chrome.scripting.executeScript mock (T-024 text extraction). */
+  scripting: {
+    executeScript: Mock;
+    /** Injected functions run against this document (JSDOM fixture in node-env tests). */
+    setPageDocument(doc: Document | null): void;
+    /** Log of injections: one { tabId } entry per executeScript call. */
+    calls: Array<{ tabId: number }>;
+  };
   /** chrome.permissions state: granted origin patterns + gesture model. */
   permissions: {
     /** Granted origin match patterns (e.g. "https://example.com/*"). */
@@ -85,6 +93,32 @@ export function installChromeMock(): InstalledMock {
     const tab = tabs.get(details.tabId);
     if (!tab) throw new Error(`pageCapture.saveAsMHTML: no tab ${details.tabId}`);
     return DEFAULT_MHTML;
+  });
+  let scriptingPageDocument: Document | null = null;
+  const scriptingCalls: Array<{ tabId: number }> = [];
+  const executeScript = vi.fn(async (injection: {
+    target: { tabId: number };
+    func: (...args: unknown[]) => unknown;
+    args?: unknown[];
+  }): Promise<Array<{ result: unknown }>> => {
+    const tab = tabs.get(injection.target.tabId);
+    if (!tab) throw new Error(`scripting.executeScript: no tab ${injection.target.tabId}`);
+    scriptingCalls.push({ tabId: injection.target.tabId });
+    // The injected func references the page's `document`/`window` globals;
+    // stand them in from the fixture when the test supplied one.
+    const globals = globalThis as { document?: Document; window?: Window };
+    const prevDocument = globals.document;
+    const prevWindow = globals.window;
+    if (scriptingPageDocument !== null) {
+      globals.document = scriptingPageDocument;
+      globals.window = (scriptingPageDocument.defaultView as Window | null) ?? prevWindow;
+    }
+    try {
+      return [{ result: await injection.func(...(injection.args ?? [])) }];
+    } finally {
+      globals.document = prevDocument;
+      globals.window = prevWindow;
+    }
   });
   const grantedPatterns = new Set<string>();
   const requestCalls: string[][] = [];
@@ -186,6 +220,9 @@ export function installChromeMock(): InstalledMock {
     pageCapture: {
       saveAsMHTML,
     },
+    scripting: {
+      executeScript,
+    },
     contextMenus: {
       create: (options: { id?: string | number; title: string; contexts: string[]; documentUrlPatterns?: string[] }) => {
         createdMenus.push({
@@ -269,6 +306,13 @@ export function installChromeMock(): InstalledMock {
     tabUpdated,
     tabRemoved,
     pageCapture: { saveAsMHTML, mhtmlForTab },
+    scripting: {
+      executeScript,
+      setPageDocument: (doc: Document | null) => {
+        scriptingPageDocument = doc;
+      },
+      calls: scriptingCalls,
+    },
     permissions: {
       grantedPatterns,
       get gestureActive() {

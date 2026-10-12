@@ -193,6 +193,8 @@ export interface Snapshot {
   readonly sourceUrl: string;
   /** Validated final URL after redirects (must stay within granted origin). */
   readonly finalUrl: string;
+  /** Canonical URL declared by the page itself, when absolute http(s) (FR-CAP-09). */
+  canonicalUrl: string | null;
   title: string;
   readonly capturedAt: UtcTimestamp;
   status: CaptureStatus;

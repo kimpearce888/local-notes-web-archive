@@ -332,6 +332,9 @@ Fill gaps to coverage targets: data invariants (§6), error-state matrix (§12) 
 save-failed/conflict/migration-failed/storage-full/permission-denied/URL-unsupported/
 capture-timeout/partial/failed/backup-invalid/restore-failed/notifications-denied/
 reminder-missed/AI-unavailable/tool-malformed/tool-denied. All vitest suites green.
+Also populate `SearchHit.matchedFields` (currently always `[]` — decoration gap
+left by T-011) with per-field matches computed from scoped per-field MiniSearch
+queries, with tests.
 
 ### T-042 Playwright E2E smoke suite
 Launch persistent context with `dist/` unpacked: toolbar opens dashboard; create →

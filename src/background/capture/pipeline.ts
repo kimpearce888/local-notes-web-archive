@@ -7,20 +7,22 @@
  * next worker startup (lifecycle.ts).
  *
  * The singleton lives here (not in the queue module) so tests can drop and
- * re-wire it with `resetCapturePipeline()` without touching production code.
+ * re-wire it with `resetCapturePipeline()` — which also unsubscribes the
+ * notification hook, so a dropped queue never keeps processing links.
  */
 
 import { createCaptureQueue, onLinkQueued, type CaptureQueue } from './queue';
 import { createProductionCaptureSteps } from './steps';
 
 let activePipeline: CaptureQueue | null = null;
+let unsubscribe: (() => void) | null = null;
 
 export function getCaptureQueue(): CaptureQueue {
   if (activePipeline === null) {
     const queue = createCaptureQueue({ steps: createProductionCaptureSteps() });
-    onLinkQueued((link) => {
-      // The hook fires after the link is durably `queued` in IndexedDB; the
-      // queue re-reads nothing — it owns the in-memory job from here on.
+    // The hook fires after the link is durably `queued` in IndexedDB; the
+    // queue re-reads nothing — it owns the in-memory job from here on.
+    unsubscribe = onLinkQueued((link) => {
       queue.enqueue(link);
     });
     activePipeline = queue;
@@ -28,7 +30,11 @@ export function getCaptureQueue(): CaptureQueue {
   return activePipeline;
 }
 
-/** Test hook: drop the singleton so the next access re-wires a fresh queue. */
+/** Test hook: drop the singleton AND its notification subscription. */
 export function resetCapturePipeline(): void {
+  if (unsubscribe !== null) {
+    unsubscribe();
+    unsubscribe = null;
+  }
   activePipeline = null;
 }

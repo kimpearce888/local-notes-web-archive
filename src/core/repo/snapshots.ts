@@ -54,6 +54,7 @@ export async function createSnapshot(
     linkId: input.linkId,
     sourceUrl: input.sourceUrl,
     finalUrl: input.finalUrl,
+    canonicalUrl: null,
     title: input.title,
     capturedAt: nowUtc(),
     status: 'queued',
@@ -129,8 +130,14 @@ async function patchSnapshot(
   return updated;
 }
 
+/** Records written before T-024 lack `canonicalUrl`; read-time default. */
+function normalizeSnapshot(snapshot: Snapshot): Snapshot {
+  return snapshot.canonicalUrl === undefined ? { ...snapshot, canonicalUrl: null } : snapshot;
+}
+
 export async function getSnapshot(ctx: RepoContext, id: EntityId): Promise<Snapshot | null> {
-  return ctx.get<Snapshot>(Store.Snapshots, id);
+  const snapshot = await ctx.get<Snapshot>(Store.Snapshots, id);
+  return snapshot === null ? null : normalizeSnapshot(snapshot);
 }
 
 export async function listNoteSnapshots(
@@ -138,7 +145,7 @@ export async function listNoteSnapshots(
   noteId: EntityId,
 ): Promise<Snapshot[]> {
   const snapshots = await ctx.getByIndex<Snapshot>(Store.Snapshots, 'noteId', noteId);
-  return snapshots.sort((a, b) => (a.capturedAt < b.capturedAt ? 1 : -1));
+  return snapshots.map(normalizeSnapshot).sort((a, b) => (a.capturedAt < b.capturedAt ? 1 : -1));
 }
 
 export async function listLinkSnapshots(
@@ -146,7 +153,7 @@ export async function listLinkSnapshots(
   linkId: EntityId,
 ): Promise<Snapshot[]> {
   const snapshots = await ctx.getByIndex<Snapshot>(Store.Snapshots, 'linkId', linkId);
-  return snapshots.sort((a, b) => (a.capturedAt < b.capturedAt ? 1 : -1));
+  return snapshots.map(normalizeSnapshot).sort((a, b) => (a.capturedAt < b.capturedAt ? 1 : -1));
 }
 
 /** Mark a snapshot canceled (user action); pending artifacts become canceled. */
@@ -244,6 +251,15 @@ export async function saveTextArtifact(
     extractedText: text,
     textSize: text.length,
   });
+}
+
+/** Record the page-declared canonical URL (FR-CAP-09), already validated. */
+export async function setSnapshotCanonicalUrl(
+  ctx: RepoContext,
+  id: EntityId,
+  canonicalUrl: string | null,
+): Promise<Snapshot> {
+  return patchSnapshot(ctx, id, { canonicalUrl });
 }
 
 export async function markTextArtifact(

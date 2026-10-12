@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { JSDOM } from 'jsdom';
 import { installChromeMock, type InstalledMock } from './chrome-mock';
 import { closeWorkerResources, repo } from '../../../src/background/db';
 import { MessageRouter } from '../../../src/background/router';
@@ -89,6 +90,25 @@ function autoCompleteLoads(overrides: { title?: string } = {}): () => void {
   return () => clearInterval(timer);
 }
 
+/** The page the injected extractor runs against (fresh JSDOM document). */
+function setPage(html: string): void {
+  const dom = new JSDOM(html, { url: 'https://example.com/article' });
+  installed.scripting.setPageDocument(dom.window.document);
+}
+
+const DEFAULT_PAGE = `
+  <html>
+    <head>
+      <title>Example Article</title>
+      <link rel="canonical" href="https://example.com/canonical-article">
+    </head>
+    <body>
+      <h1>Example Article</h1>
+      <p>Readable body text with the unique search term xylophonequota.</p>
+    </body>
+  </html>
+`;
+
 /** Enqueue through the production pipeline singleton. */
 async function captureThroughPipeline(link: Link): Promise<void> {
   getCaptureQueue().enqueue(link);
@@ -98,6 +118,7 @@ async function captureThroughPipeline(link: Link): Promise<void> {
 beforeEach(() => {
   installed = installChromeMock();
   installed.permissions.grantedPatterns.add(`${GRANTED_ORIGIN}/*`);
+  setPage(DEFAULT_PAGE);
   resetCapturePipeline();
   resetWorkerStartupGuard();
   router = new MessageRouter();
@@ -141,11 +162,18 @@ describe('production MHTML capture steps', () => {
       expect(snapshot.mhtmlBlobKey).not.toBeNull();
       expect(snapshot.mhtmlHash).toMatch(/^[0-9a-f]{64}$/);
       expect(snapshot.mhtmlSize).toBeGreaterThan(0);
-      // T-024/T-025 land text and PNG; until then the honest state.
-      expect(snapshot.text).toBe('not-attempted');
+      // T-024 extracted text; PNG lands in T-025 (honest not-attempted).
+      expect(snapshot.text).toBe('saved');
+      expect(snapshot.extractedText).toContain('xylophonequota');
+      expect(snapshot.textSize).toBeGreaterThan(0);
+      expect(snapshot.canonicalUrl).toBe('https://example.com/canonical-article');
       expect(snapshot.png).toBe('not-attempted');
       expect(snapshot.status).toBe('partial');
       expect(snapshot.previousSnapshotId).toBeNull();
+      expect(snapshot.warnings).toEqual([]); // the default fixture is clean
+
+      // The injected extractor ran on the temporary tab.
+      expect(installed.scripting.calls.length).toBeGreaterThan(0);
 
       // The stored blob round-trips with the exact captured bytes.
       const blob = await getBlob(await repo(), snapshot.mhtmlBlobKey!);
@@ -153,17 +181,52 @@ describe('production MHTML capture steps', () => {
       const text = await blob!.text();
       expect(text).toContain('multipart/related');
 
-      // pageCapture ran on the temporary tab, which was cleaned up after.
+      // pageCapture and scripting ran on the temporary tab, which was cleaned up after.
       expect(installed.pageCapture.saveAsMHTML).toHaveBeenCalledWith({ tabId: expect.any(Number) });
+      expect(installed.scripting.executeScript).toHaveBeenCalledWith(
+        expect.objectContaining({ target: expect.objectContaining({ tabId: expect.any(Number) }) }),
+      );
       expect(installed.tabs.size).toBe(0);
     } finally {
       stop();
     }
   });
 
-  it('falls back to the final URL as the title when the tab title is empty', async () => {
+  it('searches the captured page text through the note (FR-SEARCH-01/05)', async () => {
+    const stop = autoCompleteLoads();
+    try {
+      const note = await seedNote('Searchable capture');
+      const link = await seedQueuedLink(note.id, 'https://example.com/searchable');
+      await captureThroughPipeline(link);
+
+      const search = await ok('search/query', { query: 'xylophonequota' });
+      const hits = (search['hits'] as Array<{ noteId: EntityId }>) ?? [];
+      expect(hits.length).toBe(1);
+      expect(hits[0]!.noteId).toBe(note.id); // found through the snapshot text
+    } finally {
+      stop();
+    }
+  });
+
+  it('refines the snapshot title from the loaded document', async () => {
+    const stop = autoCompleteLoads({ title: 'Tab placeholder title' });
+    try {
+      setPage(`<html><head><title>Refined by page</title></head><body><p>text</p></body></html>`);
+      const note = await seedNote('Title refinement');
+      const link = await seedQueuedLink(note.id, 'https://example.com/refined');
+      await captureThroughPipeline(link);
+      const updated = (await linkById(link.id))!;
+      const snapshot = (await snapshotById(updated.snapshotId!))!;
+      expect(snapshot.title).toBe('Refined by page');
+    } finally {
+      stop();
+    }
+  });
+
+  it('falls back to the final URL as the title when the tab and page titles are empty', async () => {
     const stop = autoCompleteLoads({ title: '' });
     try {
+      setPage(`<html><head><title></title></head><body><p>body only</p></body></html>`);
       const note = await seedNote('Untitled page');
       const link = await seedQueuedLink(note.id, 'https://example.com/no-title');
       await captureThroughPipeline(link);
@@ -175,7 +238,7 @@ describe('production MHTML capture steps', () => {
     }
   });
 
-  it('refuses archives over the size budget with an oversized warning and no stored blob', async () => {
+  it('refuses archives over the size budget: MHTML failed, text kept, snapshot partial', async () => {
     const stop = autoCompleteLoads();
     try {
       const settings = await getSettings(await repo());
@@ -189,16 +252,17 @@ describe('production MHTML capture steps', () => {
       const link = await seedQueuedLink(note.id, 'https://example.com/huge');
 
       getCaptureQueue().enqueue(link);
-      await waitFor(async () => (await linkById(link.id))?.captureState === 'failed');
+      await waitFor(async () => (await linkById(link.id))?.captureState === 'captured');
 
       const updated = (await linkById(link.id))!;
-      expect(updated.snapshotId).toBeNull(); // failed capture leaves nothing linked
+      expect(updated.snapshotId).not.toBeNull(); // the text artifact was kept
       const snapshots = await listLinkSnapshots(await repo(), link.id);
       expect(snapshots).toHaveLength(1);
       const snapshot = snapshots[0]!;
       expect(snapshot.mhtml).toBe('failed');
       expect(snapshot.mhtmlBlobKey).toBeNull();
-      expect(snapshot.status).toBe('failed');
+      expect(snapshot.text).toBe('saved');
+      expect(snapshot.status).toBe('partial');
       expect(snapshot.warnings).toEqual([
         expect.objectContaining({ kind: 'oversized' }),
       ]);
@@ -207,7 +271,7 @@ describe('production MHTML capture steps', () => {
     }
   });
 
-  it('marks an empty archive as a resource failure', async () => {
+  it('marks an empty archive as a resource failure while the text artifact survives', async () => {
     const stop = autoCompleteLoads();
     try {
       const note = await seedNote('Empty page');
@@ -216,15 +280,16 @@ describe('production MHTML capture steps', () => {
       installed.pageCapture.saveAsMHTML.mockImplementationOnce(async () => new Blob([], { type: 'multipart/related' }));
 
       getCaptureQueue().enqueue(link);
-      await waitFor(async () => (await linkById(link.id))?.captureState === 'failed');
+      await waitFor(async () => (await linkById(link.id))?.captureState === 'captured');
 
+      const updated = (await linkById(link.id))!;
       const snapshots = await listLinkSnapshots(await repo(), link.id);
       const snapshot = snapshots[0]!;
       expect(snapshot.mhtml).toBe('failed');
-      expect(snapshot.status).toBe('failed');
-      expect(snapshot.warnings).toEqual([
-        expect.objectContaining({ kind: 'resource-failure' }),
-      ]);
+      expect(snapshot.text).toBe('saved');
+      expect(snapshot.status).toBe('partial');
+      expect(snapshot.warnings[0]?.kind).toBe('resource-failure');
+      expect(updated.snapshotId).toBe(snapshot.id);
     } finally {
       stop();
     }
@@ -240,13 +305,63 @@ describe('production MHTML capture steps', () => {
       });
 
       getCaptureQueue().enqueue(link);
-      await waitFor(async () => (await linkById(link.id))?.captureState === 'failed');
+      await waitFor(async () => (await linkById(link.id))?.captureState === 'captured');
 
       const snapshots = await listLinkSnapshots(await repo(), link.id);
       const snapshot = snapshots[0]!;
       expect(snapshot.mhtml).toBe('failed');
+      expect(snapshot.text).toBe('saved');
+      expect(snapshot.status).toBe('partial');
       expect(snapshot.warnings[0]?.kind).toBe('resource-failure');
       expect(snapshot.warnings[0]?.detail).toContain('MHTML generation failed');
+    } finally {
+      stop();
+    }
+  });
+
+  it('fails the text artifact alone when the injected script throws (MHTML retained)', async () => {
+    const stop = autoCompleteLoads();
+    try {
+      const note = await seedNote('Script-blocked page');
+      const link = await seedQueuedLink(note.id, 'https://example.com/script-blocked');
+      installed.scripting.executeScript.mockImplementationOnce(async () => {
+        throw new Error('cannot access contents of the page');
+      });
+
+      getCaptureQueue().enqueue(link);
+      await waitFor(async () => (await linkById(link.id))?.captureState === 'captured');
+
+      const snapshots = await listLinkSnapshots(await repo(), link.id);
+      const snapshot = snapshots[0]!;
+      expect(snapshot.mhtml).toBe('saved');
+      expect(snapshot.text).toBe('failed');
+      expect(snapshot.status).toBe('partial');
+      expect(snapshot.warnings.some((w) => w.kind === 'resource-failure' && w.detail.includes('cannot access contents'))).toBe(true);
+    } finally {
+      stop();
+    }
+  });
+
+  it('rejects an untrusted extraction result that fails validation', async () => {
+    const stop = autoCompleteLoads();
+    try {
+      const note = await seedNote('Hostile page');
+      const link = await seedQueuedLink(note.id, 'https://example.com/hostile');
+      installed.scripting.executeScript.mockImplementationOnce(async () => [
+        { result: { text: 42, title: '<img src=x onerror=alert(1)>', warnings: 'not-an-array' } },
+      ]);
+
+      getCaptureQueue().enqueue(link);
+      await waitFor(async () => (await linkById(link.id))?.captureState === 'captured');
+
+      const snapshots = await listLinkSnapshots(await repo(), link.id);
+      const snapshot = snapshots[0]!;
+      expect(snapshot.mhtml).toBe('saved');
+      expect(snapshot.text).toBe('failed');
+      expect(snapshot.extractedText).toBe('');
+      expect(snapshot.title).not.toContain('<img');
+      expect(snapshot.status).toBe('partial');
+      expect(snapshot.warnings.some((w) => w.kind === 'resource-failure')).toBe(true);
     } finally {
       stop();
     }
@@ -263,9 +378,13 @@ describe('production MHTML capture steps', () => {
       const goodSnapshot = (await snapshotById(first.snapshotId!))!;
       expect(goodSnapshot.mhtml).toBe('saved');
 
-      // A retry whose capture fails must leave the good archive linked.
+      // A retry whose capture fails COMPLETELY (both artifacts) must leave
+      // the good archive linked.
       installed.pageCapture.saveAsMHTML.mockImplementationOnce(async () => {
         throw new Error('second capture failed');
+      });
+      installed.scripting.executeScript.mockImplementationOnce(async () => {
+        throw new Error('extraction also failed');
       });
       const retry = await ok('capture/retry', { linkId: link.id });
       expect(retry['retried']).toBe(true);

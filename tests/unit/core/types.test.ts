@@ -120,6 +120,7 @@ describe('domain types', () => {
       pngSize: 0,
       textSize: 4,
       warnings: [],
+      canonicalUrl: null,
       previousSnapshotId: null,
     } satisfies Snapshot;
     expect(snapshot.status).toBe('partial');
