@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+release/
+*.zip
+*.crx
+*.pem
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+
+# Environment / local
+.env
+.env.local
+.DS_Store
+*.log
+
+# Editor
+.idea/
+.vscode/
+*.swp

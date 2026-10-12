@@ -1,0 +1,18 @@
+# Dev/test-only image. Runs lint, typecheck and unit tests reproducibly.
+# NEVER used at runtime or for installation — the built extension folder is a
+# self-contained unpacked Chrome extension with zero external requirements
+# (PRD §1 constraint 1, §7 dependency rules).
+
+FROM node:24-bookworm-slim
+
+WORKDIR /app
+
+# Cache dependency install
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Source
+COPY . .
+
+# Default: full quality gate (lint + strict types + unit tests)
+CMD ["npm", "run", "verify"]

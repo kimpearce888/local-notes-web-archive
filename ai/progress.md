@@ -3,7 +3,6 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-002 Repository scaffolding
 - [ ] T-003 Toolchain and pinned dependencies
 - [ ] T-004 Core domain types
 - [ ] T-005 Utility foundations
