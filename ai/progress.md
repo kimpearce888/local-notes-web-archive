@@ -3,7 +3,6 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-012 Service worker core
 - [ ] T-013 Manifest and icons
 - [ ] T-014 Dashboard shell
 - [ ] T-015 Dashboard state manager + messaging client

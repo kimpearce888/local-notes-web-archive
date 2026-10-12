@@ -26,6 +26,10 @@ export interface CreateLinkResult {
 /**
  * Create (or return the existing) link on a note. URLs are stored as-entered;
  * dedup is per note + normalized key so double-pasting does not duplicate.
+ * Only http(s) URLs may become link records — links feed the capture
+ * pipeline, so browser-internal and script-capable schemes are rejected
+ * (security rule: approved link protocols only; mailto stays an editor
+ * concern, never a capture target).
  */
 export async function createLink(
   ctx: RepoContext,
@@ -33,6 +37,10 @@ export async function createLink(
   url: string,
   anchorText = '',
 ): Promise<CreateLinkResult> {
+  const parts = parseUrl(url);
+  if (!parts || (parts.scheme !== 'http' && parts.scheme !== 'https')) {
+    throw new InvalidUrlError(url);
+  }
   const key = dedupKey(url);
   if (!key) throw new InvalidUrlError(url);
   const origin = originOf(url);

@@ -69,3 +69,10 @@ Push Status (ai/rule.md §8).
 - Validation Result: tsc strict green, eslint green, vitest 114/114 across 3 consecutive runs; FR-SEARCH-04 query syntax with inline error explanations (dates, unknown flags, impossible ranges, unclosed quotes); MiniSearch projections over all FR-SEARCH-01 fields; phrase matching with post-verification; optional fuzzy; exclusions; field scopes; has:/is:/tag:/category: filters incl. category descendants, overdue reminders, source domain, capture windows; sort by relevance/title/created/modified/reminder/capture with pagination; persisted index with corruption-triggered canonical rebuild; incremental doc add/discard/remove consistency
 - Commit Hash: (this commit)
 - Push Status: pushed with this commit
+
+## T-012 Service worker core
+- **Completion Timestamp:** 2026-10-12T09:00:00Z
+- **Validation Result:** tsc strict (app+node) green; eslint green; vitest 183/183 (69 new background tests: protocol, router error mapping, dashboard tab focus, context-menu quick capture, alarm reconciliation, lifecycle, full RPC handler matrix over fake-indexeddb)
+- **Commit Hash:** (this commit)
+- **Push Status:** pushed to origin/main
+- **Notes:** typed RPC protocol with correlation ids and coded errors (PRD §12); single dashboard tab open/focus incl. new-note intent delivery; context menus (save current page / save selection) restricted to http(s) documents; alarm reconciliation on install/update/browser-start/worker-start and after every reminder mutation (FR-REM-04); stateless worker with IndexedDB as the only durable store. Security fix discovered by tests: createLink now rejects non-http(s) schemes (javascript: could previously become a link record).
