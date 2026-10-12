@@ -1,0 +1,60 @@
+{
+  "name": "local-notes-web-archive",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-first Chrome MV3 extension for notes, web archiving, reminders and local AI (LM Studio). Production source per PRD.md.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "vite build",
+    "check": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "release": "node scripts/release.mjs",
+    "verify": "npm run lint && npm run check && npm run test"
+  },
+  "dependencies": {
+    "@tiptap/core": "3.31.4",
+    "@tiptap/extension-character-count": "3.31.4",
+    "@tiptap/extension-code-block-lowlight": "3.31.4",
+    "@tiptap/extension-highlight": "3.31.4",
+    "@tiptap/extension-image": "3.31.4",
+    "@tiptap/extension-link": "3.31.4",
+    "@tiptap/extension-placeholder": "3.31.4",
+    "@tiptap/extension-subscript": "3.31.4",
+    "@tiptap/extension-superscript": "3.31.4",
+    "@tiptap/extension-table": "3.31.4",
+    "@tiptap/extension-task-item": "3.31.4",
+    "@tiptap/extension-task-list": "3.31.4",
+    "@tiptap/extension-text-align": "3.31.4",
+    "@tiptap/extension-text-style": "3.31.4",
+    "@tiptap/extension-underline": "3.31.4",
+    "@tiptap/pm": "3.31.4",
+    "@tiptap/starter-kit": "3.31.4",
+    "dompurify": "3.4.16",
+    "fflate": "0.8.3",
+    "lowlight": "3.3.0",
+    "marked": "18.1.0",
+    "minisearch": "7.2.0",
+    "turndown": "7.2.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.0",
+    "@types/chrome": "0.3.5",
+    "@types/node": "26.6.5",
+    "@types/turndown": "5.0.6",
+    "eslint": "10.12.0",
+    "fake-indexeddb": "6.2.5",
+    "globals": "17.13.0",
+    "jsdom": "30.1.2",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.1",
+    "vite": "8.3.4",
+    "vitest": "5.0.3"
+  }
+}
