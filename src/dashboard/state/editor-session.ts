@@ -24,6 +24,7 @@ import {
 import { createAttachmentsPanel, type AttachmentsPanel } from '../editor/attachments-panel';
 import { attachmentIdFromSrc } from '../editor/local-image';
 import { editorDocToPlainText } from '../../core/repo/notes';
+import { detectHttpUrlsInText } from '../../core/util/urls';
 import type { Attachment, EntityId, Note, Revision } from '../../core/types';
 import type { RpcErrorCode } from '../../background/protocol';
 
@@ -72,6 +73,12 @@ export interface EditorSessionCallbacks {
   onOpenLink(url: string): void;
   /** Attachment pipeline (T-019). */
   attachments: AttachmentApi;
+  /** URL detection policy call (T-020, FR-CAP-01). Returns null on failure. */
+  detectLinks(input: {
+    noteId: EntityId;
+    urls: readonly string[];
+    source: 'paste' | 'manual';
+  }): Promise<{ created: number; queued: number; existing: number; rejected: number } | null>;
 }
 
 export interface EditorSession {
@@ -200,6 +207,51 @@ export async function openEditorSession(options: {
     return outcomes;
   };
 
+  /* --------------------- URL detection (T-020) --------------------- */
+
+  const detectAndQueue = async (
+    urls: readonly string[],
+    source: 'paste' | 'manual',
+  ): Promise<void> => {
+    if (urls.length === 0) return;
+    const summary = await callbacks.detectLinks({ noteId, urls, source }).catch(() => null);
+    if (!summary) {
+      if (source === 'paste') {
+        callbacks.announce('Link detection failed — the URL was still pasted as text.');
+      }
+      return;
+    }
+    if (source === 'paste' && summary.queued > 0) {
+      callbacks.announce(
+        `Link saved — ${summary.queued} capture${summary.queued === 1 ? '' : 's'} queued.`,
+      );
+    } else if (source === 'paste' && summary.rejected === urls.length) {
+      callbacks.announce('No capturable http(s) link found in the pasted text.');
+    }
+  };
+
+  const onPastedText = (text: string): void => {
+    void detectAndQueue(detectHttpUrlsInText(text), 'paste');
+  };
+
+  /**
+   * Typed URLs are detected after a successful save — never auto-visited.
+   * The scan covers the title and the full plain-text projection, so URLs
+   * that were typed without becoming link marks are still detected.
+   */
+  const syncDetectedLinks = async (snapshot: {
+    title: string;
+    plainText: string;
+  }): Promise<void> => {
+    const urls = [
+      ...detectHttpUrlsInText(snapshot.title),
+      ...detectHttpUrlsInText(snapshot.plainText),
+    ];
+    if (urls.length === 0) return;
+    const unique = [...new Set(urls)].slice(0, 50);
+    await detectAndQueue(unique, 'manual');
+  };
+
   /* --------------------------- Editor ------------------------------ */
 
   const container = document.createElement('div');
@@ -213,6 +265,7 @@ export async function openEditorSession(options: {
       onAttachImage: (file) => onAttachImage(file),
       onAttachFile: (file) => onAttachFile(file),
       onNotify: (message) => callbacks.announce(message),
+      onPastedText,
     },
     {
       initial: { title: initialTitle, subtitle: initialSubtitle, editorDoc: initialDoc },
@@ -243,6 +296,9 @@ export async function openEditorSession(options: {
         current = outcome.note;
         clearRecoveryEntry(noteId);
         panel.markSaved();
+        // Typed URLs (title/body) are detected post-save (FR-CAP-01: never
+        // auto-visited); failures never disturb the save outcome.
+        void syncDetectedLinks(snapshot).catch(() => undefined);
         return outcome.note;
       }
       if (outcome.code === 'conflict') void handleConflict();

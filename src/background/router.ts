@@ -20,7 +20,7 @@ import { NoteConflictError, NoteNotFoundError } from '../core/repo/notes';
 import { TagNotFoundError, DuplicateTagError } from '../core/repo/tags';
 import { CategoryNotFoundError } from '../core/repo/categories';
 import { ReminderNotFoundError } from '../core/repo/reminders';
-import { InvalidUrlError } from '../core/repo/links';
+import { InvalidUrlError, LinkNotFoundError } from '../core/repo/links';
 import {
   AttachmentNotFoundError,
   AttachmentTooLargeError,
@@ -49,7 +49,8 @@ export function toRpcError(error: unknown): RpcError {
     error instanceof NoteNotFoundError ||
     error instanceof TagNotFoundError ||
     error instanceof CategoryNotFoundError ||
-    error instanceof ReminderNotFoundError
+    error instanceof ReminderNotFoundError ||
+    error instanceof LinkNotFoundError
   ) {
     return { code: 'not-found', message: error.message };
   }

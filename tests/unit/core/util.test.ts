@@ -15,6 +15,7 @@ import { assertBound, clamp, normalizeKey, safePreview, truncate } from '../../.
 import {
   checkCaptureEligibility,
   dedupKey,
+  detectHttpUrlsInText,
   hostClass,
   isApprovedLinkProtocol,
   originOf,
@@ -187,6 +188,37 @@ describe('urls', () => {
     expect(isApprovedLinkProtocol('javascript:alert(1)')).toBe(false);
     expect(isApprovedLinkProtocol('data:text/html,x')).toBe(false);
     expect(isApprovedLinkProtocol('chrome://settings')).toBe(false);
+  });
+});
+
+
+describe('detectHttpUrlsInText (FR-CAP-01)', () => {
+  it('extracts http(s) URLs from messy prose in first-seen order', () => {
+    const text =
+      'See https://example.com/a and http://other.org/b?q=1, plus HTTP://EXAMPLE.COM/a again.';
+    expect(detectHttpUrlsInText(text)).toEqual([
+      'https://example.com/a',
+      'http://other.org/b?q=1',
+      'HTTP://EXAMPLE.COM/a',
+    ]);
+  });
+  it('trims trailing punctuation and unbalanced parentheses', () => {
+    expect(detectHttpUrlsInText('(visit https://example.com/x) now.')).toEqual([
+      'https://example.com/x',
+    ]);
+    expect(detectHttpUrlsInText('link: https://example.com/y;')).toEqual(['https://example.com/y']);
+    expect(detectHttpUrlsInText('(wiki (https://example.com/z))')).toEqual([
+      'https://example.com/z',
+    ]);
+  });
+  it('ignores non-http schemes, bare domains and bare fragments', () => {
+    expect(detectHttpUrlsInText('javascript:alert(1) ftp://x/ example.com/path')).toEqual([]);
+    expect(detectHttpUrlsInText('no urls here at all')).toEqual([]);
+  });
+  it('deduplicates repeated URLs', () => {
+    expect(detectHttpUrlsInText('https://a.com/1 https://a.com/1 https://a.com/1')).toEqual([
+      'https://a.com/1',
+    ]);
   });
 });
 

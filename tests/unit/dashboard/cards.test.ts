@@ -72,8 +72,9 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
   };
 }
 
-function makeLink(snapshotId: string | null): Link {
+function makeLink(snapshotId: string | null, captureState?: Link['captureState']): Link {
   return {
+    captureState: captureState ?? (snapshotId ? ('captured' as const) : ('detected' as const)),
     id: '00000000-0000-4000-8000-0000000000cc' as Link['id'],
     noteId: '00000000-0000-4000-8000-000000000001' as Link['noteId'],
     originalUrl: 'https://example.org/article',
@@ -175,6 +176,29 @@ describe('cardViewModel', () => {
     expect(model.archivedCount).toBe(1);
     expect(model.pinned).toBe(true);
     expect(model.favorite).toBe(true);
+  });
+
+  it('surfaces queued captures in the link indicator (T-020)', () => {
+    const note = makeNote({});
+    const queued = makeRelated({ links: [makeLink(null, 'queued')] });
+    const model = cardViewModel(note, queued, NOW);
+    expect(model.queuedCount).toBe(1);
+    const card = renderCard(model, { viewMode: 'grid', selected: false, onToggleSelect: () => undefined });
+    const chips = [...card.querySelectorAll('.chip')].map((el) => el.textContent);
+    expect(chips).toContain('Link · 1 capture queued');
+
+    // Archived beats queued in the label — a finished capture is the more
+    // informative state once at least one exists.
+    const mixed = makeRelated({
+      links: [
+        makeLink(null, 'queued'),
+        makeLink('00000000-0000-4000-8000-0000000000dd' as never),
+      ],
+    });
+    const mixedModel = cardViewModel(note, mixed, NOW);
+    const mixedCard = renderCard(mixedModel, { viewMode: 'grid', selected: false, onToggleSelect: () => undefined });
+    const mixedChips = [...mixedCard.querySelectorAll('.chip')].map((el) => el.textContent);
+    expect(mixedChips).toContain('Link · 1 archived');
   });
 
   it('labels untitled notes honestly (PRD §4.3)', () => {

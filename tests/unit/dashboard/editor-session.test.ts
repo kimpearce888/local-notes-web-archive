@@ -103,6 +103,23 @@ function makeCallbacks(overrides: Partial<EditorSessionCallbacks> = {}): EditorS
     },
     announce: () => undefined,
     onOpenLink: () => undefined,
+    detectLinks: async (input) => {
+      try {
+        const { results } = await client().request('links/detect-and-queue', {
+          noteId: input.noteId,
+          urls: [...input.urls],
+          source: input.source,
+        });
+        return {
+          created: results.filter((r) => r.outcome === 'created').length,
+          queued: results.filter((r) => r.link?.captureState === 'queued').length,
+          existing: results.filter((r) => r.outcome === 'existing').length,
+          rejected: results.filter((r) => r.outcome === 'rejected').length,
+        };
+      } catch {
+        return null;
+      }
+    },
     attachments: {
       add: async (input) =>
         client().request('attachments/add', {

@@ -163,7 +163,7 @@ describe('domain types', () => {
       note: sampleNote(),
       tag: { id: id('t-1'), name: 'x', normalizedKey: 'x', createdAt: ts(T0), updatedAt: ts(T0) } satisfies Tag,
       category: { id: id('c-1'), name: 'x', parentId: null, order: 0, createdAt: ts(T0), updatedAt: ts(T0) } satisfies Category,
-      link: { id: id('l-1'), noteId: id('n-1'), originalUrl: 'https://a/', dedupKey: 'https://a/', anchorText: '', origin: 'https://a', createdAt: ts(T0), snapshotId: null } satisfies Link,
+      link: { id: id('l-1'), noteId: id('n-1'), originalUrl: 'https://a/', dedupKey: 'https://a/', anchorText: '', origin: 'https://a', createdAt: ts(T0), snapshotId: null, captureState: 'detected' } satisfies Link,
       attachment: { id: id('a-1'), noteId: id('n-1'), filename: 'f', mimeType: 'text/plain', size: 1, hash: hash('h'), blobKey: blobKey('b'), createdAt: ts(T0) } satisfies Attachment,
       revision: { id: id('rv-1'), noteId: id('n-1'), editorDoc: null, metadataSnapshot: { title: '', subtitle: '', tagIds: [], categoryId: [] }, createdAt: ts(T0), summary: '' } satisfies Revision,
       audit: { id: id('ev-1'), at: ts(T0), actor: 'user', action: 'create', targetId: id('n-1'), targetKind: 'note', outcome: 'succeeded', correlationId: 'corr-1', changedFields: [], contentHash: null, detail: '' } satisfies AuditEvent,

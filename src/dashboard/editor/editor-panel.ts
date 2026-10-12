@@ -14,6 +14,7 @@ import { sanitizeEditorHtml, isSafeLinkHref } from './sanitize';
 import { markdownToEditorHtml, editorHtmlToMarkdown } from './markdown';
 import { findMatches, nextMatch, previousMatch, replaceAllInText, type FindState } from './find-replace';
 import { EDITOR_DOCUMENTATION } from './documentation';
+import { detectHttpUrlsInText } from '../../core/util/urls';
 
 export interface EditorPanelCallbacks {
   /** Content or metadata changed (dirty). */
@@ -30,6 +31,8 @@ export interface EditorPanelCallbacks {
   >;
   /** Surface upload outcomes to screen readers and the visible status line. */
   onNotify(message: string, kind: 'info' | 'error'): void;
+  /** Pasted plain text (body or title) for URL detection (FR-CAP-01). */
+  onPastedText(text: string): void;
 }
 
 export interface EditorPanelOptions {
@@ -113,9 +116,25 @@ export function createEditorPanel(
       // reference. Non-image files become note attachments instead.
       handlePaste: (view, event) => {
         const files = filesFromTransfer(event.clipboardData);
-        if (files.length === 0) return false;
+        if (files.length > 0) {
+          event.preventDefault();
+          void ingestFiles(files);
+          return true;
+        }
+        const text = event.clipboardData?.getData('text/plain') ?? '';
+        // URL detection on paste (FR-CAP-01): the policy call happens in the
+        // background (queue only under the auto-capture setting).
+        if (text.length > 0) callbacks.onPastedText(text);
+        // Rich HTML pastes keep their own links (ProseMirror parses them
+        // against the constrained schema).
+        const flavors = event.clipboardData?.types ?? [];
+        if (flavors.includes('text/html') || text.length === 0) return false;
+        const urls = detectHttpUrlsInText(text);
+        if (urls.length === 0) return false;
+        // Plain-text paste containing URLs: insert structured content so
+        // every URL survives as a clickable link mark (FR-CAP-01).
         event.preventDefault();
-        void ingestFiles(files);
+        editor.commands.insertContent(pasteContentWithLinks(text, urls));
         return true;
       },
       handleDrop: (view, event) => {
@@ -138,6 +157,35 @@ export function createEditorPanel(
     if (!transfer) return [];
     const files = Array.from(transfer.files ?? []);
     return files.slice(0, 20);
+  }
+
+  /**
+   * Build editor content for a plain-text paste that contains URLs: each
+   * URL becomes a text run with a link mark so it stays clickable
+   * (FR-CAP-01). Line breaks are preserved as separate paragraphs.
+   */
+  function pasteContentWithLinks(text: string, urls: readonly string[]): object[] {
+    const escapeRegExp = (value: string): string =>
+      value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`(${urls.map(escapeRegExp).join('|')})`, 'gi');
+    const content: object[] = [];
+    for (const line of text.split(/\r?\n/)) {
+      if (line.length === 0) {
+        content.push({ type: 'paragraph' });
+        continue;
+      }
+      const inline = line
+        .split(pattern)
+        .filter((part) => part !== undefined && part.length > 0)
+        .map((part) => {
+          const isUrl = urls.some((url) => url.toLowerCase() === part.toLowerCase());
+          return isUrl
+            ? { type: 'text', text: part, marks: [{ type: 'link', attrs: { href: part } }] }
+            : { type: 'text', text: part };
+        });
+      content.push({ type: 'paragraph', content: inline });
+    }
+    return content;
   }
 
   /** Store and insert/drop-attach a batch of local files (T-019). */
@@ -189,6 +237,10 @@ export function createEditorPanel(
   titleInput.addEventListener('input', () => {
     markDirty();
     callbacks.onChange({ title: titleInput.value, subtitle: subtitleInput.value });
+  });
+  titleInput.addEventListener('paste', (event) => {
+    const text = event.clipboardData?.getData('text/plain') ?? '';
+    if (text.length > 0) callbacks.onPastedText(text);
   });
   subtitleInput.addEventListener('input', () => {
     markDirty();

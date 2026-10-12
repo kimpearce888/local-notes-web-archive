@@ -39,6 +39,8 @@ export interface CardViewModel {
   readonly categoryNames: readonly string[];
   readonly hasLinks: boolean;
   readonly archivedCount: number;
+  /** Links waiting for the capture queue (T-020 surfacing). */
+  readonly queuedCount: number;
   readonly reminderChip: ReminderChipState;
   readonly pinned: boolean;
   readonly favorite: boolean;
@@ -104,6 +106,7 @@ export function cardViewModel(
     categoryNames: related.categories.map((category) => category.name),
     hasLinks: related.links.length > 0,
     archivedCount: related.links.filter((link) => link.snapshotId !== null).length,
+    queuedCount: related.links.filter((link) => link.captureState === 'queued').length,
     reminderChip: reminderChipFor(related.reminders, now),
     pinned: note.pinned,
     favorite: note.favorite,
@@ -217,7 +220,14 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
   if (model.hasLinks) {
     const item = document.createElement('li');
     item.append(
-      chip(model.archivedCount > 0 ? `Link · ${model.archivedCount} archived` : 'Link', 'indicator'),
+      chip(
+        model.archivedCount > 0
+          ? `Link · ${model.archivedCount} archived`
+          : model.queuedCount > 0
+            ? `Link · ${model.queuedCount} capture${model.queuedCount === 1 ? '' : 's'} queued`
+            : 'Link',
+        'indicator',
+      ),
     );
     chipsRow.append(item);
   }

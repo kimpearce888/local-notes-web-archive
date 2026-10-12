@@ -26,6 +26,7 @@ import type {
 } from '../../core/types';
 import type { CategoryNode } from '../../core/repo/categories';
 import type { CreateLinkResult } from '../../core/repo/links';
+import type { LinkDetectionResult } from '../../background/api/links';
 import type { AlarmReconcileResult } from '../../background/alarms';
 import type { CommandStatus } from '../../background/api/settings';
 
@@ -156,6 +157,18 @@ export interface ApiContract {
     result: { updated: boolean };
   };
   'links/delete': { payload: { linkId: EntityId }; result: { deleted: boolean } };
+  'links/detect-and-queue': {
+    payload: { noteId: EntityId; urls: readonly string[]; source: 'paste' | 'manual' };
+    result: { results: LinkDetectionResult[] };
+  };
+  'links/queue-capture': {
+    payload: { linkId: EntityId };
+    result: { link: Link };
+  };
+  'links/set-capture-state': {
+    payload: { linkId: EntityId; captureState: Link['captureState'] };
+    result: { link: Link };
+  };
 
   /* attachments (T-019: images and files, structured-cloneable Blobs) */
   'attachments/add': {

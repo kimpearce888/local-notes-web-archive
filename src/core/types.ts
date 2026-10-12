@@ -152,6 +152,21 @@ export interface CaptureWarning {
   readonly detail: string;
 }
 
+/**
+ * Capture lifecycle of a link record (FR-CAP-01..03). Links begin as
+ * `detected` (pasted or typed — never auto-visited); `queued` only after the
+ * auto-capture setting or an explicit user action requests a visit. The
+ * capture pipeline (T-022+) drives `permission-required`/`capturing`/
+ * `captured`/`failed`.
+ */
+export type LinkCaptureState =
+  | 'detected'
+  | 'queued'
+  | 'permission-required'
+  | 'capturing'
+  | 'captured'
+  | 'failed';
+
 export interface Link {
   readonly id: EntityId;
   readonly noteId: EntityId;
@@ -166,6 +181,8 @@ export interface Link {
   readonly createdAt: UtcTimestamp;
   /** Associated snapshot, when a capture succeeded. */
   snapshotId: EntityId | null;
+  /** Capture lifecycle (normalised on read for records written before T-020). */
+  captureState: LinkCaptureState;
 }
 
 export interface Snapshot {

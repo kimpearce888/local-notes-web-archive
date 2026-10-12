@@ -220,3 +220,43 @@ export function isApprovedLinkProtocol(raw: string): boolean {
     return false;
   }
 }
+
+/**
+ * Extract http(s) URL candidates from free text (FR-CAP-01: title/body paste
+ * detection). Extraction is deliberately conservative: bare scheme-less
+ * domains are NOT detected (only explicit http/https URLs), trailing
+ * punctuation is trimmed, and unbalanced closing parentheses are excluded so
+ * prose like "(see https://example.com/a)" keeps its closing mark. Results
+ * are unique in first-seen order; validation happens separately through
+ * checkCaptureEligibility.
+ */
+export function detectHttpUrlsInText(text: string): string[] {
+  const seen = new Set<string>();
+  const results: string[] = [];
+  const rawMatches = text.match(/https?:\/\/[^\s<>"']+/gi) ?? [];
+  const hasControlCharacter = (value: string): boolean => {
+    for (let i = 0; i < value.length; i += 1) {
+      const code = value.charCodeAt(i);
+      if (code < 0x20 || code === 0x7f) return true;
+    }
+    return false;
+  };
+  for (const raw of rawMatches) {
+    let candidate = raw;
+    // Trim sentence punctuation that hugs the URL.
+    candidate = candidate.replace(/[.,;:!?'"]+$/, '');
+    // Keep balanced parens only: strip a trailing ')' when '(' never opened.
+    const opens = (candidate.match(/\(/g) ?? []).length;
+    const closes = (candidate.match(/\)/g) ?? []).length;
+    if (closes > opens) {
+      candidate = candidate.slice(0, candidate.length - (closes - opens));
+    }
+    candidate = candidate.replace(/[),.;:!?'"]+$/, '');
+    if (candidate.length <= 'https://'.length) continue;
+    if (hasControlCharacter(candidate)) continue;
+    if (seen.has(candidate)) continue;
+    seen.add(candidate);
+    results.push(candidate);
+  }
+  return results;
+}
