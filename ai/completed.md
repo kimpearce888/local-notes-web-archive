@@ -76,3 +76,10 @@ Push Status (ai/rule.md §8).
 - **Commit Hash:** (this commit)
 - **Push Status:** pushed to origin/main
 - **Notes:** typed RPC protocol with correlation ids and coded errors (PRD §12); single dashboard tab open/focus incl. new-note intent delivery; context menus (save current page / save selection) restricted to http(s) documents; alarm reconciliation on install/update/browser-start/worker-start and after every reminder mutation (FR-REM-04); stateless worker with IndexedDB as the only durable store. Security fix discovered by tests: createLink now rejects non-http(s) schemes (javascript: could previously become a link record).
+
+## T-013 Manifest and icons
+- **Completion Timestamp:** 2026-10-12T09:08:00Z
+- **Validation Result:** tsc strict (app+node) green; eslint green; vitest 200/200 (17 new manifest tests: permissions matrix, CSP narrowing, loopback-only hosts, optional host permissions, commands, icon dimensions/byte-stability/determinism, pinned extension ID, no remote URLs)
+- **Commit Hash:** (this commit)
+- **Push Status:** pushed to origin/main
+- **Notes:** MV3 manifest with PRD §8.2 narrowest permission set (incl. contextMenus for §4.1 actions), loopback host_permissions, optional http/https host permissions, minimum_chrome_version 120, commands (_execute_action Alt+Shift+N + create-note Alt+Shift+C). CSP: script-src/object-src 'self'; connect-src 'self' + loopback verified against Chromium csp_validator.cc (localhost/127.0.0.1 sources are allowlisted secure tokens). Deterministic icon generator (pure geometry, 4x supersampling, zero deps) with byte-stability tests. Extension identity pinned via manifest "key" (public half committed; private pem gitignored under keys/, rotation-refusing generator, documented in docs/EXTENSION_IDENTITY.md; pinned ID pieeojhacbmcmkfakahpapgpmejgnaij). Full vite build/structure check lands with T-014 when the dashboard entry exists.

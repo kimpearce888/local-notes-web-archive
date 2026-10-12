@@ -8,6 +8,10 @@ release/
 *.crx
 *.pem
 
+# Extension signing identity (private key — never commit; see
+# docs/EXTENSION_IDENTITY.md)
+keys/
+
 # Test output
 coverage/
 playwright-report/

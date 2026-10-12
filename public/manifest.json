@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "Local Notes & Web Archive",
+  "short_name": "Notes & Archive",
+  "version": "1.0.0",
+  "description": "Local-first notes, web page archiving (MHTML + full-page PNG), reminders and optional local AI. All data stays on this device.",
+  "minimum_chrome_version": "120",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2va8YZgEa2VDdJCrZKBceX0kLaq4A/AmHl9UpDau3kqlLsuwCLWaloalwI5/cXqfjlPtYBb3dhZJqf7s1ebj+VbSIT+vO7Zo5/cEkHKwce+fIUPBd9GRfeWkpOXaMe+/9cXadDQdYq29D8WIBFr9yi5XJG9lsTg88zvr9DqufHhYspgH7+S594Q//VfjAHmRLO0tDgz2IM5niNH7KzWYWwQQkhHniVaqkJPYNrA3pnEA5SGC8xACP01KamS5IOgI5JjgZcqnEB5P+4MM5xRFIEK85MLLrQBIAYAQyNqqFZnrWyaRwQDosh53ZnIiaDzPs983H6o3hIUTJh4eEBenoQIDAQAB",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Local Notes & Web Archive",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "background": {
+    "service_worker": "assets/background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "alarms",
+    "notifications",
+    "scripting",
+    "pageCapture",
+    "debugger",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+N"
+      },
+      "description": "Open the notes dashboard"
+    },
+    "create-note": {
+      "suggested_key": {
+        "default": "Alt+Shift+C"
+      },
+      "description": "Create a new note"
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://127.0.0.1:* http://localhost:*"
+  }
+}
