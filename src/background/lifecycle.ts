@@ -11,6 +11,7 @@
 import { openAppDatabase, repo } from './db';
 import { openOrFocusDashboard } from './dashboard-tab';
 import { reconcileReminderAlarms } from './alarms';
+import { reconcileMissedReminders } from './reminders/fire';
 import { getCaptureQueue } from './capture/pipeline';
 import { setOnboardingComplete } from '../core/repo/settings';
 import { appendLog } from '../core/repo/logs';
@@ -76,6 +77,26 @@ export async function handleBrowserStartup(): Promise<void> {
     await logLifecycle(
       'browser-startup',
       'database-failed',
+      error instanceof Error ? error.message : String(error),
+    );
+    return; // No database — the missed pass cannot run honestly.
+  }
+  // FR-REM-05: occurrences missed while Chrome was closed are coalesced
+  // into ONE concise notification; the reminders stay overdue in the
+  // dashboard until the user acknowledges them.
+  try {
+    const missed = await reconcileMissedReminders();
+    if (missed.missed.length > 0) {
+      await logLifecycle(
+        'browser-startup',
+        'reminders-missed',
+        `${missed.missed.length} overdue reminder(s); notification=${missed.notification}`,
+      );
+    }
+  } catch (error) {
+    await logLifecycle(
+      'browser-startup',
+      'missed-pass-failed',
       error instanceof Error ? error.message : String(error),
     );
   }

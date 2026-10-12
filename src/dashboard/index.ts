@@ -12,6 +12,7 @@ import { createApiClient } from './state/client';
 import { createDashboardController, type DashboardController } from './state/controller';
 import { createDuplicateDecisionMonitor, type DuplicateDecisionMonitor } from './views/duplicate-dialog';
 import type { CaptureProgressEvent, CaptureProgressPhase } from '../background/capture/queue';
+import type { ReminderFiredEvent } from '../background/reminders/fire';
 
 const THEME_STORAGE_KEY = 'lnwa-theme-preference';
 
@@ -87,6 +88,13 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
         shell.announce(`Capture ${event.phase.replace('-', ' ')}: ${event.detail}`);
       }
       void duplicates.refresh();
+    }
+    if (kind === 'reminder-fired') {
+      // FR-REM-05: a reminder fired while this tab was open — announce it
+      // and refresh the cards (the overdue chip appears immediately).
+      const event = message as ReminderFiredEvent;
+      shell.announce(`Reminder due: ${event.title}`);
+      void controller.refresh().catch(() => undefined);
     }
   };
   if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {

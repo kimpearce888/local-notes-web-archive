@@ -26,6 +26,7 @@ import {
   resolveWallClock,
   type WallClockResolution,
 } from '../../background/reminders/engine';
+import { REMINDER_LIMITS_NOTE } from '../../background/reminders/notify';
 
 export interface RemindersPanelCallbacks {
   listForNote(noteId: EntityId): Promise<readonly Reminder[]>;
@@ -719,7 +720,11 @@ export function createRemindersPanel(
         : `${reminders.length} reminder${reminders.length === 1 ? '' : 's'}`;
   }
 
-  element.append(heading, count, addButton, status, listbox, empty);
+  const limitsNote = document.createElement('p');
+  limitsNote.className = 'reminders-panel__limits';
+  limitsNote.textContent = REMINDER_LIMITS_NOTE;
+
+  element.append(heading, count, addButton, status, listbox, empty, limitsNote);
   void refresh();
 
   return {

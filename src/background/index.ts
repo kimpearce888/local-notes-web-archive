@@ -13,6 +13,7 @@ import { openOrFocusDashboard } from './dashboard-tab';
 import { registerContextMenus, handleContextMenuClick } from './context-menus';
 import { handleBrowserStartup, handleRuntimeInstalled, handleWorkerStartup } from './lifecycle';
 import { getCaptureQueue } from './capture/pipeline';
+import { handleReminderAlarm } from './reminders/fire';
 
 const router = new MessageRouter();
 registerAllApi(router);
@@ -73,6 +74,27 @@ chrome.runtime.onInstalled.addListener((details: chrome.runtime.InstalledDetails
 chrome.runtime.onStartup.addListener(() => {
   void handleBrowserStartup();
 });
+
+/* ------------------------------ Alarms ------------------------------- */
+
+// Reminder wake-up hints (FR-REM-04): canonical records drive the truth;
+// the handler stamps lastFiredAt, recomputes the next occurrence and
+// notifies + broadcasts to open dashboard tabs.
+chrome.alarms.onAlarm.addListener((alarm: chrome.alarms.Alarm) => {
+  void handleReminderAlarm(alarm).catch((error: unknown) => {
+    console.error('[alarms] reminder firing failed', error);
+  });
+});
+
+// Reminder notification click: open (or focus) the dashboard so the user
+// can complete/dismiss the reminder that raised the notification.
+if (chrome.notifications?.onClicked) {
+  chrome.notifications.onClicked.addListener((notificationId: string) => {
+    if (notificationId.startsWith('reminder')) {
+      void openOrFocusDashboard().catch(() => undefined);
+    }
+  });
+}
 
 registerContextMenus();
 

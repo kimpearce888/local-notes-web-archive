@@ -32,9 +32,26 @@ export interface InstalledMock {
         sendResponse: (response: unknown) => void,
       ) => boolean | void
     >;
+    /** chrome.alarms.onAlarm listeners (reminder firing, T-028). */
+    alarmFired: Array<(alarm: { name: string; scheduledTime?: number }) => void>;
+    /** chrome.notifications.onClicked listeners (T-028). */
+    notificationClicked: Array<(notificationId: string) => void>;
   };
   tabs: Map<number, MockTab>;
   alarms: Map<string, { name: string; scheduledTime: number }>;
+  /** chrome.alarms.onAlarm listeners (reminder firing, T-028). */
+  alarmFired: Array<(alarm: { name: string; scheduledTime?: number }) => void>;
+  /** chrome.notifications surface state (T-028, FR-REM-05). */
+  notifications: {
+    /** Created notifications by id (basic type). */
+    created: Map<string, { title: string; message: string }>;
+    /** Simulated permission level; default 'granted'. */
+    permissionLevel: 'granted' | 'denied';
+    /** When set, create() rejects with this error. */
+    failNextCreate: Error | null;
+    /** chrome.notifications.onClicked listeners. */
+    clicked: Array<(notificationId: string) => void>;
+  };
   storage: Map<string, unknown>;
   /** Tab ids that simulate a loaded dashboard (tabs.sendMessage succeeds). */
   tabsWithListeners: Set<number>;
@@ -190,6 +207,10 @@ export function installChromeMock(): InstalledMock {
   let gestureActive = false;
   let forceNextDecline = false;
 
+  const createdNotifications = new Map<string, { title: string; message: string }>();
+  let notificationPermissionLevel: 'granted' | 'denied' = 'granted';
+  let failNextNotificationCreate: Error | null = null;
+
   const listeners: InstalledMock['listeners'] = {
     installed: [],
     startup: [],
@@ -197,6 +218,8 @@ export function installChromeMock(): InstalledMock {
     command: [],
     menuClicked: [],
     message: [],
+    alarmFired: [],
+    notificationClicked: [],
   };
 
   const mock = {
@@ -316,6 +339,33 @@ export function installChromeMock(): InstalledMock {
       }),
       clear: vi.fn(async (name: string) => alarms.delete(name)),
       getAll: vi.fn(async () => [...alarms.values()].map((a) => ({ ...a }))),
+      onAlarm: {
+        addListener: (fn: (alarm: { name: string; scheduledTime?: number }) => void) => {
+          listeners.alarmFired.push(fn);
+        },
+      },
+    },
+    notifications: {
+      create: vi.fn(
+        async (notificationId: string, options: { title: string; message: string }) => {
+          if (failNextNotificationCreate !== null) {
+            const error = failNextNotificationCreate;
+            failNextNotificationCreate = null;
+            throw error;
+          }
+          createdNotifications.set(notificationId, {
+            title: options.title,
+            message: options.message,
+          });
+        },
+      ),
+      getPermissionLevel: vi.fn(async () => notificationPermissionLevel),
+      clear: vi.fn(async (notificationId: string) => createdNotifications.delete(notificationId)),
+      onClicked: {
+        addListener: (fn: (notificationId: string) => void) => {
+          listeners.notificationClicked.push(fn);
+        },
+      },
     },
     storage: {
       local: {
@@ -370,6 +420,23 @@ export function installChromeMock(): InstalledMock {
     listeners,
     tabs,
     alarms,
+    alarmFired: listeners.alarmFired,
+    notifications: {
+      created: createdNotifications,
+      get permissionLevel() {
+        return notificationPermissionLevel;
+      },
+      set permissionLevel(value: 'granted' | 'denied') {
+        notificationPermissionLevel = value;
+      },
+      get failNextCreate() {
+        return failNextNotificationCreate;
+      },
+      set failNextCreate(value: Error | null) {
+        failNextNotificationCreate = value;
+      },
+      clicked: listeners.notificationClicked,
+    },
     storage,
     tabsWithListeners,
     createdMenus,

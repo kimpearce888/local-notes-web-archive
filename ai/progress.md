@@ -3,7 +3,6 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-028 Alarms, notifications and reconciliation
 - [ ] T-029 LM Studio client
 - [ ] T-030 Tool contract and dispatcher
 - [ ] T-031 Permission modes and AI panel
