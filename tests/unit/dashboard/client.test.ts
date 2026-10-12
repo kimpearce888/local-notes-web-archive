@@ -1,22 +1,22 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
-import { createApiClient, RpcClientError } from '../../../src/dashboard/state/client';
+import {
+  createApiClient,
+  RpcClientError,
+  type RpcTransport,
+} from '../../../src/dashboard/state/client';
 import { RPC_KIND, isRpcResponse, newCorrelationId } from '../../../src/background/protocol';
 
 /** Capturing transport: records requests, replies with scripted responses. */
 function capturingTransport(
   script: (message: unknown) => unknown,
-): { transport: ReturnType<typeof makeTransport>; requests: unknown[] } {
+): { transport: RpcTransport; requests: unknown[] } {
   const requests: unknown[] = [];
-  const transport = async (message: unknown): Promise<unknown> => {
+  const transport: RpcTransport = async (message) => {
     requests.push(message);
     return script(message);
   };
   return { transport, requests };
-}
-
-function makeTransport(fn: (message: unknown) => unknown): Parameters<typeof createApiClient>[0] {
-  return fn as Parameters<typeof createApiClient>[0];
 }
 
 describe('messaging client', () => {
@@ -27,7 +27,7 @@ describe('messaging client', () => {
       ok: true,
       result: { pong: true },
     }));
-    const client = createApiClient(makeTransport(transport));
+    const client = createApiClient(transport);
     await client.request('app/ping', { probe: 'x' });
     const envelope = requests[0] as { kind: string; id: string; type: string; payload: unknown };
     expect(envelope.kind).toBe(RPC_KIND);
@@ -42,7 +42,7 @@ describe('messaging client', () => {
       seenId = (message as { id: string }).id;
       return { kind: RPC_KIND, id: seenId, ok: true, result: { note: { id: 'n1' } } };
     });
-    const client = createApiClient(makeTransport(transport));
+    const client = createApiClient(transport);
     await client.request('notes/get', { noteId: 'n1' as never });
     expect(seenId.length).toBe(36);
   });
@@ -54,7 +54,7 @@ describe('messaging client', () => {
       ok: true,
       result: { counts: { active: 2, archived: 0, trashed: 0 } },
     }));
-    const client = createApiClient(makeTransport(transport));
+    const client = createApiClient(transport);
     const result = await client.request('notes/counts', {});
     expect(result.counts.active).toBe(2);
   });
@@ -66,7 +66,7 @@ describe('messaging client', () => {
       ok: false,
       error: { code: 'conflict', message: 'stale revision' },
     }));
-    const client = createApiClient(makeTransport(transport));
+    const client = createApiClient(transport);
     const error = await client.request('notes/save', {} as never).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(RpcClientError);
     expect((error as RpcClientError).code).toBe('conflict');
@@ -75,7 +75,7 @@ describe('messaging client', () => {
 
   it('rejects malformed responses honestly', async () => {
     const { transport } = capturingTransport(() => ({ something: 'else' }));
-    const client = createApiClient(makeTransport(transport));
+    const client = createApiClient(transport);
     await expect(client.request('app/ping', {})).rejects.toThrow(/malformed response/i);
   });
 
@@ -83,7 +83,7 @@ describe('messaging client', () => {
     const transport = async (): Promise<unknown> => {
       throw new Error('message channel closed');
     };
-    const client = createApiClient(makeTransport(transport));
+    const client = createApiClient(transport);
     const error = await client.request('app/ping', {}).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(RpcClientError);
     expect((error as RpcClientError).code).toBe('internal-error');
@@ -96,7 +96,7 @@ describe('messaging client', () => {
       ids.push(id);
       return { kind: RPC_KIND, id, ok: true, result: {} };
     });
-    const client = createApiClient(makeTransport(transport));
+    const client = createApiClient(transport);
     await Promise.all([client.request('app/ping', {}), client.request('app/ping', {})]);
     expect(new Set(ids).size).toBe(2);
   });

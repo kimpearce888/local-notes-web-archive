@@ -64,7 +64,7 @@ beforeEach(() => {
       media: query,
       addEventListener: () => undefined,
       removeEventListener: () => undefined,
-    }) as MediaQueryList;
+    }) as unknown as MediaQueryList;
   root = document.createElement('div');
   document.body.appendChild(root);
   shell = mountDashboardShell(root);
@@ -256,11 +256,11 @@ describe('navigation guard (PRD §4.3)', () => {
     const noteId = (await controller!.createNote())!;
 
     // A save the test holds open until the guard has been exercised.
-    let resolveSave: ((response: unknown) => void) | null = null;
+    const deferred = { resolve: null as null | ((response: unknown) => void) };
     interceptor = (message) => {
       if (message.type === 'notes/save') {
         return new Promise<unknown>((resolve) => {
-          resolveSave = resolve;
+          deferred.resolve = resolve;
         });
       }
       return undefined;
@@ -284,7 +284,7 @@ describe('navigation guard (PRD §4.3)', () => {
 
     // Unblock (the save settles with a failure) and confirm the guard
     // releases: navigation is allowed again.
-    resolveSave?.({
+    deferred.resolve?.({
       kind: RPC_KIND,
       id: 'manual',
       ok: false,
