@@ -15,6 +15,7 @@ import { createBulkBar, type BulkAction, type BulkBar } from '../views/bulk-bar'
 import type { ApiClient } from './client';
 import { RpcClientError } from './client';
 import { createSnapshotsApi } from './snapshot-client';
+import { createRemindersApi } from './reminders-client';
 import {
   createDashboardStore,
   INITIAL_DASHBOARD_STATE,
@@ -485,6 +486,7 @@ export function createDashboardController(options: {
             },
           },
           snapshots: createSnapshotsApi(client),
+          reminders: createRemindersApi(client),
         },
       });
       showView('editor');

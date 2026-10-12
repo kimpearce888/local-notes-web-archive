@@ -281,14 +281,13 @@ export interface ApiContract {
   'settings/set-onboarding-complete': { payload: { complete: boolean }; result: { complete: boolean } };
   'commands/status': { payload: Record<string, never>; result: CommandStatus };
 
-  /* reminders */
+  /* reminders (nextDueAt is engine-computed in the background, never client-supplied) */
   'reminders/create': {
     payload: {
       noteId: EntityId;
       dueAt?: UtcTimestamp | null;
       recurrence?: RecurrenceRule | null;
       timeZone: TimeZoneName;
-      nextDueAt?: UtcTimestamp | null;
     };
     result: { reminder: Reminder };
   };
@@ -300,7 +299,6 @@ export interface ApiContract {
       reminderId: EntityId;
       dueAt?: UtcTimestamp | null;
       recurrence?: RecurrenceRule | null;
-      nextDueAt?: UtcTimestamp | null;
       timeZone?: TimeZoneName;
     };
     result: { reminder: Reminder };

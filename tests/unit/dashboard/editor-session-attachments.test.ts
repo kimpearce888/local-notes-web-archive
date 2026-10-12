@@ -6,6 +6,7 @@ import {
   type EditorSessionCallbacks,
 } from '../../../src/dashboard/state/editor-session';
 import { createSnapshotsApi } from '../../../src/dashboard/state/snapshot-client';
+import { createRemindersApi } from '../../../src/dashboard/state/reminders-client';
 import { clearRecoveryJournal } from '../../../src/dashboard/editor/recovery';
 import { MessageRouter } from '../../../src/background/router';
 import { registerAllApi } from '../../../src/background/api';
@@ -169,6 +170,7 @@ function makeCallbacks(announce: (message: string) => void = () => undefined): E
       },
     },
     snapshots: createSnapshotsApi(client()),
+    reminders: createRemindersApi(client()),
   };
 }
 

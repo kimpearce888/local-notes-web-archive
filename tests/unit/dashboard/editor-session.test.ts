@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApiClient } from '../../../src/dashboard/state/client';
 import { openEditorSession, type EditorSessionCallbacks } from '../../../src/dashboard/state/editor-session';
 import { createSnapshotsApi } from '../../../src/dashboard/state/snapshot-client';
+import { createRemindersApi } from '../../../src/dashboard/state/reminders-client';
 import { clearRecoveryJournal } from '../../../src/dashboard/editor/recovery';
 import type { ConflictChoice, ConflictSnapshot } from '../../../src/dashboard/editor/revisions';
 import { MessageRouter } from '../../../src/background/router';
@@ -150,6 +151,7 @@ function makeCallbacks(overrides: Partial<EditorSessionCallbacks> = {}): EditorS
       },
     },
     snapshots: createSnapshotsApi(client()),
+    reminders: createRemindersApi(client()),
     ...overrides,
   };
 }

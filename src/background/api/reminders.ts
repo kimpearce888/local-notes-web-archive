@@ -1,7 +1,9 @@
 /**
  * Reminders API (FR-REM-01..04): CRUD over canonical reminder records.
- * Every mutation triggers alarm reconciliation because alarms are hints
- * derived from durable state — never authoritative (FR-REM-04).
+ * The ENGINE computes `nextDueAt` authoritatively on create/update — the
+ * client never supplies it (alarms are hints derived from durable state,
+ * never authoritative, FR-REM-04). Every mutation triggers alarm
+ * reconciliation.
  */
 
 import type { MessageRouter } from '../router';
@@ -20,6 +22,8 @@ import {
 } from '../../core/repo/reminders';
 import { reconcileReminderAlarms } from '../alarms';
 import { ReminderNotFoundError } from '../../core/repo/reminders';
+import { computeNextDueAt, validateRecurrenceRule } from '../reminders/engine';
+import { nowUtc } from '../../core/util/time';
 import type { LocalDate, LocalTime, RecurrenceRule, TimeZoneName, UtcTimestamp } from '../../core/types';
 import { PayloadValidationError } from '../protocol';
 import {
@@ -71,13 +75,17 @@ function parseRecurrence(value: unknown, field: string): RecurrenceRule {
   const finalYear = p['finalYear'] === undefined || p['finalYear'] === null
     ? null
     : asNumber(p['finalYear'], `${field}.finalYear`, { min: 1000, max: 9999, integer: true });
-  return {
+  const rule: RecurrenceRule = {
     kind,
     on,
     at,
     finalYear: finalYear ?? null,
     leapDayPolicy: asEnum(p['leapDayPolicy'], `${field}.leapDayPolicy`, LEAP_DAY_POLICIES),
   };
+  // Semantic validation: the civil date must exist (Feb 29 governed by the
+  // leap-day policy, FR-REM-03).
+  validateRecurrenceRule(rule);
+  return rule;
 }
 
 function parseTimeZone(value: unknown, field: string): TimeZoneName {
@@ -91,13 +99,19 @@ export function registerReminderApi(router: MessageRouter): void {
     const recurrence = p['recurrence'] === undefined || p['recurrence'] === null
       ? null
       : parseRecurrence(p['recurrence'], 'recurrence');
-    const nextDueAt = asOptionalUtcTimestamp(p['nextDueAt'], 'nextDueAt');
+    const normalizedDueAt = dueAt ?? null;
+    if (normalizedDueAt === null && recurrence === null) {
+      throw new PayloadValidationError('a reminder needs either dueAt or a recurrence rule');
+    }
+    const timeZone = parseTimeZone(p['timeZone'], 'timeZone');
+    // Authoritative next occurrence: computed by the engine, never the client.
+    const nextDueAt = computeNextDueAt({ dueAt: normalizedDueAt, recurrence, timeZone }, nowUtc());
     const reminder = await createReminder(await repo(), {
       noteId: asId(p['noteId'], 'noteId'),
-      dueAt: dueAt ?? null,
+      dueAt: normalizedDueAt,
       recurrence,
-      timeZone: parseTimeZone(p['timeZone'], 'timeZone'),
-      nextDueAt: nextDueAt ?? null,
+      timeZone,
+      nextDueAt,
     });
     await reconcileReminderAlarms();
     return { reminder };
@@ -116,6 +130,9 @@ export function registerReminderApi(router: MessageRouter): void {
 
   router.register('reminders/update-rule', async (payload) => {
     const p = asObject(payload, 'reminders/update-rule');
+    const reminderId = asId(p['reminderId'], 'reminderId');
+    const current = await getReminder(await repo(), reminderId);
+    if (!current) throw new ReminderNotFoundError(reminderId);
     const patch: {
       dueAt?: UtcTimestamp | null;
       recurrence?: RecurrenceRule | null;
@@ -128,13 +145,21 @@ export function registerReminderApi(router: MessageRouter): void {
     if (p['recurrence'] !== undefined) {
       patch.recurrence = p['recurrence'] === null ? null : parseRecurrence(p['recurrence'], 'recurrence');
     }
-    if (p['nextDueAt'] !== undefined) {
-      patch.nextDueAt = asOptionalUtcTimestamp(p['nextDueAt'], 'nextDueAt');
-    }
     if (p['timeZone'] !== undefined) {
       patch.timeZone = parseTimeZone(p['timeZone'], 'timeZone');
     }
-    const reminder = await updateReminderRule(await repo(), asId(p['reminderId'], 'reminderId'), patch);
+    // Recompute the next occurrence from the EFFECTIVE rule (FR-REM-04):
+    // the engine sees the merged shape, so partial updates stay truthful.
+    const effective = {
+      dueAt: patch.dueAt !== undefined ? patch.dueAt : current.dueAt,
+      recurrence: patch.recurrence !== undefined ? patch.recurrence : current.recurrence,
+      timeZone: patch.timeZone !== undefined ? patch.timeZone : current.timeZone,
+    };
+    if (effective.dueAt === null && effective.recurrence === null) {
+      throw new PayloadValidationError('a reminder needs either dueAt or a recurrence rule');
+    }
+    patch.nextDueAt = computeNextDueAt(effective, nowUtc());
+    const reminder = await updateReminderRule(await repo(), reminderId, patch);
     await reconcileReminderAlarms();
     return { reminder };
   });

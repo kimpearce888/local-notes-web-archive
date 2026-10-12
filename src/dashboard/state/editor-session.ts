@@ -23,10 +23,21 @@ import {
 } from '../editor/revisions';
 import { createAttachmentsPanel, type AttachmentsPanel } from '../editor/attachments-panel';
 import { createSnapshotsPanel, type SnapshotsPanel } from '../editor/snapshots-panel';
+import { createRemindersPanel, type RemindersPanel } from '../editor/reminders-panel';
 import { attachmentIdFromSrc } from '../editor/local-image';
 import { editorDocToPlainText } from '../../core/repo/notes';
 import { detectHttpUrlsInText } from '../../core/util/urls';
-import type { Attachment, EntityId, Note, Revision, Snapshot } from '../../core/types';
+import type {
+  Attachment,
+  EntityId,
+  Note,
+  RecurrenceRule,
+  Reminder,
+  Revision,
+  Snapshot,
+  TimeZoneName,
+  UtcTimestamp,
+} from '../../core/types';
 import type { RpcErrorCode } from '../../background/protocol';
 
 export type SaveOutcome = { ok: true; note: Note } | { ok: false; code: RpcErrorCode };
@@ -55,6 +66,30 @@ export interface SnapshotsApi {
   ): Promise<{ blob: Blob; filename: string }>;
   rename(snapshotId: EntityId, title: string): Promise<boolean>;
   remove(snapshotId: EntityId): Promise<boolean>;
+}
+
+/** Reminder operations the session needs (T-027, RPC-backed). */
+export interface RemindersApi {
+  listForNote(noteId: EntityId): Promise<readonly Reminder[]>;
+  create(input: {
+    noteId: EntityId;
+    dueAt: UtcTimestamp | null;
+    recurrence: RecurrenceRule | null;
+    timeZone: TimeZoneName;
+  }): Promise<Reminder>;
+  updateRule(
+    reminderId: EntityId,
+    patch: {
+      dueAt?: UtcTimestamp | null;
+      recurrence?: RecurrenceRule | null;
+      timeZone?: TimeZoneName;
+    },
+  ): Promise<Reminder>;
+  complete(reminderId: EntityId): Promise<boolean>;
+  dismiss(reminderId: EntityId): Promise<boolean>;
+  stop(reminderId: EntityId): Promise<boolean>;
+  snooze(reminderId: EntityId, until: UtcTimestamp): Promise<boolean>;
+  remove(reminderId: EntityId): Promise<boolean>;
 }
 
 export interface EditorSessionCallbacks {
@@ -88,6 +123,8 @@ export interface EditorSessionCallbacks {
   attachments: AttachmentApi;
   /** Snapshot management (T-026, FR-CAP-06/07/08). */
   snapshots: SnapshotsApi;
+  /** Reminder management (T-027, FR-REM-01..03). */
+  reminders: RemindersApi;
   /** URL detection policy call (T-020, FR-CAP-01). Returns null on failure. */
   detectLinks(input: {
     noteId: EntityId;
@@ -118,6 +155,7 @@ export async function openEditorSession(options: {
   const noteId = note.id;
   const attachmentApi = callbacks.attachments;
   const snapshotsApi = callbacks.snapshots;
+  const remindersApi = callbacks.reminders;
 
   let current = note;
   let lastRecoveryWrite = 0;
@@ -562,6 +600,57 @@ export async function openEditorSession(options: {
 
   void updateSnapshotCount();
 
+  /* ------------------------- Reminders panel ------------------------ */
+
+  let remindersElement: HTMLElement | null = null;
+  let remindersPanelInstance: RemindersPanel | null = null;
+
+  const remindersButton = document.createElement('button');
+  remindersButton.type = 'button';
+  remindersButton.className = 'btn';
+  remindersButton.setAttribute('aria-expanded', 'false');
+  remindersButton.textContent = 'Reminders';
+  remindersButton.addEventListener('click', () => void toggleReminders());
+
+  async function toggleReminders(): Promise<void> {
+    if (remindersElement) {
+      remindersPanelInstance?.dispose();
+      remindersElement.remove();
+      remindersElement = null;
+      remindersPanelInstance = null;
+      remindersButton.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    remindersPanelInstance = createRemindersPanel(noteId, {
+      listForNote: (id) => remindersApi.listForNote(id),
+      create: (input) => remindersApi.create(input),
+      updateRule: (id, patch) => remindersApi.updateRule(id, patch),
+      complete: (id) => remindersApi.complete(id),
+      dismiss: (id) => remindersApi.dismiss(id),
+      stop: (id) => remindersApi.stop(id),
+      snooze: (id, until) => remindersApi.snooze(id, until),
+      remove: (id) => remindersApi.remove(id),
+      announce: (message) => callbacks.announce(message),
+    });
+    remindersElement = remindersPanelInstance.element;
+    container.insertBefore(remindersElement, header.nextSibling);
+    remindersButton.setAttribute('aria-expanded', 'true');
+    await remindersPanelInstance.refresh();
+    await updateReminderCount();
+  }
+
+  async function updateReminderCount(): Promise<void> {
+    try {
+      const reminders = await remindersApi.listForNote(noteId);
+      remindersButton.textContent =
+        reminders.length > 0 ? `Reminders (${reminders.length})` : 'Reminders';
+    } catch {
+      remindersButton.textContent = 'Reminders';
+    }
+  }
+
+  void updateReminderCount();
+
   const closeButton = document.createElement('button');
   closeButton.type = 'button';
   closeButton.className = 'btn';
@@ -570,7 +659,7 @@ export async function openEditorSession(options: {
 
   const header = document.createElement('div');
   header.className = 'editor-session__header';
-  header.append(closeButton, revisionsButton, attachmentsButton, snapshotsButton);
+  header.append(closeButton, revisionsButton, attachmentsButton, snapshotsButton, remindersButton);
   container.prepend(header);
   mount.append(container);
 
@@ -589,6 +678,9 @@ export async function openEditorSession(options: {
       snapshotsPanelInstance?.dispose();
       snapshotsElement = null;
       snapshotsPanelInstance = null;
+      remindersPanelInstance?.dispose();
+      remindersElement = null;
+      remindersPanelInstance = null;
       revokeObjectUrls();
       container.remove();
     },

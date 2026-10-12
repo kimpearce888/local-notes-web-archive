@@ -22,6 +22,7 @@ import { CategoryNotFoundError } from '../core/repo/categories';
 import { ReminderNotFoundError } from '../core/repo/reminders';
 import { InvalidUrlError, LinkNotFoundError } from '../core/repo/links';
 import { SnapshotNotFoundError } from '../core/repo/snapshots';
+import { InvalidRecurrenceError } from './reminders/engine';
 import {
   AttachmentNotFoundError,
   AttachmentTooLargeError,
@@ -62,6 +63,12 @@ export function toRpcError(error: unknown): RpcError {
     return {
       code: 'invalid-url',
       message: 'The URL is not an allowed absolute http(s) address (FR-CAP-04).',
+    };
+  }
+  if (error instanceof InvalidRecurrenceError) {
+    return {
+      code: 'invalid-request',
+      message: error.message,
     };
   }
   if (error instanceof AttachmentNotFoundError) {
