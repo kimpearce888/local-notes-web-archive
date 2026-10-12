@@ -45,3 +45,9 @@ Push Status (ai/rule.md §8).
 - Validation Result: tsc strict green, eslint green, vitest 57/57; transactional save of doc+projection+revision; createdAt-once and updatedAt-on-commit semantics; optimistic concurrency (NoteConflictError); bounded retention with floor 20 and restore-as-new-revision; archive/trash lifecycle; confirmed cascade permanent deletion; monotonic session clock for deterministic ordering
 - Commit Hash: (this commit)
 - Push Status: pushed with this commit
+---
+### T-008 Repository: tags, categories and joins
+- Completion Timestamp: 2026-10-12T07:36:41Z
+- Validation Result: tsc strict green, eslint green, vitest 70/70; normalized unique tag keys with duplicate/collision rejection; merge with join reassignment + dedup; nested categories with cycle prevention on move/merge; delete-with-reassignment semantics; transactional join replacement; bulk additive assignment
+- Commit Hash: (this commit)
+- Push Status: pushed with this commit
