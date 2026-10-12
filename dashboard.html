@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Local Notes &amp; Web Archive</title>
+    <link rel="stylesheet" href="/src/dashboard/styles.css" />
+    <link rel="icon" href="icons/icon-32.png" />
+    <script>
+      // Pre-paint theme resolution: avoids a light flash on dark systems by
+      // aligning data-theme with the saved preference before first render.
+      // The settings-backed value arrives with the store (T-015); until
+      // then the system preference is the truthful default (FR-SET-01).
+      (function () {
+        try {
+          var saved = localStorage.getItem('lnwa-theme-preference');
+          var theme =
+            saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (error) {
+          /* storage unavailable — keep the system default */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>
+      <p role="alert">
+        Local Notes &amp; Web Archive needs JavaScript to run. All data stays on this
+        device — nothing can load without it.
+      </p>
+    </noscript>
+    <script type="module" src="/src/dashboard/index.ts"></script>
+  </body>
+</html>

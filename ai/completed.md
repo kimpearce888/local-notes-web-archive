@@ -83,3 +83,10 @@ Push Status (ai/rule.md §8).
 - **Commit Hash:** (this commit)
 - **Push Status:** pushed to origin/main
 - **Notes:** MV3 manifest with PRD §8.2 narrowest permission set (incl. contextMenus for §4.1 actions), loopback host_permissions, optional http/https host permissions, minimum_chrome_version 120, commands (_execute_action Alt+Shift+N + create-note Alt+Shift+C). CSP: script-src/object-src 'self'; connect-src 'self' + loopback verified against Chromium csp_validator.cc (localhost/127.0.0.1 sources are allowlisted secure tokens). Deterministic icon generator (pure geometry, 4x supersampling, zero deps) with byte-stability tests. Extension identity pinned via manifest "key" (public half committed; private pem gitignored under keys/, rotation-refusing generator, documented in docs/EXTENSION_IDENTITY.md; pinned ID pieeojhacbmcmkfakahpapgpmejgnaij). Full vite build/structure check lands with T-014 when the dashboard entry exists.
+
+## T-014 Dashboard shell
+- **Completion Timestamp:** 2026-10-12T09:16:00Z
+- **Validation Result:** tsc strict green; eslint green; vitest 228/228 (28 new shell tests); `npm run build` produces the loadable unpacked structure (dist/manifest.json, dashboard.html, assets/background.js + dashboard.js/css, icons/) and the static release-gate scan passes (no remote URLs, no dynamic code)
+- **Commit Hash:** (this commit)
+- **Push Status:** pushed to origin/main
+- **Notes:** PRD §4.1 top-to-bottom order (New Note → search+filters → toolbar with active-filters/sort/view-toggle → results); single-stylesheet design system with custom properties, light/dark/system themes, WCAG-AA-minded tokens, :focus-visible, reduced motion, no colour-only status; semantic HTML with skip link, labelled controls, radiogroup view toggle; live region + save-state label (Saving/Saved/Save failed) and loading/empty/error region states with retry; keyboard shortcuts (Ctrl+K, /); theme engine with live system tracking; ui-intent new-note handling (tab message + ?new=1); shell event API for the state manager (T-015) and views (T-016). HTML entry moved to repo root for correct dist/dashboard.html output.

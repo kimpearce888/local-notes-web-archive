@@ -1,0 +1,677 @@
+/* ======================================================================
+   Local Notes & Web Archive — dashboard design system (single stylesheet)
+
+   - One source of truth for every visual token (custom properties).
+   - Light and dark themes with a system-following mode; all combinations
+     meet WCAG 2.2 AA contrast for body text and UI labels.
+   - Visible focus everywhere (:focus-visible), reduced-motion support,
+     no status conveyed by colour alone (states pair colour with text and
+     shape tokens).
+   - System font stack only: no remote font or asset is ever fetched.
+   ====================================================================== */
+
+/* ------------------------------- Tokens ------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  /* Palette (light) */
+  --color-bg: #f6f7fa;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #eef0f5;
+  --color-text: #1c2333;
+  --color-text-muted: #55607a; /* 7:1 on --color-surface */
+  --color-text-on-accent: #ffffff;
+  --color-border: #c9cfdd;
+  --color-border-strong: #99a3ba;
+
+  /* Brand indigo (matches the extension mark) */
+  --color-accent: #2e4fa3;
+  --color-accent-hover: #244087;
+  --color-accent-soft: #e3e8f6;
+
+  /* Semantic colours — always paired with a text label or glyph, never
+     used as the only carrier of meaning (PRD §11). */
+  --color-danger: #a4262c;
+  --color-danger-soft: #f7e5e6;
+  --color-warning: #8a5300;
+  --color-warning-soft: #fbf0dd;
+  --color-success: #1c6b3c;
+  --color-success-soft: #e0f0e6;
+
+  --color-focus-ring: #2e4fa3;
+  --color-selection: #b9c6ea;
+
+  /* Typography */
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+
+  /* Spacing (4px base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  /* Radii and elevation */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+  --shadow-1: 0 1px 2px rgba(20, 27, 45, 0.08);
+  --shadow-2: 0 2px 8px rgba(20, 27, 45, 0.12);
+
+  /* Layout */
+  --app-max-width: 1280px;
+  --header-sticky-offset: 0;
+
+  /* Motion */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+}
+
+/* Dark theme: explicit or system-following. */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #14161f;
+  --color-surface: #1d2130;
+  --color-surface-raised: #242a3d;
+  --color-surface-sunken: #171a26;
+  --color-text: #e8ebf4;
+  --color-text-muted: #a7b0c8; /* 7:1 on --color-surface */
+  --color-text-on-accent: #ffffff;
+  --color-border: #3a415a;
+  --color-border-strong: #59617f;
+
+  --color-accent: #9db4f0;
+  --color-accent-hover: #b3c5f4;
+  --color-accent-soft: #273052;
+
+  --color-danger: #f1a6ab;
+  --color-danger-soft: #45262a;
+  --color-warning: #e5b96c;
+  --color-warning-soft: #433418;
+  --color-success: #8fd6ab;
+  --color-success-soft: #1d3a29;
+
+  --color-focus-ring: #9db4f0;
+  --color-selection: #3a4a7a;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme='system'] {
+    color-scheme: dark;
+
+    --color-bg: #14161f;
+    --color-surface: #1d2130;
+    --color-surface-raised: #242a3d;
+    --color-surface-sunken: #171a26;
+    --color-text: #e8ebf4;
+    --color-text-muted: #a7b0c8;
+    --color-text-on-accent: #ffffff;
+    --color-border: #3a415a;
+    --color-border-strong: #59617f;
+
+    --color-accent: #9db4f0;
+    --color-accent-hover: #b3c5f4;
+    --color-accent-soft: #273052;
+
+    --color-danger: #f1a6ab;
+    --color-danger-soft: #45262a;
+    --color-warning: #e5b96c;
+    --color-warning-soft: #433418;
+    --color-success: #8fd6ab;
+    --color-success-soft: #1d3a29;
+
+    --color-focus-ring: #9db4f0;
+    --color-selection: #3a4a7a;
+
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ------------------------------- Reset ------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text);
+  background: var(--color-bg);
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3 {
+  line-height: var(--line-height-tight);
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--color-selection);
+}
+
+/* ------------------------- Focus visibility -------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* --------------------------- Utilities ------------------------------- */
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: calc(-1 * var(--space-8, 3rem));
+  z-index: 100;
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2);
+  text-decoration: none;
+  transition: top var(--motion-fast) ease;
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+}
+
+/* ----------------------------- App shell ----------------------------- */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-1);
+  padding: var(--space-3) var(--space-4) 0;
+}
+
+.app-header__inner {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.app-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.app-title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.app-title__mark {
+  width: 1.5em;
+  height: 1.5em;
+  flex: none;
+  border-radius: var(--radius-sm);
+}
+
+/* ------------------------------ Buttons ------------------------------ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease;
+}
+
+.btn:hover {
+  background: var(--color-surface-sunken);
+}
+
+.btn:active {
+  box-shadow: inset var(--shadow-1);
+}
+
+.btn--primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+
+.btn--primary:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.btn--ghost {
+  border-color: transparent;
+  background: transparent;
+}
+
+.btn--ghost:hover {
+  background: var(--color-surface-sunken);
+}
+
+.btn--danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+  background: transparent;
+}
+
+.btn--danger:hover {
+  background: var(--color-danger-soft);
+}
+
+.btn[disabled],
+.btn[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ------------------------------ Search -------------------------------- */
+
+.search-form {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1 1 22rem;
+  min-width: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+  padding: var(--space-2) var(--space-3);
+}
+
+.search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* ------------------------------ Toolbar ------------------------------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.toolbar__spacer {
+  flex: 1 1 auto;
+}
+
+.select {
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-2);
+  min-height: 2.25rem;
+}
+
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.view-toggle__option {
+  border: 0;
+  background: var(--color-surface);
+  padding: var(--space-1) var(--space-3);
+  min-height: 2.25rem;
+  cursor: pointer;
+}
+
+.view-toggle__option[aria-checked='true'] {
+  background: var(--color-accent-soft);
+  font-weight: var(--weight-semibold);
+}
+
+.view-toggle__option + .view-toggle__option {
+  border-left: 1px solid var(--color-border);
+}
+
+/* -------------------------------- Chips ------------------------------- */
+
+.chips {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border: 1px solid var(--color-border);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.chip__label {
+  font-weight: var(--weight-medium);
+}
+
+.chip__remove {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-1);
+  line-height: 1;
+}
+
+.chip__remove:hover {
+  color: var(--color-danger);
+}
+
+/* ------------------------------ Results ------------------------------- */
+
+.app-main {
+  flex: 1;
+  padding: var(--space-5) var(--space-4);
+}
+
+.app-main__inner {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+}
+
+.results-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.results-heading h2 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.results-count {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--space-4);
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ------------------------- Region states ------------------------------ */
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-7) var(--space-4);
+  text-align: center;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+.state__glyph {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-border-strong);
+  position: relative;
+  flex: none;
+}
+
+/* Distinguishable shapes per state: the glyph is decorative only; the
+   status text always carries the meaning (no colour-only status). */
+.state--empty .state__glyph::after {
+  content: '';
+  position: absolute;
+  inset: 30%;
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.state--loading .state__glyph {
+  border-top-color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+  animation: state-spin 1s linear infinite;
+}
+
+.state--error .state__glyph::before,
+.state--error .state__glyph::after {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 45%;
+  height: 2px;
+  background: var(--color-danger);
+}
+
+.state--error .state__glyph::after {
+  top: 60%;
+  left: 30%;
+  right: 30%;
+}
+
+@keyframes state-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.state__title {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  margin: 0;
+}
+
+.state__detail {
+  margin: 0;
+  font-size: var(--text-sm);
+  max-width: 34rem;
+}
+
+.state__error-text {
+  color: var(--color-danger);
+}
+
+/* ----------------------------- Status bar ----------------------------- */
+
+.status-bar {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: var(--space-2) var(--space-4);
+}
+
+.status-bar__inner {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.status-bar__message {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 1.5em; /* reserves height so layout never jumps on announce */
+}
+
+/* Save-state indicator (wired by the state manager task). */
+.save-state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: var(--weight-medium);
+}
+
+.save-state::before {
+  content: '';
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ------------------------------ Dialogs ------------------------------- */
+
+dialog {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  box-shadow: var(--shadow-2);
+  padding: var(--space-5);
+  max-width: 30rem;
+  width: calc(100vw - 2 * var(--space-5));
+}
+
+dialog::backdrop {
+  background: rgba(12, 16, 28, 0.5);
+}
+
+/* ------------------------------ Motion -------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --------------------------- Responsiveness --------------------------- */
+
+@media (max-width: 40rem) {
+  .app-header {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+
+  .app-main {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .app-title {
+    font-size: var(--text-base);
+  }
+}

@@ -3,7 +3,6 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-014 Dashboard shell
 - [ ] T-015 Dashboard state manager + messaging client
 - [ ] T-016 Cards and list views
 - [ ] T-017 Editor core with full feature matrix
