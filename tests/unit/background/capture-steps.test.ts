@@ -162,18 +162,28 @@ describe('production MHTML capture steps', () => {
       expect(snapshot.mhtmlBlobKey).not.toBeNull();
       expect(snapshot.mhtmlHash).toMatch(/^[0-9a-f]{64}$/);
       expect(snapshot.mhtmlSize).toBeGreaterThan(0);
-      // T-024 extracted text; PNG lands in T-025 (honest not-attempted).
+      // T-024 extracted text + T-025 full-page PNG: all three artifacts.
       expect(snapshot.text).toBe('saved');
       expect(snapshot.extractedText).toContain('xylophonequota');
       expect(snapshot.textSize).toBeGreaterThan(0);
       expect(snapshot.canonicalUrl).toBe('https://example.com/canonical-article');
-      expect(snapshot.png).toBe('not-attempted');
-      expect(snapshot.status).toBe('partial');
+      expect(snapshot.png).toBe('saved');
+      expect(snapshot.pngBlobKey).not.toBeNull();
+      expect(snapshot.pngHash).toMatch(/^[0-9a-f]{64}$/);
+      expect(snapshot.pngSize).toBeGreaterThan(0);
+      expect(snapshot.status).toBe('complete');
       expect(snapshot.previousSnapshotId).toBeNull();
       expect(snapshot.warnings).toEqual([]); // the default fixture is clean
 
-      // The injected extractor ran on the temporary tab.
+      // The PNG blob round-trips with PNG magic bytes from the CDP payload.
+      const pngBlob = await getBlob(await repo(), snapshot.pngBlobKey!);
+      expect(pngBlob).not.toBeNull();
+      const pngBytes = new Uint8Array(await pngBlob!.arrayBuffer());
+      expect([...pngBytes.slice(0, 8)]).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+      // The injected extractor and the debugger both ran on the temporary tab.
       expect(installed.scripting.calls.length).toBeGreaterThan(0);
+      expect(installed.debugger.commands.length).toBeGreaterThan(0);
 
       // The stored blob round-trips with the exact captured bytes.
       const blob = await getBlob(await repo(), snapshot.mhtmlBlobKey!);
@@ -367,6 +377,26 @@ describe('production MHTML capture steps', () => {
     }
   });
 
+  it('keeps MHTML and text when the debugger cannot attach (FR-CAP-10)', async () => {
+    const stop = autoCompleteLoads();
+    try {
+      installed.debugger.failNextAttach('Cannot attach to this target');
+      const note = await seedNote('No debugger');
+      const link = await seedQueuedLink(note.id, 'https://example.com/no-debugger');
+      await captureThroughPipeline(link);
+
+      const updated = (await linkById(link.id))!;
+      const snapshot = (await snapshotById(updated.snapshotId!))!;
+      expect(snapshot.mhtml).toBe('saved');
+      expect(snapshot.text).toBe('saved');
+      expect(snapshot.png).toBe('failed');
+      expect(snapshot.status).toBe('partial');
+      expect(snapshot.warnings.some((w) => w.kind === 'screenshot-limits' && w.detail.includes('Cannot attach'))).toBe(true);
+    } finally {
+      stop();
+    }
+  });
+
   it('a failed recapture never overwrites the previous success (FR-CAP-05/08)', async () => {
     const stop = autoCompleteLoads({ title: 'Good capture' });
     try {
@@ -378,7 +408,7 @@ describe('production MHTML capture steps', () => {
       const goodSnapshot = (await snapshotById(first.snapshotId!))!;
       expect(goodSnapshot.mhtml).toBe('saved');
 
-      // A retry whose capture fails COMPLETELY (both artifacts) must leave
+      // A retry whose capture fails COMPLETELY (all artifacts) must leave
       // the good archive linked.
       installed.pageCapture.saveAsMHTML.mockImplementationOnce(async () => {
         throw new Error('second capture failed');
@@ -386,6 +416,7 @@ describe('production MHTML capture steps', () => {
       installed.scripting.executeScript.mockImplementationOnce(async () => {
         throw new Error('extraction also failed');
       });
+      installed.debugger.failNextAttach('debugger conflict');
       const retry = await ok('capture/retry', { linkId: link.id });
       expect(retry['retried']).toBe(true);
       await waitFor(async () => (await linkById(link.id))?.captureState === 'failed');
@@ -440,7 +471,7 @@ describe('production MHTML capture steps', () => {
       expect(captureEvents.length).toBeGreaterThan(0);
       const succeeded = captureEvents.find((e) => e.action === 'capture/job-succeeded');
       expect(succeeded).toBeDefined();
-      expect(succeeded!.detail).toContain('status=partial');
+      expect(succeeded!.detail).toContain('status=complete');
       // URLs never appear verbatim in audit bodies (redacted).
       expect(succeeded!.detail).not.toContain('https://example.com/audited');
     } finally {

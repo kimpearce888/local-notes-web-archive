@@ -3,7 +3,6 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-025 CDP full-page PNG
 - [ ] T-026 Snapshot management UI
 - [ ] T-027 Reminder engine
 - [ ] T-028 Alarms, notifications and reconciliation

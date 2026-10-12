@@ -57,6 +57,20 @@ export interface InstalledMock {
     /** Log of injections: one { tabId } entry per executeScript call. */
     calls: Array<{ tabId: number }>;
   };
+  /** chrome.debugger mock (T-025 CDP screenshots). */
+  debugger: {
+    attach: Mock;
+    detach: Mock;
+    sendCommand: Mock;
+    /** Log of every CDP command: { tabId, method }. */
+    commands: Array<{ tabId: number; method: string }>;
+    /** Page layout reported by Page.getLayoutMetrics. */
+    setLayout(width: number, height: number): void;
+    /** Fail the NEXT debugger.attach with this reason. */
+    failNextAttach(reason: string): void;
+    /** Fail the NEXT sendCommand for this method with this reason. */
+    failNextCommand(method: string, reason: string): void;
+  };
   /** chrome.permissions state: granted origin patterns + gesture model. */
   permissions: {
     /** Granted origin match patterns (e.g. "https://example.com/*"). */
@@ -120,6 +134,57 @@ export function installChromeMock(): InstalledMock {
       globals.window = prevWindow;
     }
   });
+  const cdpCommands: Array<{ tabId: number; method: string }> = [];
+  let cdpLayout = { width: 1200, height: 800 };
+  let nextAttachFailure: Error | null = null;
+  const nextCommandFailures = new Map<string, Error>();
+  const attachedTabs = new Set<number>();
+  const PNG_MAGIC = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const fakePngBase64 = (band: number): string =>
+    Buffer.from(Uint8Array.from([...PNG_MAGIC, band % 256, 0, 0, 0])).toString('base64');
+  const debuggerAttach = vi.fn(async (target: { tabId?: number }, _version: string) => {
+    if (nextAttachFailure !== null) {
+      const error = nextAttachFailure;
+      nextAttachFailure = null;
+      throw error;
+    }
+    if (target.tabId === undefined) throw new Error('debugger.attach: no tabId');
+    attachedTabs.add(target.tabId);
+  });
+  const debuggerDetach = vi.fn(async (target: { tabId?: number }) => {
+    if (target.tabId !== undefined) attachedTabs.delete(target.tabId);
+  });
+  const debuggerSendCommand = vi.fn(
+    async (
+      target: { tabId?: number },
+      method: string,
+      params?: Record<string, unknown>,
+    ): Promise<object | undefined> => {
+      if (target.tabId === undefined) throw new Error('sendCommand: no tabId');
+      cdpCommands.push({ tabId: target.tabId, method });
+      const failure = nextCommandFailures.get(method);
+      if (failure) {
+        nextCommandFailures.delete(method);
+        throw failure;
+      }
+      if (!attachedTabs.has(target.tabId)) {
+        throw new Error('Debugger is not attached to the tab');
+      }
+      if (method === 'Page.getLayoutMetrics') {
+        return {
+          contentSize: { x: 0, y: 0, width: cdpLayout.width, height: cdpLayout.height },
+          cssLayoutViewport: { width: cdpLayout.width, height: cdpLayout.height },
+          cssVisualViewport: { width: cdpLayout.width, height: cdpLayout.height },
+        };
+      }
+      if (method === 'Page.captureScreenshot') {
+        // The band index rides the clip's y position for stitcher assertions.
+        const clip = (params?.['clip'] ?? {}) as { y?: number };
+        return { data: fakePngBase64(Math.floor(clip.y ?? 0)) };
+      }
+      throw new Error(`mock debugger does not implement ${method}`);
+    },
+  );
   const grantedPatterns = new Set<string>();
   const requestCalls: string[][] = [];
   let gestureActive = false;
@@ -223,6 +288,11 @@ export function installChromeMock(): InstalledMock {
     scripting: {
       executeScript,
     },
+    debugger: {
+      attach: debuggerAttach,
+      detach: debuggerDetach,
+      sendCommand: debuggerSendCommand,
+    },
     contextMenus: {
       create: (options: { id?: string | number; title: string; contexts: string[]; documentUrlPatterns?: string[] }) => {
         createdMenus.push({
@@ -312,6 +382,21 @@ export function installChromeMock(): InstalledMock {
         scriptingPageDocument = doc;
       },
       calls: scriptingCalls,
+    },
+    debugger: {
+      attach: debuggerAttach,
+      detach: debuggerDetach,
+      sendCommand: debuggerSendCommand,
+      commands: cdpCommands,
+      setLayout: (width: number, height: number) => {
+        cdpLayout = { width, height };
+      },
+      failNextAttach: (reason: string) => {
+        nextAttachFailure = new Error(reason);
+      },
+      failNextCommand: (method: string, reason: string) => {
+        nextCommandFailures.set(method, new Error(reason));
+      },
     },
     permissions: {
       grantedPatterns,

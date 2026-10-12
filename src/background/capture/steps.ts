@@ -12,8 +12,10 @@
  * the page-declared canonical URL and a refined title ride along, and the
  * note's search projection is re-indexed after artifacts land
  * (FR-SEARCH-01/05).
- * The CDP PNG (T-025) extends this module next; until it lands the PNG
- * carries the honest `not-attempted` state, never fake success.
+ * The CDP full-page PNG (T-025, FR-CAP-10) rides the temporary tab through
+ * a hard-allowlisted debugger session with tiled capture under the pixel
+ * budget; its failures keep the MHTML archive and extracted text intact
+ * and are explained on the record.
  *
  * Truthfulness rules this module guarantees:
  *
@@ -42,11 +44,13 @@ import {
   markTextArtifact,
   renameSnapshot,
   saveMhtmlArtifact,
+  savePngArtifact,
   saveTextArtifact,
   setSnapshotCanonicalUrl,
 } from '../../core/repo/snapshots';
 import { getNote } from '../../core/repo/notes';
 import { extractReadableTextInPage, MAX_TEXT_CHARS } from './extract-core';
+import { capturePngArtifact } from './cdp';
 import type { CaptureWarning, EntityId, Snapshot } from '../../core/types';
 
 const MAX_RECORDED_WARNING_DETAIL = 300;
@@ -295,6 +299,45 @@ async function reindexNote(noteId: EntityId): Promise<void> {
   }
 }
 
+/**
+ * Full-page PNG through the debugger API on the temporary tab (T-025,
+ * FR-CAP-10): hard CDP allowlist, tiling under the pixel budget, honest
+ * failure states that never disturb the saved MHTML/text artifacts.
+ */
+async function capturePng(
+  context: CaptureRunContext,
+  tab: DrivenTab,
+  snapshotId: Snapshot['id'],
+): Promise<{ saved: boolean; warnings: CaptureWarning[]; details: string[] }> {
+  const warnings: CaptureWarning[] = [];
+  const details: string[] = [];
+  if (context.isCanceled()) {
+    await markIfPending(snapshotId, 'png', 'not-attempted');
+    return { saved: false, warnings, details: ['screenshot skipped (canceled)'] };
+  }
+
+  const result = await capturePngArtifact(tab.tabId, context.settings);
+  warnings.push(...result.warnings);
+  details.push(result.detail);
+
+  if (result.png === null) {
+    await markIfPending(snapshotId, 'png', 'failed');
+    return { saved: false, warnings, details };
+  }
+
+  try {
+    await savePngArtifact(await repo(), snapshotId, result.png);
+    details.push(`PNG saved (${result.png.size} bytes)`);
+    return { saved: true, warnings, details };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    await markIfPending(snapshotId, 'png', 'failed');
+    warnings.push({ kind: 'resource-failure', detail: boundedDetail(`storing the PNG failed: ${reason}`) });
+    details.push(`storing the PNG failed (${boundedDetail(reason)})`);
+    return { saved: false, warnings, details };
+  }
+}
+
 export function createProductionCaptureSteps(options: ProductionCaptureStepsOptions = {}): CaptureSteps {
   const settleMs = options.settleMs ?? SETTLE_MS;
   return {
@@ -330,8 +373,11 @@ export function createProductionCaptureSteps(options: ProductionCaptureStepsOpti
         details.push(...text.details);
         warnings.push(...text.warnings);
 
-        // 4. The CDP PNG (T-025) extends here; honest not-attempted until then.
-        await markIfPending(snapshot.id, 'png', 'not-attempted');
+        // 4. Full-page PNG through the debugger API (T-025, FR-CAP-10) —
+        //    the tab is never activated; failures keep MHTML+text intact.
+        const png = await capturePng(context, tab, snapshot.id);
+        details.push(...png.details);
+        warnings.push(...png.warnings);
 
         // 5. Warnings belong to the record (FR-CAP-05) — appended after the
         //    artifacts so a partial record is never left warning-less.
