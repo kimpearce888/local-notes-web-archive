@@ -3,7 +3,6 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-018 Autosave, revisions and recovery
 - [ ] T-019 Images and attachments pipeline
 - [ ] T-020 URL detection and link queue
 - [ ] T-021 Origin permission manager
