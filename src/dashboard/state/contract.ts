@@ -34,6 +34,8 @@ import type { CommandStatus } from '../../background/api/settings';
 import type { CaptureQueueStatus, DuplicateResolution } from '../../background/capture/queue';
 import type { ConnectionTestResult, LmStudioModel } from '../../background/ai/client';
 import type { AgentTurnResult } from '../../background/ai/agent';
+import type { BackupExportResult } from '../../background/backup/export';
+import type { BackupPreview } from '../../background/backup/restore';
 
 export interface ApiContract {
   /* app */
@@ -291,6 +293,18 @@ export interface ApiContract {
   'ai/list-models': {
     payload: { baseUrl?: string };
     result: { models: LmStudioModel[] };
+  };
+  /* backup (T-033/T-034, FR-DATA-03/04/05) */
+  'backup/export': { payload: Record<string, never>; result: BackupExportResult };
+  'backup/preview': { payload: { archive: Blob }; result: { preview: BackupPreview } };
+  'backup/restore': {
+    payload: { archive: Blob; mode: 'merge' | 'replace'; confirmReplace?: boolean };
+    result: {
+      result: {
+        mode: 'merge' | 'replace';
+        imported: { notes: number; reminders: number; snapshots: number; blobs: number };
+      };
+    };
   };
   'ai/chat': {
     payload: {

@@ -16,6 +16,7 @@ import { registerPermissionApi } from './permissions';
 import { registerCaptureApi } from './capture';
 import { registerSnapshotApi } from './snapshots';
 import { registerAiApi } from './ai';
+import { registerBackupApi } from './backup';
 
 export function registerAllApi(router: MessageRouter): void {
   registerNoteApi(router);
@@ -29,4 +30,5 @@ export function registerAllApi(router: MessageRouter): void {
   registerCaptureApi(router);
   registerSnapshotApi(router);
   registerAiApi(router);
+  registerBackupApi(router);
 }
