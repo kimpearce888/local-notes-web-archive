@@ -21,3 +21,9 @@ Push Status (ai/rule.md §8).
 - Validation Result: tsc --noEmit green (tsconfig.app.json + tsconfig.node.json, strict); eslint . green (no-eval/no-new-func errors, no-explicit-any); vitest 4/4 green; 26 runtime deps + 14 dev deps pinned exact with committed lockfile; release.mjs static gate scans dist for remote URLs and dynamic code
 - Commit Hash: (this commit)
 - Push Status: pushed with this commit
+---
+### T-004 Core domain types
+- Completion Timestamp: 2026-10-12T07:21:21Z
+- Validation Result: tsc strict green (app+node), eslint green, vitest 11/11 green; all PRD §6 entities typed with branded ids/ISO timestamps/local reminder dates; per-artifact capture states and FR-SET-01 settings surface covered
+- Commit Hash: (this commit)
+- Push Status: pushed with this commit
