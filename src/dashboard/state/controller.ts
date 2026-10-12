@@ -1,14 +1,17 @@
 /**
- * Dashboard controller (T-015): the only writer of the store. Wires shell
- * events to typed service-worker calls, applies optimistic updates with
- * truthful rollback, drives the save-state indicator, and renders result
- * states into the results region. The navigation guard blocks unload while
- * a save is in flight (PRD §4.3).
+ * Dashboard controller (T-015/T-016): the only writer of the store. Wires
+ * shell events to typed service-worker calls, applies optimistic updates
+ * with truthful rollback, drives the save-state indicator, renders card
+ * views with pagination and multi-select bulk actions, and guards
+ * navigation while a save is in flight (PRD §4.2/§4.3).
  */
 
 import type { DashboardShell } from '../shell';
 import type { ThemeManager } from '../theme';
 import { showContent, showEmpty, showError, showLoading } from '../states';
+import { cardViewModel, renderCard, EMPTY_RELATED } from '../views/cards';
+import { effectiveFilters, smartListById, type SmartListId } from '../views/smart-lists';
+import { createBulkBar, type BulkAction, type BulkBar } from '../views/bulk-bar';
 import type { ApiClient } from './client';
 import { RpcClientError } from './client';
 import {
@@ -38,8 +41,10 @@ export interface DashboardController {
     expectedRevisionId: EntityId | null;
     changeSummary: string;
   }): Promise<Note | null>;
-  /** Re-runs the current query (filters/sort changes). */
+  /** Re-runs the current query (filters/sort/page changes). */
   requery(): Promise<void>;
+  /** Applies a bulk action to the current selection. */
+  applyBulkAction(action: BulkAction): Promise<void>;
   dispose(): void;
 }
 
@@ -59,18 +64,33 @@ export function createDashboardController(options: {
   const disposers: Array<() => void> = [];
   let disposed = false;
 
+  /* --------------------------- bulk bar ----------------------------- */
+
+  const bulkBar: BulkBar = createBulkBar({
+    onAction: (action) => void applyBulkAction(action),
+    onClearSelection: () => store.setState({ selection: new Set<EntityId>() }),
+  });
+  shell.elements.bulkBarMount.append(bulkBar.element);
+
   /* --------------------------- rendering ---------------------------- */
 
+  function nowIso(): string {
+    return new Date().toISOString();
+  }
+
   function render(state: DashboardState): void {
+    const list = smartListById(state.smartList);
     shell.setResultsHeading(
-      state.query.trim().length > 0 ? 'Search results' : 'All notes',
+      state.query.trim().length > 0 ? 'Search results' : list.label,
       formatCount(state.total),
     );
-    const region = shell.elements.resultsRegion;
+    shell.setActiveSmartList(state.smartList);
 
+    const region = shell.elements.resultsRegion;
     if (state.status === 'loading') {
       region.setAttribute('aria-busy', 'true');
       showLoading(region, 'Loading notes…', 'Reading your local database.');
+      syncChrome(state);
       return;
     }
     region.setAttribute('aria-busy', 'false');
@@ -80,6 +100,7 @@ export function createDashboardController(options: {
         label: 'Try again',
         onRetry: () => void refresh(),
       });
+      syncChrome(state);
       return;
     }
 
@@ -91,65 +112,94 @@ export function createDashboardController(options: {
           ? 'Try different search terms or clear the search.'
           : 'Notes you create and pages you save will appear here.',
       );
+      syncChrome(state);
       return;
     }
 
     showContent(region);
-    // Minimal accessible result list; the card views (T-016) replace this
-    // presentation with the full PRD §4.2 card design.
-    const list = document.createElement('ul');
-    list.className = 'results-list';
+    const grid = document.createElement('div');
+    grid.className = state.viewMode === 'grid' ? 'results-grid' : 'results-list';
+    grid.setAttribute('role', 'list');
+    grid.setAttribute('aria-label', 'Notes');
+    const now = nowIso() as Note['updatedAt'];
     for (const note of state.notes) {
-      const item = document.createElement('li');
-      item.dataset['noteId'] = note.id;
-      const label = document.createElement('span');
-      label.className = 'note-row__title';
-      label.textContent = note.title.trim().length > 0 ? note.title : 'Untitled';
-      const meta = document.createElement('span');
-      meta.className = 'note-row__meta';
-      meta.textContent = `Modified ${note.updatedAt.slice(0, 10)}`;
-      item.append(label, meta);
-      list.append(item);
+      const related = state.related[note.id] ?? EMPTY_RELATED;
+      const model = cardViewModel(note, related, now);
+      const card = renderCard(model, {
+        viewMode: state.viewMode,
+        selected: state.selection.has(note.id),
+        onToggleSelect: (noteId) => toggleSelection(noteId),
+      });
+      const wrapper = document.createElement('div');
+      wrapper.className = 'results-item';
+      wrapper.setAttribute('role', 'listitem');
+      wrapper.append(card);
+      grid.append(wrapper);
     }
-    region.append(list);
+    region.append(grid);
+    syncChrome(state);
+  }
+
+  /** Mirrors store state into shell chrome (pagination, select-all, bulk). */
+  function syncChrome(state: DashboardState): void {
+    const pageCount = Math.max(1, Math.ceil(state.total / state.pageSize));
+    const from = (state.page - 1) * state.pageSize;
+    const to = Math.min(from + state.notes.length, state.total);
+    shell.setPagination({ page: state.page, pageCount, from, to, total: state.total });
+
+    const pageNoteIds = state.notes.map((note) => note.id);
+    const selectedOnPage = pageNoteIds.filter((id) => state.selection.has(id));
+    shell.setSelectAllState({
+      checked: pageNoteIds.length > 0 && selectedOnPage.length === pageNoteIds.length,
+      indeterminate: selectedOnPage.length > 0 && selectedOnPage.length < pageNoteIds.length,
+      pageNoteIds,
+    });
+
+    const list = state.smartList;
+    bulkBar.update({
+      selectedCount: selectedOnPage.length,
+      totalSelected: state.selection.size,
+      viewAllows: {
+        pin: list !== 'trashed' && list !== 'archived',
+        archive: list !== 'trashed' && list !== 'archived',
+        restore: list === 'archived' || list === 'trashed',
+        trash: list !== 'trashed',
+        deletePermanently: list === 'trashed',
+      },
+      tags: state.allTags,
+      categories: state.allCategories,
+    });
   }
 
   disposers.push(store.subscribe(render));
 
   /* ---------------------------- actions ----------------------------- */
 
+  async function loadOrganization(): Promise<void> {
+    try {
+      const [{ tags }, { categories }] = await Promise.all([
+        client.request('tags/list', {}),
+        client.request('categories/list', {}),
+      ]);
+      if (disposed) return;
+      store.setState({ allTags: tags, allCategories: categories });
+    } catch {
+      // Organization data is decorative for cards; failing to load it must
+      // not fail the results view.
+    }
+  }
+
   async function refresh(): Promise<void> {
     store.setState({ status: 'loading', loadError: null });
     try {
-      const [{ settings }, { counts }, result] = await Promise.all([
+      const [{ settings }, { counts }] = await Promise.all([
         client.request('settings/get', {}),
         client.request('notes/counts', {}),
-        client.request('search/query', {
-          query: store.getState().query,
-          filters: store.getState().filters,
-          sort: store.getState().sort,
-        }),
       ]);
       if (disposed) return;
       theme.setPreference(settings.theme);
-      const state = store.getState();
-      const notes = await resolveNotes(result.hits.map((hit) => hit.noteId));
-      if (disposed) return;
-      store.setState({
-        status: 'ready',
-        loadError: null,
-        settings,
-        counts,
-        total: result.total,
-        notes,
-        viewMode: state.viewMode,
-        sort: settings.defaultSort,
-      });
-      shell.announce(
-        result.total === 0
-          ? 'No notes found.'
-          : `${result.total} ${result.total === 1 ? 'note' : 'notes'} loaded.`,
-      );
+      store.setState({ settings, counts });
+      await Promise.all([requery(), loadOrganization()]);
     } catch (error) {
       if (disposed) return;
       const coded = error instanceof RpcClientError ? error : null;
@@ -178,18 +228,48 @@ export function createDashboardController(options: {
     return notes;
   }
 
+  async function hydrateRelated(notes: readonly Note[]): Promise<void> {
+    if (notes.length === 0) {
+      store.setState({ related: {} });
+      return;
+    }
+    try {
+      const { related } = await client.request('notes/related-bulk', {
+        noteIds: notes.map((note) => note.id),
+      });
+      if (disposed) return;
+      store.setState({ related });
+    } catch {
+      // Cards degrade to note-only fields; indicators simply hide.
+    }
+  }
+
   async function requery(): Promise<void> {
     const state = store.getState();
+    const list = smartListById(state.smartList);
     try {
       const result = await client.request('search/query', {
         query: state.query,
-        filters: state.filters,
+        filters: effectiveFilters(list, state.filters),
         sort: state.sort,
+        limit: state.pageSize,
+        offset: (state.page - 1) * state.pageSize,
       });
       if (disposed) return;
       const notes = await resolveNotes(result.hits.map((hit) => hit.noteId));
       if (disposed) return;
-      store.setState({ total: result.total, notes, status: 'ready', loadError: null });
+      // Drop selections that no longer appear anywhere in the results.
+      const visible = new Set(notes.map((note) => note.id));
+      const selection = new Set<EntityId>([...state.selection].filter((id) => visible.has(id)));
+      const selectionChanged = selection.size !== state.selection.size;
+      store.setState({
+        total: result.total,
+        notes,
+        status: 'ready',
+        loadError: null,
+        ...(selectionChanged ? { selection } : {}),
+      });
+      await hydrateRelated(notes);
     } catch (error) {
       if (disposed) return;
       store.setState({
@@ -211,8 +291,8 @@ export function createDashboardController(options: {
       subtitle: '',
       editorDoc: null,
       plainText: '',
-      createdAt: new Date().toISOString() as Note['createdAt'],
-      updatedAt: new Date().toISOString() as Note['updatedAt'],
+      createdAt: nowIso() as Note['createdAt'],
+      updatedAt: nowIso() as Note['updatedAt'],
       state: 'active',
       pinned: false,
       favorite: false,
@@ -221,8 +301,7 @@ export function createDashboardController(options: {
       revisionId: null,
       duplicatedFrom: null,
     };
-    const before = store.getState().notes;
-    store.setState({ notes: [optimistic, ...before], total: store.getState().total + 1 });
+    store.setState({ notes: [optimistic, ...store.getState().notes], total: store.getState().total + 1 });
     try {
       const { note } = await client.request('notes/create', { title: 'Untitled' });
       if (disposed) return null;
@@ -256,7 +335,7 @@ export function createDashboardController(options: {
         title: input.title,
         subtitle: input.subtitle,
         plainText: input.plainText,
-        updatedAt: new Date().toISOString() as Note['updatedAt'],
+        updatedAt: nowIso() as Note['updatedAt'],
       };
       store.setState({
         notes: before.map((note) => (note.id === input.noteId ? optimistic : note)),
@@ -275,9 +354,7 @@ export function createDashboardController(options: {
       if (disposed) return null;
       store.setState({
         saveState: 'save-failed',
-        notes: store.getState().notes.map((n) =>
-          n.id === input.noteId ? (previous ?? n) : n,
-        ),
+        notes: store.getState().notes.map((n) => (n.id === input.noteId ? (previous ?? n) : n)),
       });
       shell.announce(
         error instanceof RpcClientError && error.code === 'conflict'
@@ -288,25 +365,164 @@ export function createDashboardController(options: {
     }
   }
 
+  /* ------------------------- selection / bulk ----------------------- */
+
+  function toggleSelection(noteId: EntityId): void {
+    const state = store.getState();
+    const selection = new Set(state.selection);
+    if (selection.has(noteId)) selection.delete(noteId);
+    else selection.add(noteId);
+    store.setState({ selection });
+  }
+
+  function selectAllOnPage(checked: boolean): void {
+    const state = store.getState();
+    const selection = new Set(state.selection);
+    for (const note of state.notes) {
+      if (checked) selection.add(note.id);
+      else selection.delete(note.id);
+    }
+    store.setState({ selection });
+  }
+
+  async function applyBulkAction(action: BulkAction): Promise<void> {
+    const state = store.getState();
+    const targets = [...state.selection];
+    if (targets.length === 0) return;
+
+    let succeeded = 0;
+    const failures: string[] = [];
+
+    const runOne = async (operation: () => Promise<unknown>): Promise<void> => {
+      try {
+        await operation();
+        succeeded += 1;
+      } catch (error) {
+        failures.push(error instanceof Error ? error.message : 'unknown failure');
+      }
+    };
+
+    if (action.kind === 'pin') {
+      for (const noteId of targets) {
+        await runOne(() => client.request('notes/set-flags', { noteId, pinned: action.value }));
+      }
+    } else if (action.kind === 'archive') {
+      for (const noteId of targets) {
+        await runOne(() => client.request('notes/archive', { noteId }));
+      }
+    } else if (action.kind === 'restore') {
+      for (const noteId of targets) {
+        await runOne(() => client.request('notes/restore', { noteId }));
+      }
+    } else if (action.kind === 'trash') {
+      for (const noteId of targets) {
+        await runOne(() => client.request('notes/trash', { noteId }));
+      }
+    } else if (action.kind === 'delete-permanently') {
+      for (const noteId of targets) {
+        await runOne(() =>
+          client.request('notes/delete-permanently', { noteId, confirm: true }),
+        );
+      }
+    } else if (action.kind === 'assign-tags') {
+      const tagIds: EntityId[] = [...action.tagIds];
+      for (const name of action.newTags) {
+        await runOne(async () => {
+          const { tag } = await client.request('tags/create', { name });
+          tagIds.push(tag.id);
+        });
+      }
+      if (tagIds.length > 0) {
+        await runOne(() =>
+          client.request('tags/assign-to-notes', { noteIds: targets, tagIds }),
+        );
+      }
+    } else if (action.kind === 'assign-category') {
+      let categoryId: EntityId | null = action.categoryId;
+      if (action.newCategoryName) {
+        try {
+          const { category } = await client.request('categories/create', {
+            name: action.newCategoryName,
+          });
+          categoryId = category.id;
+        } catch (error) {
+          failures.push(error instanceof Error ? error.message : 'category creation failed');
+        }
+      }
+      if (categoryId) {
+        await runOne(() =>
+          client.request('categories/assign-to-notes', { noteIds: targets, categoryIds: [categoryId] }),
+        );
+      }
+    }
+
+    const verb =
+      action.kind === 'pin'
+        ? action.value ? 'Pin' : 'Unpin'
+        : action.kind === 'assign-tags'
+          ? 'Tag assignment'
+          : action.kind === 'assign-category'
+            ? 'Category assignment'
+            : action.kind === 'delete-permanently'
+              ? 'Permanent deletion'
+              : action.kind.charAt(0).toUpperCase() + action.kind.slice(1);
+
+    if (disposed) return;
+    store.setState({ selection: new Set<EntityId>() });
+    await requery();
+    await loadOrganization();
+
+    if (failures.length === 0) {
+      shell.announce(`${verb}: ${succeeded} ${succeeded === 1 ? 'note' : 'notes'} updated.`);
+    } else {
+      shell.announce(
+        `${verb}: ${succeeded} succeeded, ${failures.length} failed — ${failures[0]}`,
+      );
+    }
+  }
+
   /* --------------------------- shell wiring ------------------------- */
 
   disposers.push(shell.on('newNote', () => void createNote()));
   disposers.push(shell.on('searchInput', (query) => {
-    store.setState({ query });
+    store.setState({ query, page: 1 });
     void requery();
   }));
   disposers.push(shell.on('searchSubmit', (query) => {
-    store.setState({ query });
+    store.setState({ query, page: 1 });
     void requery();
   }));
   disposers.push(shell.on('sortChange', (field) => {
-    const sort = { field: field as DashboardState['sort']['field'], direction: store.getState().sort.direction };
-    store.setState({ sort });
+    const sort = {
+      field: field as DashboardState['sort']['field'],
+      direction: store.getState().sort.direction,
+    };
+    store.setState({ sort, page: 1 });
     void requery();
   }));
   disposers.push(shell.on('viewModeChange', (viewMode) => {
     store.setState({ viewMode });
   }));
+  disposers.push(shell.on('smartListChange', (smartList: SmartListId) => {
+    store.setState({ smartList, page: 1, selection: new Set<EntityId>() });
+    void requery();
+    shell.setActiveSmartList(smartList);
+  }));
+  disposers.push(shell.on('pagePrev', () => {
+    const page = Math.max(1, store.getState().page - 1);
+    if (page === store.getState().page) return;
+    store.setState({ page });
+    void requery();
+  }));
+  disposers.push(shell.on('pageNext', () => {
+    const state = store.getState();
+    const pageCount = Math.max(1, Math.ceil(state.total / state.pageSize));
+    const page = Math.min(pageCount, state.page + 1);
+    if (page === state.page) return;
+    store.setState({ page });
+    void requery();
+  }));
+  disposers.push(shell.on('selectAllPage', (checked) => selectAllOnPage(checked)));
 
   /* ------------------------ save-state mirror ----------------------- */
 
@@ -338,9 +554,11 @@ export function createDashboardController(options: {
     createNote,
     saveNote,
     requery,
+    applyBulkAction,
     dispose(): void {
       disposed = true;
       for (const dispose of disposers) dispose();
+      bulkBar.element.remove();
     },
   };
 }

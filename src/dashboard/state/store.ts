@@ -5,12 +5,25 @@
  * listeners receive (next, previous) so they can diff cheaply.
  */
 
-import type { AppSettings, EntityId, Filters, Note, SortDirection, SortField } from '../../core/types';
+import type {
+  AppSettings,
+  Category,
+  EntityId,
+  Filters,
+  Note,
+  SortDirection,
+  SortField,
+  Tag,
+} from '../../core/types';
 import type { RpcErrorCode } from '../../background/protocol';
+import type { RelatedInfo } from '../views/cards';
+import type { SmartListId } from '../views/smart-lists';
 
 export type LoadStatus = 'loading' | 'ready' | 'error';
 
 export type SaveFlowState = 'idle' | 'saving' | 'saved' | 'save-failed';
+
+export const PAGE_SIZE = 50;
 
 export interface DashboardState {
   /** Data load status for the results region. */
@@ -27,8 +40,18 @@ export interface DashboardState {
   readonly filters: Filters;
   readonly sort: { field: SortField; direction: SortDirection };
   readonly viewMode: 'grid' | 'list';
-  /** Multi-selection for bulk actions (T-016 uses it). */
+  /** Active smart list (PRD §4.2). */
+  readonly smartList: SmartListId;
+  /** 1-based results page. */
+  readonly page: number;
+  readonly pageSize: number;
+  /** Multi-selection for bulk actions. */
   readonly selection: ReadonlySet<EntityId>;
+  /** Related entities per note for the current page (cards). */
+  readonly related: Readonly<Record<string, RelatedInfo>>;
+  /** All tags and categories (bulk dialogs). */
+  readonly allTags: readonly Tag[];
+  readonly allCategories: readonly Category[];
   /** Save flow indicator state (PRD §4.3). */
   readonly saveState: SaveFlowState;
   /** Settings snapshot once loaded (null until then). */
@@ -45,7 +68,13 @@ export const INITIAL_DASHBOARD_STATE: DashboardState = {
   filters: {},
   sort: { field: 'modified', direction: 'desc' },
   viewMode: 'grid',
+  smartList: 'all',
+  page: 1,
+  pageSize: PAGE_SIZE,
   selection: new Set<EntityId>(),
+  related: {},
+  allTags: [],
+  allCategories: [],
   saveState: 'idle',
   settings: null,
 };

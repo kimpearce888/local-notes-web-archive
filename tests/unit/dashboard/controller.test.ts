@@ -137,8 +137,8 @@ describe('New Note (optimistic with truthful rollback)', () => {
     expect(state.total).toBe(1);
     expect(shell.elements.resultsCount.textContent).toBe('1 note');
 
-    // The row renders with an untitled label (PRD §4.3).
-    expect(root.querySelector('.note-row__title')?.textContent).toBe('Untitled');
+    // The card renders with an untitled label (PRD §4.3).
+    expect(root.querySelector('.card__title')?.textContent).toContain('Untitled');
 
     await flush();
     expect(shell.elements.liveRegion.textContent).toContain('Note created.');

@@ -11,6 +11,7 @@
  */
 
 import type { ThemePreference } from './theme';
+import { SMART_LISTS, type SmartListId } from './views/smart-lists';
 
 export interface ShellEvents {
   /** New Note action activated (button click or ui-intent). */
@@ -25,6 +26,14 @@ export interface ShellEvents {
   viewModeChange: (mode: 'grid' | 'list') => void;
   /** Filters disclosure toggled. */
   filtersToggle: (open: boolean) => void;
+  /** Smart list switched (all/pinned/favorites/recent/overdue/archived/trashed). */
+  smartListChange: (list: SmartListId) => void;
+  /** Previous results page requested. */
+  pagePrev: () => void;
+  /** Next results page requested. */
+  pageNext: () => void;
+  /** Select-all-on-page checkbox toggled. */
+  selectAllPage: (checked: boolean) => void;
 }
 
 export interface ShellElements {
@@ -37,10 +46,16 @@ export interface ShellElements {
   readonly viewToggle: HTMLElement;
   readonly activeFilters: HTMLElement;
   readonly filtersRegion: HTMLElement;
+  readonly smartNav: HTMLElement;
+  readonly bulkBarMount: HTMLElement;
   readonly resultsRegion: HTMLElement;
   readonly resultsHeading: HTMLElement;
   readonly resultsTitle: HTMLHeadingElement;
   readonly resultsCount: HTMLElement;
+  readonly selectAllCheckbox: HTMLInputElement;
+  readonly paginationPrev: HTMLButtonElement;
+  readonly paginationNext: HTMLButtonElement;
+  readonly paginationLabel: HTMLElement;
   readonly liveRegion: HTMLElement;
   readonly saveState: HTMLElement;
 }
@@ -54,6 +69,12 @@ export interface DashboardShell {
   setSaveState(state: 'idle' | 'saving' | 'saved' | 'save-failed'): void;
   /** Updates the results heading and count label. */
   setResultsHeading(title: string, countText: string): void;
+  /** Marks the active smart list button (aria-current). */
+  setActiveSmartList(list: SmartListId): void;
+  /** Updates pagination controls. */
+  setPagination(input: { page: number; pageCount: number; from: number; to: number; total: number }): void;
+  /** Syncs the select-all checkbox with the page selection state. */
+  setSelectAllState(input: { checked: boolean; indeterminate: boolean; pageNoteIds: readonly string[] }): void;
   dispose(): void;
 }
 
@@ -187,6 +208,31 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   headerInner.append(headerRow, searchForm, toolbar);
   header.append(headerInner);
 
+  /* ---------------------- Smart list navigation -------------------- */
+
+  const smartNav = document.createElement('nav');
+  smartNav.className = 'smart-nav';
+  smartNav.setAttribute('aria-label', 'Note lists');
+  const smartListButtons = new Map<SmartListId, HTMLButtonElement>();
+  for (const list of SMART_LISTS) {
+    const item = document.createElement('span');
+    item.className = 'smart-nav__item';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'smart-nav__button';
+    button.dataset['smartList'] = list.id;
+    button.textContent = list.label;
+    if (list.id === 'all') button.setAttribute('aria-current', 'true');
+    smartListButtons.set(list.id, button);
+    item.append(button);
+    smartNav.append(item);
+  }
+
+  /* ---------------------- Bulk action bar mount -------------------- */
+
+  const bulkBarMount = document.createElement('div');
+  bulkBarMount.className = 'bulk-bar-mount';
+
   /* ------------------------- Filters region ------------------------- */
 
   const filtersRegion = document.createElement('div');
@@ -211,7 +257,16 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   const resultsCount = document.createElement('span');
   resultsCount.className = 'results-count';
   resultsCount.id = 'results-count';
-  resultsHeading.append(resultsTitle, resultsCount);
+  const selectAll = document.createElement('label');
+  selectAll.className = 'results-heading__select-all';
+  const selectAllCheckbox = document.createElement('input');
+  selectAllCheckbox.type = 'checkbox';
+  selectAllCheckbox.id = 'select-all-page';
+  selectAllCheckbox.setAttribute('aria-label', 'Select all notes on this page');
+  const selectAllText = document.createElement('span');
+  selectAllText.textContent = 'Select page';
+  selectAll.append(selectAllCheckbox, selectAllText);
+  resultsHeading.append(resultsTitle, selectAll, resultsCount);
 
   const resultsRegion = document.createElement('div');
   resultsRegion.id = 'results-region';
@@ -221,6 +276,26 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
 
   mainInner.append(resultsHeading, resultsRegion);
   main.append(mainInner);
+
+  /* --------------------------- Pagination --------------------------- */
+
+  const pagination = document.createElement('nav');
+  pagination.className = 'pagination';
+  pagination.setAttribute('aria-label', 'Results pages');
+  const paginationPrev = document.createElement('button');
+  paginationPrev.type = 'button';
+  paginationPrev.className = 'btn';
+  paginationPrev.textContent = 'Previous page';
+  paginationPrev.disabled = true;
+  const paginationLabel = document.createElement('span');
+  paginationLabel.className = 'pagination__label';
+  paginationLabel.setAttribute('aria-live', 'polite');
+  const paginationNext = document.createElement('button');
+  paginationNext.type = 'button';
+  paginationNext.className = 'btn';
+  paginationNext.textContent = 'Next page';
+  paginationNext.disabled = true;
+  pagination.append(paginationPrev, paginationLabel, paginationNext);
 
   /* ---------------------------- Status bar -------------------------- */
 
@@ -253,7 +328,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
 
   const app = document.createElement('div');
   app.className = 'app';
-  app.append(header, filtersRegion, main, statusBar);
+  app.append(header, smartNav, bulkBarMount, filtersRegion, main, pagination, statusBar);
   root.replaceChildren(skipLink, app, liveRegion);
 
   type EventKey = keyof ShellEvents;
@@ -264,6 +339,10 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     sortChange: [],
     viewModeChange: [],
     filtersToggle: [],
+    smartListChange: [],
+    pagePrev: [],
+    pageNext: [],
+    selectAllPage: [],
   };
 
   const emit = <K extends EventKey>(event: K, ...args: Parameters<ShellEvents[K]>): void => {
@@ -327,6 +406,24 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   filtersButton.addEventListener('click', onFiltersClick);
   disposers.push(() => filtersButton.removeEventListener('click', onFiltersClick));
 
+  for (const [listId, button] of smartListButtons) {
+    const onSmartListClick = (): void => emit('smartListChange', listId);
+    button.addEventListener('click', onSmartListClick);
+    disposers.push(() => button.removeEventListener('click', onSmartListClick));
+  }
+
+  const onPrevClick = (): void => emit('pagePrev');
+  paginationPrev.addEventListener('click', onPrevClick);
+  disposers.push(() => paginationPrev.removeEventListener('click', onPrevClick));
+
+  const onNextClick = (): void => emit('pageNext');
+  paginationNext.addEventListener('click', onNextClick);
+  disposers.push(() => paginationNext.removeEventListener('click', onNextClick));
+
+  const onSelectAllChange = (): void => emit('selectAllPage', selectAllCheckbox.checked);
+  selectAllCheckbox.addEventListener('change', onSelectAllChange);
+  disposers.push(() => selectAllCheckbox.removeEventListener('change', onSelectAllChange));
+
   /** Global keyboard shortcuts: Ctrl/Cmd+K or "/" focuses search. */
   const onKeyDown = (event: KeyboardEvent): void => {
     const inTextField =
@@ -360,10 +457,16 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     viewToggle,
     activeFilters,
     filtersRegion,
+    smartNav,
+    bulkBarMount,
     resultsRegion,
     resultsHeading,
     resultsTitle,
     resultsCount,
+    selectAllCheckbox,
+    paginationPrev,
+    paginationNext,
+    paginationLabel,
     liveRegion,
     saveState,
   };
@@ -413,6 +516,30 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     setResultsHeading(titleText: string, countText: string): void {
       resultsTitle.textContent = titleText;
       resultsCount.textContent = countText;
+    },
+    setActiveSmartList(list: SmartListId): void {
+      for (const [listId, button] of smartListButtons) {
+        if (listId === list) {
+          button.setAttribute('aria-current', 'true');
+          button.classList.add('smart-nav__button--active');
+        } else {
+          button.removeAttribute('aria-current');
+          button.classList.remove('smart-nav__button--active');
+        }
+      }
+    },
+    setPagination(input: { page: number; pageCount: number; from: number; to: number; total: number }): void {
+      paginationPrev.disabled = input.page <= 1;
+      paginationNext.disabled = input.page >= input.pageCount;
+      paginationLabel.textContent =
+        input.total === 0
+          ? 'No results'
+          : `Showing ${input.from + 1}–${input.to} of ${input.total} · Page ${input.page} of ${input.pageCount}`;
+    },
+    setSelectAllState(input: { checked: boolean; indeterminate: boolean; pageNoteIds: readonly string[] }): void {
+      selectAllCheckbox.checked = input.checked;
+      selectAllCheckbox.indeterminate = input.indeterminate;
+      selectAllCheckbox.disabled = input.pageNoteIds.length === 0;
     },
     dispose(): void {
       for (const dispose of disposers) dispose();

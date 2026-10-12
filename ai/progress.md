@@ -3,7 +3,6 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-016 Cards and list views
 - [ ] T-017 Editor core with full feature matrix
 - [ ] T-018 Autosave, revisions and recovery
 - [ ] T-019 Images and attachments pipeline

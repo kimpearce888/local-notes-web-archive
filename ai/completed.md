@@ -97,3 +97,10 @@ Push Status (ai/rule.md §8).
 - **Commit Hash:** (this commit)
 - **Push Status:** pushed to origin/main
 - **Notes:** typed ApiContract shared between dashboard client and background router (payload+result per message, no drift possible); client wraps chrome.runtime.sendMessage with correlation ids and coded RpcClientError; store with subscription model and change-only notifications; controller = single writer wiring shell events (newNote/search/sort/view) to RPC, optimistic UI with truthful rollback, save-state indicator mirrored to the shell, beforeunload guard while saving; new-note intents (button, tab message, ?new=1) now create real persisted notes; minimal accessible result list until card views (T-016).
+
+## T-016 Cards and list views
+- **Completion Timestamp:** 2026-10-12T09:46:00Z
+- **Validation Result:** tsc strict green; eslint green; vitest 287/287 (35 new: pure card view-models incl. safe truncation/reminder chips/indicator mapping, XSS-safe textContent rendering, smart-list filter mapping, bulk-bar visibility/permission gating, controller integration over the REAL router: card+related rendering, grid/list toggle, pinned/archived/trashed smart lists, pagination windowing with 55 seeded notes, multi-select archive/tag/category assignment/trash/restore/permanent-delete with audit assertions)
+- **Commit Hash:** (this commit)
+- **Push Status:** pushed to origin/main
+- **Notes:** full PRD §4.2 card field set (title/subtitle/tag+category chips/created+modified/reminder state/link+snapshot indicators/plain-text preview with word-boundary truncation); grid+list toggle; seven smart lists incl. overdue; pagination (page size 50, windowed rendering — only the page's cards exist in DOM); select-all with indeterminate state; bulk actions bar with per-view permission gating and honest per-item failure reporting; tag/category assignment dialogs + destructive confirmations (native dialog; E2E coverage in T-042); background additions: notes/related-bulk handler and audit events on all note mutations (FR-LOG-02, correlation-linked).

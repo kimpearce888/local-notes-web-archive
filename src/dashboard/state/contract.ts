@@ -82,6 +82,12 @@ export interface ApiContract {
     payload: { noteId: EntityId };
     result: { note: Note; tags: Tag[]; categories: Category[]; links: Link[]; reminders: Reminder[] };
   };
+  'notes/related-bulk': {
+    payload: { noteIds: readonly EntityId[] };
+    result: {
+      related: Record<string, { tags: Tag[]; categories: Category[]; links: Link[]; reminders: Reminder[] }>;
+    };
+  };
   'notes/counts': {
     payload: Record<string, never>;
     result: { counts: { active: number; archived: number; trashed: number } };
