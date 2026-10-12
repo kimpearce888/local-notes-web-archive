@@ -5,9 +5,19 @@ import type { LocalDate, LocalTime, TimeZoneName, UtcTimestamp } from '../types'
  * Reminder dates keep an explicit local civil representation plus IANA zone.
  */
 
-/** Current instant as ISO 8601 UTC. */
+/**
+ * Monotonic UTC clock: strictly increasing timestamps within a session, so
+ * revision/audit ordering is deterministic even for burst saves in the same
+ * millisecond (PRD §6: stable event ordering).
+ */
+let lastNowMs = 0;
+
+/** Current instant as ISO 8601 UTC; never returns the same value twice. */
 export function nowUtc(): UtcTimestamp {
-  return new Date().toISOString() as UtcTimestamp;
+  let ms = Date.now();
+  if (ms <= lastNowMs) ms = lastNowMs + 1;
+  lastNowMs = ms;
+  return new Date(ms).toISOString() as UtcTimestamp;
 }
 
 /** Validates the ISO-8601 UTC shape used across the data model. */

@@ -3,7 +3,6 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-007 Repository: notes and revisions
 - [ ] T-008 Repository: tags, categories and joins
 - [ ] T-009 Repository: links, snapshots, attachments
 - [ ] T-010 Repository: reminders, audit, logs, settings

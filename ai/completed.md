@@ -39,3 +39,9 @@ Push Status (ai/rule.md §8).
 - Validation Result: tsc strict green, eslint green, vitest 42/42; 15 canonical stores with full index layout incl. composite keys; versioned idempotent migrations; MigrationFailedError rollback proven to preserve data; versionchange step-aside and lower-version rejection tested
 - Commit Hash: (this commit)
 - Push Status: pushed with this commit
+---
+### T-007 Repository: notes and revisions
+- Completion Timestamp: 2026-10-12T07:33:33Z
+- Validation Result: tsc strict green, eslint green, vitest 57/57; transactional save of doc+projection+revision; createdAt-once and updatedAt-on-commit semantics; optimistic concurrency (NoteConflictError); bounded retention with floor 20 and restore-as-new-revision; archive/trash lifecycle; confirmed cascade permanent deletion; monotonic session clock for deterministic ordering
+- Commit Hash: (this commit)
+- Push Status: pushed with this commit
