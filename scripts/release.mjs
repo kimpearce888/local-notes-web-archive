@@ -29,6 +29,11 @@ function fail(message) {
 console.log('[release] building dist/ ...');
 execFileSync('npx', ['vite', 'build'], { cwd: root, stdio: 'inherit' });
 
+// 1b. Dependency inventory (PRD §14): regenerate from the actual lockfile so
+// DEPENDENCIES.json / THIRD_PARTY_NOTICES.md can never drift from reality.
+console.log('[release] regenerating dependency inventory ...');
+execFileSync('node', ['scripts/generate-dependencies.mjs'], { cwd: root, stdio: 'inherit' });
+
 // 2. Static release gate: no remote runtime URLs, no dynamic code in shipped JS.
 // Inert literal constants embedded by bundled dependencies — never fetched
 // at runtime (the E2E network privacy test, FR-SET-04, proves this):

@@ -31,6 +31,15 @@ tests, build tooling and the bundled third-party dependency inventory.
   create/edit notes, manage reminders); the application validates, authorizes
   and executes every operation under your chosen permission mode. There is no
   cloud fallback, ever.
+- **Diagnostics & settings** — a full settings surface (appearance, capture
+  behaviour and limits, site-access grants with revocation, reminder
+  preferences, editor toolbar, retention, backup/restore with preview) and a
+  diagnostics page (versions, storage, index status, permissions, LM Studio
+  reachability, recent sanitized errors, audit trail, a network privacy
+  self-test, and an opt-in diagnostics export with a review step).
+- **First-run onboarding** — five short, honest points about local storage,
+  permissions, optional AI, reminder limits and data-loss risk; nothing is
+  gated behind it.
 
 ## Requirements
 
@@ -107,8 +116,14 @@ external, proprietary, user-installed software — never bundled or required.
 | [`KNOWN_LIMITATIONS.md`](./KNOWN_LIMITATIONS.md) | Honest limits: MCP, reminders, capture fidelity |
 | [`BACKUP_RESTORE.md`](./BACKUP_RESTORE.md) | Backup format, validation, merge/replace, portability |
 | [`SECURITY.md`](./SECURITY.md) | Threat model, reporting, sandboxing, update policy |
+| [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md) | Licenses of every bundled runtime dependency |
+| [`DEPENDENCIES.json`](./DEPENDENCIES.json) | Machine-readable pinned dependency inventory |
+| [`docs/EXTENSION_IDENTITY.md`](./docs/EXTENSION_IDENTITY.md) | Stable extension ID and key management |
 
 ## Status
 
-See [`ai/plan.md`](./ai/plan.md) and [`ai/progress.md`](./ai/progress.md) for
-the implementation task queue and completion state.
+Implementation is complete against the PRD: every feature area (notes,
+search, capture, reminders, local AI, data lifecycle, observability,
+settings/onboarding) is implemented, tested and verified by the release
+gate. See [`ai/plan.md`](./ai/plan.md) and [`ai/completed.md`](./ai/completed.md)
+for the task-level record.
