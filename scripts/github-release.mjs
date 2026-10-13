@@ -103,9 +103,30 @@ Chrome 120+ required. Everything stays on your device.
 - Full gate matrix and measured numbers: [\`docs/RELEASE_VERIFICATION.md\`](https://github.com/${slug}/blob/main/docs/RELEASE_VERIFICATION.md)
 - File inventory: **RELEASE_MANIFEST.txt** below (byte-for-byte with the zip contents)
 - Integrity: **${zipName}.sha256** below
-- Automated acceptance: unit 752/752, Playwright E2E 35/35 over the real
+- Automated acceptance: unit 791/791, Playwright E2E 56/56 over the real
   unpacked build, including a dedicated extract-zip-and-load acceptance suite
   (the artifact in this release is the exact folder layout that was tested)
+
+## What's new in v1.0.3 — redesigned UI/UX
+
+The whole interface was redesigned ("a local-first Obsidian alternative
+with Linear's polish and Arc's modern feel") with **100% feature parity**:
+no change to business logic, data structures, storage, APIs, permissions,
+search/AI/reminder/archive logic or import/export behavior.
+
+- Persistent sidebar layout (brand, New Note, smart lists, secondary
+  actions) with a sticky search topbar and a command-center content column
+- New **command palette (Ctrl+K)**: keyboard-first launcher over existing
+  actions — new note, import, smart-list navigation, settings, diagnostics,
+  theme preference
+- Refined dark-first design language (deep neutral palette, indigo accent,
+  hairline borders, subtle motion) with light and system themes kept in
+  WCAG-AA parity
+- Editor: document-grade title, calm prose typography, grouped session
+  header with icons, sticky formatting toolbar
+- Uniform dialog rhythm, unified editor sub-panels, small-caps settings and
+  diagnostics sections, floating bulk action bar, responsive sidebar
+  collapse (icon rail -> top strip)
 
 ## Checksum
 

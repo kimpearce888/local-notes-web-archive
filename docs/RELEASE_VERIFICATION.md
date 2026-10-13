@@ -1,8 +1,8 @@
 # Release Verification Report
 
 **Task:** T-043 Release verification gate (plan.md; PRD §11, §13) — re-verified for
-v1.0.2 by T-055 (re-release with the T-054 user-reported fixes)
-**Version verified:** 1.0.2
+v1.0.3 by T-059 (re-release with the T-056..T-058 UI/UX redesign)
+**Version verified:** 1.0.3
 **Date:** 2026-10-13
 **Verdict:** **PASS** — every gate green; the artifact is releasable.
 
@@ -30,8 +30,8 @@ assertions are the production ones.
 | 1 | Build (`vite build`) | PASS — 14 files, 0 warnings blocking, `theme-hint.js` external (CSP-safe) |
 | 2 | Static release scan (`release.mjs`) | PASS — 4 shipped JS files scanned: no remote runtime URLs, no `eval`/`new Function`; inert literal allowlist (W3C namespace URIs, dependency doc links) only |
 | 3 | Manifest scan (`verify-release.mjs`) | PASS — MV3, Chrome ≥ 120, stable `key`; CSP `script-src 'self'` / `object-src 'self'` / `connect-src 'self' + loopback`; 6 manifest/html-referenced assets present; icons are real PNGs; permissions match PERMISSIONS.md exactly (8 API, 2 required host, 2 optional host) |
-| 4 | Unit tests | PASS — 773/773 (`vitest run`) |
-| 5 | E2E smoke + verification | PASS — 49/49 in real Chromium over the unpacked `dist/` (functional smoke, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance, screenshot suite, T-054 user-report regressions) |
+| 4 | Unit tests | PASS — 791/791 (`vitest run`; +18 redesign tests: command palette semantics/keyboard model, shell Ctrl/Cmd+K wiring) |
+| 5 | E2E smoke + verification | PASS — 56/56 in real Chromium over the unpacked `dist/` (functional smoke incl. the new command-palette spec, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance, the extended 14-test screenshot suite, T-054 user-report regressions) |
 | 6 | Performance (PRD §11) | PASS — see measurements below |
 | 7 | Accessibility keyboard pass | PASS — see below |
 | 8 | Release artifacts | PASS — see below |
@@ -61,11 +61,11 @@ one authoritative index build:
 | Statistic | Value |
 |---|---|
 | p50 | 68 ms |
-| **p95** | **119 ms** |
+| **p95** | **118 ms** |
 | p99 | 301 ms |
 | max | 396 ms |
 
-Per-shape p95: common term 63 ms, two-term 112 ms, phrase 128 ms,
+Per-shape p95: common term 66 ms, two-term 118 ms, phrase 125 ms,
 title-scoped 133 ms, flag filter + term 56 ms, filter-only 60 ms,
 term + title sort 95 ms, fuzzy 84 ms. **PRD budget: p95 < 500 ms → PASS**
 (asserted in `tests/perf/search-p95.test.ts`, runnable via
@@ -87,21 +87,26 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
   input and the editor are all reachable by Tab through the full toolbar
   chain; text typed, `Ctrl+A` + `Ctrl+B` bold applied (`<strong>` present),
   autosave reached the durable "Saved" state — no pointer input anywhere.
+- **Command palette (new, v1.0.3):** Ctrl+K opens it, typing filters,
+  ArrowDown/Enter run commands, Escape closes, a no-match query shows an
+  honest empty state where Enter is a no-op (asserted in
+  `tests/e2e/extension.spec.ts`).
 - Settings dialog: 12 consecutive Tabs never leave the dialog (focus trap);
   Escape closes it; focus returns to page.
 - Visible focus: keyboard-focused search input renders the `:focus-visible`
-  outline (2px solid focus ring, asserted via computed style).
-- Accessible names: all interactions in both E2E specs use role + accessible
+  outline (2px solid focus ring, asserted via computed style) — the redesigned
+  topbar focus glow layers on top of the ring, never replaces it.
+- Accessible names: all interactions in the E2E specs use role + accessible
   name queries only, which fail on unlabeled controls.
 
 ## Release artifacts
 
 | Artifact | Value |
 |---|---|
-| Zip | `release/local-notes-web-archive-1.0.2.zip` (1,517,813 bytes) |
-| SHA-256 | `aecb14997c5a8df3c048852923d1536793b00e9003065eb5442e7755196339b9` |
+| Zip | `release/local-notes-web-archive-1.0.3.zip` (1,532,959 bytes) |
+| SHA-256 | `2cb3d6131c99a054fd0f4ec6f54c35a2683fa6f3595174ec589ade104be9181c` |
 | Inventory | `release/RELEASE_MANIFEST.txt` (file list + sizes) |
-| Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). The v1.0.2 artifact supersedes v1.0.1: it ships the T-054 user-reported fixes (natural-height reminder-dialog fields — the 22rem flex-basis defect — and the editor Pin / Move-to-trash actions) that v1.0.1 predates; it also carries the T-052 hidden-attribute guard from v1.0.1. |
+| Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). The v1.0.3 artifact supersedes v1.0.2: it ships the complete UI/UX redesign (T-056..T-058 — sidebar app shell, Linear/Arc design language, command palette, component pass; redesign QA evidence in `docs/REDESIGN_QA_REPORT.md`) while preserving 100% feature parity — no change to business logic, data, storage, APIs, permissions, search/AI/reminder/archive logic or import/export behavior; it also carries every earlier fix (T-054 dialog fields + editor pin/trash, T-052 hidden guard). |
 
 The zip and checksums are regenerable via `npm run release`; the manifest
 scan is enforced inside that pipeline (`scripts/verify-release.mjs`) and
@@ -111,8 +116,8 @@ a remote URL, dynamic code, missing asset or undocumented permission.
 ## Verification commands
 
 ```bash
-npm run verify          # lint + tsc strict + 773 unit tests
+npm run verify          # lint + tsc strict + 791 unit tests
 npm run test:perf       # 10k-note search p95 benchmark (< 500 ms budget)
-npm run test:e2e        # 49 Playwright tests over the built extension
+npm run test:e2e        # 56 Playwright tests over the built extension
 npm run release         # build + static gate + manifest scan + zip + sha256
 ```

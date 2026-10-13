@@ -10,7 +10,7 @@ Everything stays on your device.
 [![Chrome 120+](https://img.shields.io/badge/Chrome-120%2B-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-34A853)](https://developer.chrome.com/docs/extensions/reference/manifest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-2ea44f)](./LICENSE)
-[![Unit tests](https://img.shields.io/badge/vitest-762%20passing-brightgreen)](#quality-and-verification)
+[![Unit tests](https://img.shields.io/badge/vitest-791%20passing-brightgreen)](#quality-and-verification)
 [![E2E tests](https://img.shields.io/badge/Playwright-44%20passing-brightgreen)](#quality-and-verification)
 [![Audit](https://img.shields.io/badge/audit-0%20vulnerabilities-success)](./docs/REPOSITORY_AUDIT.md)
 [![Network](https://img.shields.io/badge/network-loopback%20only-blueviolet)](./PRIVACY.md)
@@ -47,9 +47,12 @@ through the bulk bar, one note pinned).
 
 | | |
 |---|---|
-| ![Dashboard in the light theme with a grid of six notes, tag and category chips and a pinned note](./docs/screenshots/dashboard-light.png) | ![Rich-text editor showing a research note with headings, bold text, bullet lists and a table](./docs/screenshots/editor.png) |
+| ![Dashboard in the light theme: sidebar navigation, command-center search bar and a grid of six note cards](./docs/screenshots/dashboard-light.png) | ![Rich-text editor showing a research note with headings, bold text, bullet lists and a table](./docs/screenshots/editor.png) |
 | ![Search results for the prefix query chrom showing three matching notes and a result count](./docs/screenshots/search.png) | ![Dashboard in the dark theme showing the same library of notes](./docs/screenshots/dashboard-dark.png) |
-| ![Diagnostics dialog showing storage, permissions and local AI status sections](./docs/screenshots/diagnostics.png) | ![Social banner with the extension icon, product name, tagline and feature chips](./docs/screenshots/social-banner.png) |
+| ![The command palette open over the dashboard, listing keyboard-first commands in groups](./docs/screenshots/command-palette.png) | ![The add-reminder dialog with a valid due date filled, every field at natural height](./docs/screenshots/reminders.png) |
+| ![The local AI workspace panel with the honest LM Studio offline disclosure](./docs/screenshots/ai-panel.png) | ![The Settings dialog with Appearance and Web Capture sections](./docs/screenshots/settings.png) |
+| ![The Archived smart list showing a real archived note with its restore affordances](./docs/screenshots/archives.png) | ![The compact icon-rail sidebar at a medium window width](./docs/screenshots/responsive-rail.png) |
+| ![The narrow single-column layout at 480 px with search still in use](./docs/screenshots/responsive-narrow.png) | ![Diagnostics dialog showing storage, permissions and local AI status sections](./docs/screenshots/diagnostics.png) |
 
 Retina captures (2880 px wide); the social banner is 1280x640 for link previews.
 
@@ -57,8 +60,8 @@ Retina captures (2880 px wide); the social banner is 1280x640 for link previews.
 
 The published package is fully built and tested — nothing to compile:
 
-1. Download `local-notes-web-archive-1.0.2.zip` from the
-   [v1.0.2 release](https://github.com/kimpearce888/local-notes-web-archive/releases/tag/v1.0.2).
+1. Download `local-notes-web-archive-1.0.3.zip` from the
+   [v1.0.3 release](https://github.com/kimpearce888/local-notes-web-archive/releases/tag/v1.0.3).
 2. Extract the ZIP anywhere on your machine.
 3. Open `chrome://extensions` and enable **Developer mode**.
 4. Click **Load unpacked** and select the **extracted** folder.
@@ -154,8 +157,8 @@ change.
 
 | Gate | Result |
 |---|---|
-| Unit + integration tests (Vitest) | **762/762 passing** |
-| End-to-end tests (Playwright, real Chromium, unpacked build) | **44/44 passing** |
+| Unit + integration tests (Vitest) | **791/791 passing** |
+| End-to-end tests (Playwright, real Chromium, unpacked build) | **56/56 passing** |
 | Performance budget (search p95 < 500 ms over 10,000 notes) | PASS |
 | Secrets scan (worktree + full git history) | 0 findings |
 | `npm audit` (production and full graphs) | 0 vulnerabilities |
