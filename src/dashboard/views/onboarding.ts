@@ -126,6 +126,12 @@ export function createOnboardingOverlay(callbacks: OnboardingCallbacks): Onboard
 
   return {
     open(): void {
+      // T-067 (audit D-05): the first successful completion disables the
+      // Get-started button (guarded against double-clicks), and only the
+      // failure branch re-enabled it — so a re-shown onboarding presented a
+      // permanently dead primary action. Every fresh presentation resets
+      // the button so the dialog is always dismissible by its primary path.
+      startButton.disabled = false;
       if (!dialog.open) dialog.showModal();
       startButton.focus();
     },

@@ -117,6 +117,36 @@ describe('onboarding overlay', () => {
     harness.overlay.dispose();
   });
 
+  it('re-enables Get started every time the overlay is re-shown (T-067, audit D-05)', async () => {
+    // The audit: Settings -> "Show the introduction again" presented a
+    // permanently disabled primary button (Escape-only exit) because the
+    // click handler only re-enabled it on FAILURE. Every open() resets it.
+    const harness = mountOverlay();
+    harness.overlay.open();
+    const dialog = dialogOf();
+    const start = [...dialog.querySelectorAll<HTMLButtonElement>('button')].find(
+      (button) => button.textContent === 'Get started',
+    );
+
+    // First completion disables the button and closes the dialog.
+    start?.click();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(harness.completions).toBe(1);
+    expect(dialog.open).toBe(false);
+    expect(start?.disabled).toBe(true);
+
+    // Re-show (the settings "Show the introduction again" path): the button
+    // is enabled again and completes a second time.
+    harness.overlay.open();
+    expect(dialog.open).toBe(true);
+    expect(start?.disabled).toBe(false);
+    start?.click();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(harness.completions).toBe(2);
+    expect(dialog.open).toBe(false);
+    harness.overlay.dispose();
+  });
+
   it('routes Open Settings first through the callback and closes', () => {
     const harness = mountOverlay();
     harness.overlay.open();

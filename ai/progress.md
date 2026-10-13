@@ -5,9 +5,6 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
-### T-067 Fix D-05: re-enable Get started when onboarding re-shows
-See ai/plan.md §L. Reset the button state on overlay re-open.
-
 ### T-068 Fix D-07: keep the page-1 slice invariant after rapid creation
 See ai/plan.md §L. Requery instead of unbounded optimistic prepend when the
 page slice is already full.

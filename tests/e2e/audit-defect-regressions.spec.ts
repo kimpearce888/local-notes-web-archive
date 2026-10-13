@@ -351,3 +351,23 @@ test('D-03: sort direction control sorts ascending (FR-SEARCH-06)', async () => 
   await page.locator('#sort-select').selectOption('title');
   await expect(direction).toBeVisible();
 });
+
+test('D-05: re-shown onboarding Get started is enabled and completes', async () => {
+  // The audit's exact repro: Settings -> "Show the introduction again"
+  // re-opened the dialog with a PERMANENTLY disabled primary button — only
+  // Escape could close it. The button now resets on every presentation.
+  await page.getByRole('button', { name: 'Settings' }).click();
+  const settings = page.locator('dialog[aria-labelledby="settings-title"]');
+  await expect(settings).toBeVisible({ timeout: 10_000 });
+  await settings.getByRole('button', { name: 'Show the introduction again' }).click();
+  await expect(settings).not.toBeVisible();
+
+  const onboarding = page.locator('dialog.dialog--onboarding');
+  await expect(onboarding).toBeVisible({ timeout: 10_000 });
+  const getStarted = onboarding.getByRole('button', { name: 'Get started' });
+  await expect(getStarted).toBeEnabled();
+
+  // The primary path completes the re-shown onboarding honestly.
+  await getStarted.click();
+  await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
+});
