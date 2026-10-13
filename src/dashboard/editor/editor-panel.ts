@@ -43,6 +43,8 @@ export interface EditorPanelOptions {
   };
   /** Resolves `attachment:` image references for display (T-019). */
   resolveImageSrc?: (src: string) => Promise<string | null>;
+  /** Toolbar group visibility (settings.editor.toolbar, FR-SET-01). */
+  toolbarGroups?: Record<string, boolean>;
 }
 
 export interface EditorPanel {
@@ -634,7 +636,7 @@ export function createEditorPanel(
     onImportMarkdown: importMarkdownDialog,
     onExportMarkdown: exportMarkdown,
     onShowDocumentation: showDocumentation,
-  });
+  }, options.toolbarGroups);
   const syncToolbar = (): void => toolbar.sync();
   editor.on('selectionUpdate', syncToolbar);
   editor.on('transaction', syncToolbar);

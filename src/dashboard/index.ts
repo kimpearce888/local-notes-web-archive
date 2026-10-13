@@ -11,6 +11,8 @@ import { showEmpty } from './states';
 import { createApiClient } from './state/client';
 import { createDashboardController, type DashboardController } from './state/controller';
 import { createDiagnosticsPanel, type DiagnosticsPanel } from './views/diagnostics-panel';
+import { createSettingsPanel, type SettingsPanel } from './views/settings-panel';
+import { createOnboardingOverlay, type OnboardingOverlay } from './views/onboarding';
 import { createDuplicateDecisionMonitor, type DuplicateDecisionMonitor } from './views/duplicate-dialog';
 import type { CaptureProgressEvent, CaptureProgressPhase } from '../background/capture/queue';
 import type { ReminderFiredEvent } from '../background/reminders/fire';
@@ -71,6 +73,44 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
     announce: (message) => shell.announce(message),
   });
   shell.on('diagnosticsOpen', () => diagnostics.open());
+
+  // Settings panel (FR-SET-01): every section injects its RPC calls, the
+  // theme applies live, and a saved patch re-loads the controller state.
+  const settings: SettingsPanel = createSettingsPanel({
+    getSettings: async () => (await client.request('settings/get', {})).settings,
+    patchSettings: async (patch) => (await client.request('settings/patch', { patch })).settings,
+    listGranted: async () => await client.request('permissions/list-granted', {}),
+    revokeOrigin: async (origin) => await client.request('permissions/revoke', { origin }),
+    listModels: async () => await client.request('ai/list-models', {}),
+    testConnection: async (baseUrl) =>
+      (await client.request('ai/test-connection', baseUrl ? { baseUrl } : {})).result,
+    exportBackup: async () => await client.request('backup/export', {}),
+    previewBackup: async (file) => (await client.request('backup/preview', { archive: file })).preview,
+    restoreBackup: async (file, mode, confirmReplace) =>
+      (await client.request('backup/restore', { archive: file, mode, confirmReplace })).result,
+    readCommandStatus: async () => await client.request('commands/status', {}),
+    showOnboarding: () => onboarding.open(),
+    setTheme: (preference) => theme.setPreference(preference),
+    announce: (message) => shell.announce(message),
+  });
+  shell.on('settingsOpen', () => settings.open());
+
+  // First-run onboarding (FR-SET-02): informative, never blocking.
+  const onboarding: OnboardingOverlay = createOnboardingOverlay({
+    complete: async () => {
+      await client.request('settings/set-onboarding-complete', { complete: true });
+    },
+    openSettings: () => settings.open(),
+    announce: (message) => shell.announce(message),
+  });
+  void (async () => {
+    try {
+      const { complete } = await client.request('settings/get-onboarding-complete', {});
+      if (!complete) onboarding.open();
+    } catch {
+      // Unreadable flag: never block the app on onboarding bookkeeping.
+    }
+  })();
 
   // Duplicate-capture decisions (FR-CAP-08 `ask` policy): parked links get
   // a user-visible confirmation, presented one at a time.
@@ -144,6 +184,8 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
       }
       duplicates.dispose();
       diagnostics.dispose();
+      settings.dispose();
+      onboarding.dispose();
       controller.dispose();
       theme.dispose();
       shell.dispose();

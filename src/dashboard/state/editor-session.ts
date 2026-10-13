@@ -174,6 +174,8 @@ export async function openEditorSession(options: {
   note: Note;
   callbacks: EditorSessionCallbacks;
   conflictPresenter?: (local: ConflictSnapshot, remote: ConflictSnapshot, choose: (choice: ConflictChoice) => void) => void;
+  /** Toolbar group visibility from settings (FR-SET-01). */
+  toolbarGroups?: Record<string, boolean>;
 }): Promise<EditorSession> {
   const { mount, note, callbacks } = options;
   const presentConflict = options.conflictPresenter ?? presentConflictDialog;
@@ -351,6 +353,7 @@ export async function openEditorSession(options: {
     {
       initial: { title: initialTitle, subtitle: initialSubtitle, editorDoc: initialDoc },
       resolveImageSrc,
+      toolbarGroups: options.toolbarGroups,
     },
   );
 

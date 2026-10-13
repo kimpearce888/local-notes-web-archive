@@ -20,6 +20,8 @@ export interface ShellEvents {
   importNote: (file: File) => void;
   /** Diagnostics view requested (FR-LOG-05). */
   diagnosticsOpen: () => void;
+  /** Settings view requested (FR-SET-01). */
+  settingsOpen: () => void;
   /** Search input changed (raw value; parsing belongs to the store). */
   searchInput: (query: string) => void;
   /** Search submitted (Enter). */
@@ -146,7 +148,14 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   diagnosticsButton.textContent = 'Diagnostics';
   diagnosticsButton.setAttribute('aria-label', 'Open the diagnostics page');
 
-  headerRow.append(title, diagnosticsButton, importNoteButton, newNoteButton);
+  const settingsButton = document.createElement('button');
+  settingsButton.type = 'button';
+  settingsButton.className = 'btn';
+  settingsButton.dataset['action'] = 'open-settings';
+  settingsButton.textContent = 'Settings';
+  settingsButton.setAttribute('aria-label', 'Open settings');
+
+  headerRow.append(title, settingsButton, diagnosticsButton, importNoteButton, newNoteButton);
 
   /* -------------------------- Search row ---------------------------- */
 
@@ -364,6 +373,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     newNote: [],
     importNote: [],
     diagnosticsOpen: [],
+    settingsOpen: [],
     searchInput: [],
     searchSubmit: [],
     sortChange: [],
@@ -388,6 +398,10 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   const onDiagnosticsClick = (): void => emit('diagnosticsOpen');
   diagnosticsButton.addEventListener('click', onDiagnosticsClick);
   disposers.push(() => diagnosticsButton.removeEventListener('click', onDiagnosticsClick));
+
+  const onSettingsClick = (): void => emit('settingsOpen');
+  settingsButton.addEventListener('click', onSettingsClick);
+  disposers.push(() => settingsButton.removeEventListener('click', onSettingsClick));
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   const onSearchInput = (): void => {

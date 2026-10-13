@@ -2,7 +2,10 @@
  * Editor toolbar (PRD §4.4): every control has an accessible name, groups
  * are labelled, and state (active/Disabled) is mirrored into aria. Colour
  * pickers are bounded swatch lists, never free-form fields, so notes stay
- * predictable and sanitisation stays trivial.
+ * predictable and sanitisation stays trivial. Toolbar groups can be
+ * hidden per user preference (settings.editor.toolbar, FR-SET-01) — a
+ * disabled group renders nothing, and every control stays reachable
+ * through its keyboard shortcut or the in-app documentation.
  */
 
 import type { Editor } from '@tiptap/core';
@@ -34,15 +37,29 @@ type CommandButton = {
   enabled?: () => boolean;
 };
 
+export const TOOLBAR_GROUPS: readonly string[] = [
+  'history',
+  'text',
+  'font',
+  'blocks',
+  'lists',
+  'align',
+  'table',
+  'media',
+  'tools',
+];
+
 export function createEditorToolbar(
   editor: Editor,
   callbacks: ToolbarCallbacks,
+  groups?: Record<string, boolean>,
 ): EditorToolbar {
   const element = document.createElement('div');
   element.className = 'editor-toolbar';
   element.setAttribute('role', 'toolbar');
   element.setAttribute('aria-label', 'Text formatting');
   const buttons: CommandButton[] = [];
+  const groupEnabled = (group: string): boolean => groups?.[group] !== false;
 
   const add = (button: CommandButton): void => {
     buttons.push(button);
@@ -238,6 +255,7 @@ export function createEditorToolbar(
 
   let currentGroup = '';
   for (const button of buttons) {
+    if (!groupEnabled(button.group)) continue;
     if (button.group !== currentGroup) {
       currentGroup = button.group;
       const separator = document.createElement('span');
@@ -263,6 +281,7 @@ export function createEditorToolbar(
 
   /* ----------------------- Font size select ------------------------ */
 
+  const fontGroupOn = groupEnabled('font');
   const sizeSelect = document.createElement('select');
   sizeSelect.className = 'select editor-toolbar__select';
   sizeSelect.setAttribute('aria-label', 'Font size');
@@ -284,7 +303,7 @@ export function createEditorToolbar(
     }
     editor.chain().focus().setFontSize(`${value}px`).run();
   });
-  element.append(sizeSelect);
+  if (fontGroupOn) element.append(sizeSelect);
 
   /* -------------------------- Colour rows -------------------------- */
 
@@ -309,7 +328,7 @@ export function createEditorToolbar(
   clearColor.title = 'Remove text colour';
   clearColor.addEventListener('click', () => editor.chain().focus().unsetColor().run());
   colorRow.append(clearColor);
-  element.append(colorRow);
+  if (fontGroupOn) element.append(colorRow);
 
   const highlightRow = document.createElement('span');
   highlightRow.className = 'editor-toolbar__colors';
@@ -332,7 +351,7 @@ export function createEditorToolbar(
   clearHighlight.title = 'Remove highlight';
   clearHighlight.addEventListener('click', () => editor.chain().focus().unsetHighlight().run());
   highlightRow.append(clearHighlight);
-  element.append(highlightRow);
+  if (fontGroupOn) element.append(highlightRow);
 
   function sync(): void {
     for (const control of element.querySelectorAll<HTMLElement>(

@@ -2101,3 +2101,228 @@ dialog::backdrop {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/* ------------------------- Settings panel ----------------------------- */
+
+.dialog--settings {
+  max-width: 46rem;
+}
+
+.settings__content {
+  max-height: min(60vh, 34rem);
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.settings__content[aria-busy='true'] {
+  color: var(--color-text-muted);
+}
+
+.settings__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.settings__section-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  margin: var(--space-3) 0 var(--space-1) 0;
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.settings__section-title:first-child {
+  margin-top: 0;
+}
+
+.settings__section-hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.settings__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-1) 0;
+}
+
+.settings__row-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.settings__row-value {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.settings__hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.settings__radios {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.settings__radio {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.settings__radio input {
+  width: 1.1em;
+  height: 1.1em;
+  flex-shrink: 0;
+}
+
+.settings__radio-hint {
+  flex-basis: 100%;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin-left: calc(1.1em + var(--space-2));
+}
+
+.settings__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.settings__check input {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+.settings__number {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.settings__number .input {
+  width: 8rem;
+}
+
+.input {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: inherit;
+}
+
+.settings__number-suffix {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.settings__origins {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.settings__origin {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.settings__empty {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.settings__toolbar-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+.settings__backup-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.settings__model-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.settings__model-row .select {
+  max-width: 16rem;
+}
+
+.settings__actions {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+/* ------------------------- Onboarding --------------------------------- */
+
+.dialog--onboarding {
+  max-width: 40rem;
+}
+
+.onboarding__intro {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.onboarding__list {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.onboarding__item h3 {
+  font-size: var(--text-base);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.onboarding__item p {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.onboarding__actions {
+  justify-content: flex-end;
+}

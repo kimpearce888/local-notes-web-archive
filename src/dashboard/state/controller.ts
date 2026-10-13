@@ -533,6 +533,7 @@ export function createDashboardController(options: {
       editorSession = await openEditorSession({
         mount: editorMount,
         note,
+        toolbarGroups: { ...store.getState().settings?.editor.toolbar },
         callbacks: {
           getRevisions: async (id) => (await client.request('notes/revisions', { noteId: id })).revisions,
           saveNoteDetailed,
