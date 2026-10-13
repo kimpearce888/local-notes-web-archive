@@ -477,6 +477,21 @@ byte-identical sha256). The v1.0.0 release stays untouched as the historical
 record.
 
 
+### T-055 Re-release v1.0.2 with the T-054 fixes
+The v1.0.1 release artifact predates the T-054 user-reported fixes (the
+reminder-dialog field sizing and the editor pin/trash actions). Bump
+package.json + package-lock + public/manifest.json + src/core/version.ts
+to 1.0.2, update the version-pinning tests (manifest mirror, core/types
+metadata, diagnostics-api overview) and the README install links, rebuild
+the production dist, re-run the full gate battery (eslint, tsc strict,
+vitest, perf), regenerate the release zip via npm run release (new
+sha256), run the full Playwright suite (including the zip-acceptance
+extract-and-load against the NEW artifact and the T-054 regression
+specs), publish GitHub Release v1.0.2 with the three assets via npm run
+publish-release, refresh the verification-doc numbers, and verify the
+uploaded asset digest through the REST API (download-back +
+byte-identical sha256).
+
 ---
 
 ## Task → PRD traceability
