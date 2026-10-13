@@ -38,6 +38,12 @@ import type { BackupExportResult } from '../../background/backup/export';
 import type { BackupPreview } from '../../background/backup/restore';
 import type { NoteExportFile } from '../../background/api/note-transfer';
 import type { StorageHealthReport } from '../../background/api/storage-health';
+import type {
+  DiagnosticsExport,
+  DiagnosticsOverview,
+  NetworkSelfTestResult,
+} from '../../background/api/diagnostics';
+import type { AuditEvent, DiagnosticLog, LogLevel } from '../../core/types';
 
 export interface ApiContract {
   /* app */
@@ -359,6 +365,19 @@ export interface ApiContract {
   };
   'reminders/delete': { payload: { reminderId: EntityId }; result: { deleted: boolean } };
   'reminders/reconcile-alarms': { payload: Record<string, never>; result: AlarmReconcileResult };
+
+  /* diagnostics (T-038, FR-LOG-05 / FR-SET-04) */
+  'diagnostics/overview': { payload: Record<string, never>; result: { overview: DiagnosticsOverview } };
+  'diagnostics/logs': {
+    payload: { level?: LogLevel | 'error+warn' | null; limit?: number; offset?: number };
+    result: { logs: DiagnosticLog[]; total: number };
+  };
+  'diagnostics/audit': {
+    payload: { actor?: 'user' | 'ai' | null; limit?: number; offset?: number };
+    result: { events: AuditEvent[]; total: number };
+  };
+  'diagnostics/network-self-test': { payload: Record<string, never>; result: { result: NetworkSelfTestResult } };
+  'diagnostics/export-bundle': { payload: Record<string, never>; result: { bundle: DiagnosticsExport } };
 }
 
 export type ApiMessageType = keyof ApiContract;

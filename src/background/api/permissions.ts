@@ -69,6 +69,21 @@ export interface GrantedOriginInfo {
   readonly waitingCount: number;
 }
 
+/** Site-access grants with per-origin link counts (settings + diagnostics). */
+export async function listGrantedOriginInfos(): Promise<GrantedOriginInfo[]> {
+  const origins = await listGrantedCaptureOrigins();
+  const entries: GrantedOriginInfo[] = [];
+  for (const origin of origins) {
+    const links = await listLinksByOrigin(await repo(), origin);
+    entries.push({
+      origin,
+      linkCount: links.length,
+      waitingCount: links.filter((l) => l.captureState === 'permission-required').length,
+    });
+  }
+  return entries;
+}
+
 export function registerPermissionApi(router: MessageRouter): void {
   router.register('links/request-capture-permission', async (payload, ctx) => {
     const p = asObject(payload, 'links/request-capture-permission');
@@ -119,17 +134,8 @@ export function registerPermissionApi(router: MessageRouter): void {
   });
 
   router.register('permissions/list-granted', async () => {
-    const origins = await listGrantedCaptureOrigins();
-    const entries: GrantedOriginInfo[] = [];
-    for (const origin of origins) {
-      const links = await listLinksByOrigin(await repo(), origin);
-      entries.push({
-        origin,
-        linkCount: links.length,
-        waitingCount: links.filter((l) => l.captureState === 'permission-required').length,
-      });
-    }
-    return { origins: entries };
+    const origins = await listGrantedOriginInfos();
+    return { origins };
   });
 
   router.register('permissions/revoke', async (payload, ctx) => {

@@ -19,6 +19,7 @@ import { registerAiApi } from './ai';
 import { registerBackupApi } from './backup';
 import { registerNoteTransferApi } from './note-transfer';
 import { registerStorageHealthApi } from './storage-health';
+import { registerDiagnosticsApi } from './diagnostics';
 
 export function registerAllApi(router: MessageRouter): void {
   registerNoteApi(router);
@@ -35,4 +36,5 @@ export function registerAllApi(router: MessageRouter): void {
   registerBackupApi(router);
   registerNoteTransferApi(router);
   registerStorageHealthApi(router);
+  registerDiagnosticsApi(router);
 }

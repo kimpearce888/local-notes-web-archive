@@ -8,6 +8,14 @@
  */
 
 import { vi, type Mock } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+/** The real shipped manifest — getManifest() returns it truthfully (T-038). */
+function loadRealManifest(): chrome.runtime.ManifestV3 {
+  const root = join(__dirname, '..', '..', '..');
+  return JSON.parse(readFileSync(join(root, 'public', 'manifest.json'), 'utf8')) as chrome.runtime.ManifestV3;
+}
 
 export interface MockTab {
   id: number;
@@ -227,6 +235,7 @@ export function installChromeMock(): InstalledMock {
       id: 'test-extension-id',
       getURL: (path: string) =>
         `chrome-extension://test-extension-id/${path.replace(/^\//, '')}`,
+      getManifest: (): chrome.runtime.ManifestV3 => loadRealManifest(),
       onInstalled: { addListener: (fn: (details: chrome.runtime.InstalledDetails) => void) => void listeners.installed.push(fn) },
       onStartup: { addListener: (fn: () => void) => void listeners.startup.push(fn) },
       onMessage: {

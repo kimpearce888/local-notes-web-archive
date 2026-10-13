@@ -10,6 +10,7 @@ import { createThemeManager, type ThemeManager } from './theme';
 import { showEmpty } from './states';
 import { createApiClient } from './state/client';
 import { createDashboardController, type DashboardController } from './state/controller';
+import { createDiagnosticsPanel, type DiagnosticsPanel } from './views/diagnostics-panel';
 import { createDuplicateDecisionMonitor, type DuplicateDecisionMonitor } from './views/duplicate-dialog';
 import type { CaptureProgressEvent, CaptureProgressPhase } from '../background/capture/queue';
 import type { ReminderFiredEvent } from '../background/reminders/fire';
@@ -53,6 +54,23 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
 
   const client = createApiClient();
   const controller = createDashboardController({ shell, theme, client });
+
+  // Diagnostics page (FR-LOG-05 / FR-SET-04): the shell button opens the
+  // modal; every RPC it needs is injected here so the panel itself stays
+  // chrome-free and unit-testable.
+  const diagnostics: DiagnosticsPanel = createDiagnosticsPanel({
+    overview: async () => (await client.request('diagnostics/overview', {})).overview,
+    auditTrail: async () => {
+      const page = await client.request('diagnostics/audit', { limit: 20 });
+      return { events: page.events, total: page.total };
+    },
+    networkSelfTest: async () => (await client.request('diagnostics/network-self-test', {})).result,
+    exportBundle: async () => (await client.request('diagnostics/export-bundle', {})).bundle,
+    testLmStudio: async () => (await client.request('ai/test-connection', {})).result,
+    rebuildSearchIndex: async () => await client.request('search/rebuild', {}),
+    announce: (message) => shell.announce(message),
+  });
+  shell.on('diagnosticsOpen', () => diagnostics.open());
 
   // Duplicate-capture decisions (FR-CAP-08 `ask` policy): parked links get
   // a user-visible confirmation, presented one at a time.
@@ -125,6 +143,7 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
         chrome.runtime.onMessage.removeListener(onRuntimeMessage);
       }
       duplicates.dispose();
+      diagnostics.dispose();
       controller.dispose();
       theme.dispose();
       shell.dispose();

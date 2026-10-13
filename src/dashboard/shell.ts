@@ -18,6 +18,8 @@ export interface ShellEvents {
   newNote: () => void;
   /** Import a note file (JSON/Markdown/HTML) as a new note (FR-DATA-05). */
   importNote: (file: File) => void;
+  /** Diagnostics view requested (FR-LOG-05). */
+  diagnosticsOpen: () => void;
   /** Search input changed (raw value; parsing belongs to the store). */
   searchInput: (query: string) => void;
   /** Search submitted (Enter). */
@@ -137,7 +139,14 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     picker.click();
   });
 
-  headerRow.append(title, importNoteButton, newNoteButton);
+  const diagnosticsButton = document.createElement('button');
+  diagnosticsButton.type = 'button';
+  diagnosticsButton.className = 'btn';
+  diagnosticsButton.dataset['action'] = 'open-diagnostics';
+  diagnosticsButton.textContent = 'Diagnostics';
+  diagnosticsButton.setAttribute('aria-label', 'Open the diagnostics page');
+
+  headerRow.append(title, diagnosticsButton, importNoteButton, newNoteButton);
 
   /* -------------------------- Search row ---------------------------- */
 
@@ -354,6 +363,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   const listeners: { [K in EventKey]: Array<ShellEvents[K]> } = {
     newNote: [],
     importNote: [],
+    diagnosticsOpen: [],
     searchInput: [],
     searchSubmit: [],
     sortChange: [],
@@ -374,6 +384,10 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   const onNewNoteClick = (): void => emit('newNote');
   newNoteButton.addEventListener('click', onNewNoteClick);
   disposers.push(() => newNoteButton.removeEventListener('click', onNewNoteClick));
+
+  const onDiagnosticsClick = (): void => emit('diagnosticsOpen');
+  diagnosticsButton.addEventListener('click', onDiagnosticsClick);
+  disposers.push(() => diagnosticsButton.removeEventListener('click', onDiagnosticsClick));
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   const onSearchInput = (): void => {
