@@ -126,3 +126,43 @@ describe('release verification report (T-043, PRD §13)', () => {
     expect(report).toContain('Environment honesty');
   });
 });
+
+describe('repository audit report (T-049)', () => {
+  it('exists with a PASS verdict and every required section', () => {
+    const report = readDoc('docs/REPOSITORY_AUDIT.md');
+    expect(report).toContain('**PASS**');
+    for (const section of [
+      '## Executive summary',
+      '## Repository structure and statistics',
+      '## Commit history',
+      '## Code metrics',
+      '## Secrets scan',
+      '## Dependency audit',
+      '## Manifest, permissions and CSP verification (re-run)',
+      '## Documentation completeness',
+      '## Release artifact integrity',
+      '## Test verification (this audit session)',
+      '## Verification commands',
+    ]) {
+      expect(report, `section ${section} missing`).toContain(section);
+    }
+  });
+
+  it('records the honest audit outcome and how every number was produced', () => {
+    const report = readDoc('docs/REPOSITORY_AUDIT.md');
+    // Secrets scan of worktree AND full git history: zero findings.
+    expect(report).toContain('**Result: 0 findings.**');
+    expect(report).toContain('full git\nhistory');
+    // Dependency audit: zero vulnerabilities in both graphs.
+    expect(report).toContain('(production graph): **0 vulnerabilities**');
+    expect(report).toContain('(full graph incl. dev tooling): **0 vulnerabilities**');
+    // Release integrity: artifact identified with name and checksum, and the
+    // GitHub Release API cross-check agrees with the local artifact.
+    expect(report).toContain('local-notes-web-archive-1.0.0.zip');
+    expect(report).toMatch(/[0-9a-f]{64}/);
+    expect(report).toContain('digest');
+    // Reproducibility: the generating script and honest environment note.
+    expect(report).toContain('scripts/audit.mjs');
+    expect(report).toContain('Environment honesty');
+  });
+});

@@ -136,6 +136,7 @@ external, proprietary, user-installed software — never bundled or required.
 | [`DEPENDENCIES.json`](./DEPENDENCIES.json) | Machine-readable pinned dependency inventory |
 | [`docs/EXTENSION_IDENTITY.md`](./docs/EXTENSION_IDENTITY.md) | Stable extension ID and key management |
 | [`docs/RELEASE_VERIFICATION.md`](./docs/RELEASE_VERIFICATION.md) | Release gate results, measured performance, keyboard pass, artifact checksums |
+| [`docs/REPOSITORY_AUDIT.md`](./docs/REPOSITORY_AUDIT.md) | Full repository audit: structure, code metrics, secrets scan, npm audit, release integrity |
 
 ## Status
 
