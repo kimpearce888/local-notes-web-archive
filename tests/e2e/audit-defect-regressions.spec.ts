@@ -310,3 +310,44 @@ test('D-02: the Filters disclosure holds real controls, chips and saved views', 
   await expect(page.locator('#search-input')).toHaveValue('Transport', { timeout: 10_000 });
   await expect(page.locator('#results-count')).toContainText('1 note', { timeout: 10_000 });
 });
+
+test('D-03: sort direction control sorts ascending (FR-SEARCH-06)', async () => {
+  // The audit: "sort by Title → first card is Gamma (reverse-alphabetical);
+  // no asc/desc control exists anywhere". The direction select now exists
+  // and flips the order honestly.
+  await page.locator('#search-input').fill('');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#results-count')).toContainText('1 note', { timeout: 10_000 });
+
+  // A second note so ordering is observable.
+  await page.getByRole('button', { name: 'New Note' }).click();
+  await page.getByRole('button', { name: 'Open Untitled for editing' }).click();
+  const title = page.locator('.editor-panel__title');
+  await expect(title).toBeVisible({ timeout: 15_000 });
+  await title.fill('AAA Audit Alpha');
+  await expect(page.locator('#save-state')).toHaveText('Saved', { timeout: 20_000 });
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+  await expect(page.locator('#results-count')).toContainText('2 notes', { timeout: 10_000 });
+
+  const direction = page.locator('#sort-direction-select');
+  await expect(direction).toBeVisible();
+
+  // Title DESC: reverse-alphabetical — the audit's exact observation.
+  await page.locator('#sort-select').selectOption('title');
+  await expect(
+    page.locator('.card .card__title').first(),
+  ).toHaveText('T-063 Transport Note', { timeout: 10_000 });
+
+  // Ascending: the audit's repro inverted to PASS.
+  await direction.selectOption('asc');
+  await expect(page.locator('.card .card__title').first()).toHaveText('AAA Audit Alpha', {
+    timeout: 10_000,
+  });
+
+  // Relevance hides the direction control honestly (score order has no
+  // direction — PRD "ascending/descending where meaningful").
+  await page.locator('#sort-select').selectOption('relevance');
+  await expect(direction).toBeHidden();
+  await page.locator('#sort-select').selectOption('title');
+  await expect(direction).toBeVisible();
+});

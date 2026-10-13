@@ -301,7 +301,7 @@ describe('navigation guard (PRD §4.3)', () => {
 });
 
 describe('sort wiring', () => {
-  it('re-sorts results when the sort control changes', async () => {
+  it('re-sorts results when the sort control changes (engine truth)', async () => {
     await waitFor(() => controller!.store.getState().status === 'ready');
     await clientSeedNote('Beta', 'b');
     await clientSeedNote('Alpha', 'a');
@@ -310,10 +310,61 @@ describe('sort wiring', () => {
 
     shell.elements.sortSelect.value = 'title';
     shell.elements.sortSelect.dispatchEvent(new Event('change', { bubbles: true }));
-    await waitFor(
-      () => controller!.store.getState().notes[0]?.title === 'Alpha',
-    );
     expect(controller!.store.getState().sort.field).toBe('title');
+    // Title DESC is reverse-alphabetical — the engine's real order (this
+    // used to assert the transient pre-requery state, which passed even
+    // when no sort ever applied).
+    await waitFor(
+      () => controller!.store.getState().notes[0]?.title === 'Beta',
+    );
+  });
+
+  it('sorts ascending through the direction control (audit D-03 repro inverted)', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    await clientSeedNote('Audit Gamma xray', 'g');
+    await clientSeedNote('Audit Alpha zebra', 'a');
+    await controller!.requery();
+    await waitFor(() => controller!.store.getState().notes.length === 2);
+
+    // The audit's exact observation: Title desc put Gamma first. The
+    // direction control now flips it honestly.
+    shell.elements.sortSelect.value = 'title';
+    shell.elements.sortSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    await waitFor(() => controller!.store.getState().notes[0]?.title.startsWith('Audit Gamma'));
+
+    shell.elements.sortDirectionSelect.value = 'asc';
+    shell.elements.sortDirectionSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(controller!.store.getState().sort.direction).toBe('asc');
+    await waitFor(() => controller!.store.getState().notes[0]?.title.startsWith('Audit Alpha'));
+
+    // The control mirrors state and hides for relevance (score order has
+    // no direction — PRD "where meaningful").
+    expect(shell.elements.sortDirectionSelect.hidden).toBe(false);
+    shell.elements.sortSelect.value = 'relevance';
+    shell.elements.sortSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    await waitFor(() => shell.elements.sortDirectionSelect.hidden === true);
+  });
+
+  it('seeds the session from the persisted default sort on load (FR-SEARCH-06)', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    // Change the persisted default through the real RPC.
+    const client = createApiClient(transport);
+    await client.request('settings/patch', {
+      patch: { defaultSort: { field: 'title', direction: 'asc' } },
+    });
+
+    controller?.dispose();
+    shell.dispose();
+    root.remove();
+    root = document.createElement('div');
+    document.body.appendChild(root);
+    shell = mountDashboardShell(root);
+    controller = createDashboardController({ shell, theme, client: createApiClient(transport) });
+
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    expect(controller!.store.getState().sort).toEqual({ field: 'title', direction: 'asc' });
+    expect(shell.elements.sortSelect.value).toBe('title');
+    expect(shell.elements.sortDirectionSelect.value).toBe('asc');
   });
 });
 

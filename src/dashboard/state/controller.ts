@@ -141,6 +141,8 @@ export function createDashboardController(options: {
   /* --------------------------- editor route -------------------------- */
 
   let editorSession: EditorSession | null = null;
+  /** Whether the persisted default sort was applied to this session yet. */
+  let sortSeeded = false;
   const editorMount = document.createElement('div');
   editorMount.className = 'editor-mount';
   editorMount.hidden = true;
@@ -227,6 +229,7 @@ export function createDashboardController(options: {
   /** Mirrors store state into shell chrome (pagination, select-all, bulk). */
   function syncChrome(state: DashboardState): void {
     syncFiltersPanel();
+    shell.setSort({ field: state.sort.field, direction: state.sort.direction });
     const pageCount = Math.max(1, Math.ceil(state.total / state.pageSize));
     const from = (state.page - 1) * state.pageSize;
     const to = Math.min(from + state.notes.length, state.total);
@@ -291,6 +294,14 @@ export function createDashboardController(options: {
       if (disposed) return;
       theme.setPreference(settings.theme);
       store.setState({ settings, counts });
+      // The persisted default sort finally seeds the session (T-066,
+      // FR-SEARCH-06): first settings load only, so later refreshes never
+      // clobber the user's in-session sort choices.
+      if (!sortSeeded) {
+        sortSeeded = true;
+        store.setState({ sort: { ...settings.defaultSort } });
+        shell.setSort({ field: settings.defaultSort.field, direction: settings.defaultSort.direction });
+      }
       await Promise.all([requery(), loadOrganization()]);
     } catch (error) {
       if (disposed) return;
@@ -930,6 +941,18 @@ export function createDashboardController(options: {
       direction: store.getState().sort.direction,
     };
     store.setState({ sort, page: 1 });
+    void requery();
+  }));
+  // Direction changes re-query at page 1 with the same field (T-066, audit
+  // D-03: previously direction was hard-coded desc with no control).
+  disposers.push(shell.on('sortDirectionChange', (direction) => {
+    const current = store.getState().sort;
+    const next = {
+      field: current.field,
+      direction: direction === 'asc' ? ('asc' as const) : ('desc' as const),
+    };
+    if (next.field === current.field && next.direction === current.direction) return;
+    store.setState({ sort: next, page: 1 });
     void requery();
   }));
   disposers.push(shell.on('viewModeChange', (viewMode) => {

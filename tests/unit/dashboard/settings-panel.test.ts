@@ -215,6 +215,35 @@ describe('settings panel', () => {
     harness.panel.dispose();
   });
 
+  it('collects the default sort field AND direction into the patch (T-066)', async () => {
+    const harness = mountPanel();
+    harness.panel.open();
+    const dialog = dialogOf();
+    await waitFor(() => dialog.querySelector('.settings__panel'));
+
+    // The Default sort row now carries the direction pair the audit found
+    // missing (D-03: no ascending control anywhere).
+    const selects = [...dialog.querySelectorAll<HTMLSelectElement>('select')];
+    const sortRow = selects.filter(
+      (select) => select.parentElement?.classList.contains('settings__sort-row'),
+    );
+    expect(sortRow).toHaveLength(2);
+    expect(sortRow[1]?.value).toBe('desc'); // mirrors the loaded settings
+
+    sortRow[0]!.value = 'title';
+    sortRow[0]!.dispatchEvent(new Event('change'));
+    sortRow[1]!.value = 'asc';
+    sortRow[1]!.dispatchEvent(new Event('change'));
+
+    const save = button('Save changes*');
+    save?.click();
+    await waitFor(() => harness.patches.length > 0);
+    expect(harness.patches[0]).toMatchObject({
+      defaultSort: { field: 'title', direction: 'asc' },
+    });
+    harness.panel.dispose();
+  });
+
   it('collects nested capture and AI drafts into one patch', async () => {
     const harness = mountPanel();
     harness.panel.open();

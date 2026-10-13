@@ -310,10 +310,35 @@ export function createSettingsPanel(callbacks: SettingsPanelCallbacks): Settings
       ),
       fieldRow(
         'Default sort',
-        selectInput(SORT_OPTIONS, settings.defaultSort.field, (value) => {
-          patch['defaultSort'] = { field: value, direction: settings.defaultSort.direction };
-          markDirty();
-        }),
+        (() => {
+          // Field + direction pair (T-066, FR-SEARCH-06): the persisted
+          // default now carries the direction the audit found missing, and
+          // the controller seeds the session from it on load.
+          const row = document.createElement('div');
+          row.className = 'settings__sort-row';
+          let pending: { field: string; direction: string } = { ...settings.defaultSort };
+          row.append(
+            selectInput(SORT_OPTIONS, settings.defaultSort.field, (value) => {
+              pending = { ...pending, field: value };
+              patch['defaultSort'] = { ...pending };
+              markDirty();
+            }),
+            selectInput(
+              [
+                { value: 'desc', label: 'Descending' },
+                { value: 'asc', label: 'Ascending' },
+              ],
+              settings.defaultSort.direction,
+              (value) => {
+                pending = { ...pending, direction: value === 'asc' ? 'asc' : 'desc' };
+                patch['defaultSort'] = { ...pending };
+                markDirty();
+              },
+            ),
+          );
+          return row;
+        })(),
+        'Applied when the dashboard opens.',
       ),
     );
 

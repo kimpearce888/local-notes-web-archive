@@ -46,7 +46,10 @@ export interface ShellEvents {
   /** Search submitted (Enter). */
   searchSubmit: (query: string) => void;
   /** Sort order changed. */
+  /** Sort field changed through the toolbar select. */
   sortChange: (field: string) => void;
+  /** Sort direction changed (T-066, FR-SEARCH-06, audit D-03). */
+  sortDirectionChange: (direction: string) => void;
   /** View mode changed (grid/list). */
   viewModeChange: (mode: 'grid' | 'list') => void;
   /** Filters disclosure toggled. */
@@ -74,6 +77,7 @@ export interface ShellElements {
   readonly searchInput: HTMLInputElement;
   readonly filtersButton: HTMLButtonElement;
   readonly sortSelect: HTMLSelectElement;
+  readonly sortDirectionSelect: HTMLSelectElement;
   readonly viewToggle: HTMLElement;
   readonly activeFilters: HTMLElement;
   /** Saved named views (FR-SEARCH-03, T-065). */
@@ -106,6 +110,8 @@ export interface DashboardShell {
   setActiveSmartList(list: SmartListId): void;
   /** Updates pagination controls. */
   setPagination(input: { page: number; pageCount: number; from: number; to: number; total: number }): void;
+  /** Mirrors the sort field + direction selects to the live sort (T-066). */
+  setSort(input: { field: string; direction: string }): void;
   /** Syncs the select-all checkbox with the page selection state. */
   setSelectAllState(input: { checked: boolean; indeterminate: boolean; pageNoteIds: readonly string[] }): void;
   dispose(): void;
@@ -318,6 +324,31 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   }
   sortSelect.value = 'modified';
 
+  // Sort direction (T-066, FR-SEARCH-06 "ascending/descending where
+  // meaningful", audit D-03): previously hard-coded desc with no control
+  // anywhere. Hidden while sorting by relevance — score order has no
+  // direction.
+  const sortDirectionLabel = document.createElement('label');
+  sortDirectionLabel.className = 'visually-hidden';
+  sortDirectionLabel.htmlFor = 'sort-direction-select';
+  sortDirectionLabel.textContent = 'Sort direction';
+
+  const sortDirectionSelect = document.createElement('select');
+  sortDirectionSelect.className = 'select';
+  sortDirectionSelect.id = 'sort-direction-select';
+  sortDirectionSelect.dataset['action'] = 'sort-direction';
+  sortDirectionSelect.setAttribute('aria-label', 'Sort direction');
+  for (const option of [
+    { value: 'desc', label: 'Descending' },
+    { value: 'asc', label: 'Ascending' },
+  ]) {
+    const element = document.createElement('option');
+    element.value = option.value;
+    element.textContent = option.label;
+    sortDirectionSelect.append(element);
+  }
+  sortDirectionSelect.value = 'desc';
+
   const viewToggle = document.createElement('div');
   viewToggle.className = 'view-toggle';
   viewToggle.setAttribute('role', 'radiogroup');
@@ -338,7 +369,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   listOption.textContent = 'List';
   viewToggle.append(gridOption, listOption);
 
-  toolbar.append(activeFilters, savedViewsHost, spacer, sortLabel, sortSelect, viewToggle);
+  toolbar.append(activeFilters, savedViewsHost, spacer, sortLabel, sortSelect, sortDirectionLabel, sortDirectionSelect, viewToggle);
 
   /* ------------------------- Topbar / content ----------------------- */
 
@@ -469,6 +500,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     searchInput: [],
     searchSubmit: [],
     sortChange: [],
+    sortDirectionChange: [],
     viewModeChange: [],
     filtersToggle: [],
     smartListChange: [],
@@ -524,6 +556,23 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   const onSortChange = (): void => emit('sortChange', sortSelect.value);
   sortSelect.addEventListener('change', onSortChange);
   disposers.push(() => sortSelect.removeEventListener('change', onSortChange));
+
+  const onSortDirectionChange = (): void => emit('sortDirectionChange', sortDirectionSelect.value);
+  sortDirectionSelect.addEventListener('change', onSortDirectionChange);
+  disposers.push(() => sortDirectionSelect.removeEventListener('change', onSortDirectionChange));
+
+  /** Keeps both sort selects mirroring the live sort state (T-066). */
+  const setSort = (input: { field: string; direction: string }): void => {
+    if ([...sortSelect.options].some((option) => option.value === input.field)) {
+      sortSelect.value = input.field;
+    }
+    sortDirectionSelect.value = input.direction === 'asc' ? 'asc' : 'desc';
+    // Relevance is score order — direction is meaningless, so the control
+    // honestly disappears while it applies (PRD "where meaningful").
+    sortDirectionSelect.hidden = input.field === 'relevance';
+    sortDirectionLabel.hidden = input.field === 'relevance';
+  };
+  setSort({ field: sortSelect.value, direction: sortDirectionSelect.value });
 
   const onViewClick = (event: Event): void => {
     const target = event.target;
@@ -602,6 +651,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     searchInput,
     filtersButton,
     sortSelect,
+    sortDirectionSelect,
     viewToggle,
     activeFilters,
     savedViewsHost,
@@ -684,6 +734,9 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
         input.total === 0
           ? 'No results'
           : `Showing ${input.from + 1}–${input.to} of ${input.total} · Page ${input.page} of ${input.pageCount}`;
+    },
+    setSort(input: { field: string; direction: string }): void {
+      setSort(input);
     },
     setSelectAllState(input: { checked: boolean; indeterminate: boolean; pageNoteIds: readonly string[] }): void {
       selectAllCheckbox.checked = input.checked;
