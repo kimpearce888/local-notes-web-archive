@@ -6,13 +6,15 @@
  */
 
 import { mountDashboardShell, initialThemePreference, type DashboardShell } from './shell';
-import { createThemeManager, type ThemeManager } from './theme';
+import { createThemeManager, type ThemeManager, type ThemePreference } from './theme';
 import { showEmpty } from './states';
 import { createApiClient } from './state/client';
 import { createDashboardController, type DashboardController } from './state/controller';
 import { createDiagnosticsPanel, type DiagnosticsPanel } from './views/diagnostics-panel';
 import { createSettingsPanel, type SettingsPanel } from './views/settings-panel';
 import { createOnboardingOverlay, type OnboardingOverlay } from './views/onboarding';
+import { createCommandPalette, type PaletteEntry } from './views/command-palette';
+import { SMART_LISTS, type SmartListId } from './views/smart-lists';
 import { createDuplicateDecisionMonitor, type DuplicateDecisionMonitor } from './views/duplicate-dialog';
 import type { CaptureProgressEvent, CaptureProgressPhase } from '../background/capture/queue';
 import type { ReminderFiredEvent } from '../background/reminders/fire';
@@ -94,6 +96,89 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
     announce: (message) => shell.announce(message),
   });
   shell.on('settingsOpen', () => settings.open());
+
+  /* Command palette (T-056, redesign brief): a keyboard-first launcher
+     over EXISTING actions only. Every entry activates the very same
+     buttons the rest of the UI uses, so the palette owns no business
+     logic — navigation and preference surface, nothing else. */
+  const smartListButton = (list: SmartListId): HTMLButtonElement | null =>
+    shell.elements.smartNav.querySelector<HTMLButtonElement>(
+      `[data-smart-list="${list}"]`,
+    );
+  const THEME_ENTRIES: ReadonlyArray<{ preference: ThemePreference; label: string }> = [
+    { preference: 'dark', label: 'Dark theme' },
+    { preference: 'light', label: 'Light theme' },
+    { preference: 'system', label: 'Follow system theme' },
+  ];
+  const paletteEntries = (): PaletteEntry[] => {
+    const entries: PaletteEntry[] = [
+      {
+        id: 'new-note',
+        label: 'New note',
+        group: 'Actions',
+        hint: 'Alt+Shift+C',
+        icon: 'plus',
+        run: () => shell.elements.newNoteButton.click(),
+      },
+      {
+        id: 'import-note',
+        label: 'Import note…',
+        group: 'Actions',
+        icon: 'import',
+        run: () => shell.elements.importNoteButton.click(),
+      },
+      {
+        id: 'focus-search',
+        label: 'Focus search',
+        group: 'Actions',
+        hint: '/',
+        icon: 'search',
+        run: () => {
+          shell.elements.searchInput.focus();
+          shell.elements.searchInput.select();
+        },
+      },
+    ];
+    for (const list of SMART_LISTS) {
+      entries.push({
+        id: `go-${list.id}`,
+        label: `Go to ${list.label}`,
+        group: 'Go to',
+        run: () => smartListButton(list.id)?.click(),
+      });
+    }
+    for (const themeEntry of THEME_ENTRIES) {
+      entries.push({
+        id: `theme-${themeEntry.preference}`,
+        label: themeEntry.label,
+        group: 'Preferences',
+        active: theme.preference() === themeEntry.preference,
+        run: () => theme.setPreference(themeEntry.preference),
+      });
+    }
+    entries.push(
+      {
+        id: 'open-settings',
+        label: 'Open settings',
+        group: 'Open',
+        icon: 'settings',
+        run: () => shell.elements.settingsButton.click(),
+      },
+      {
+        id: 'open-diagnostics',
+        label: 'Open diagnostics',
+        group: 'Open',
+        icon: 'activity',
+        run: () => shell.elements.diagnosticsButton.click(),
+      },
+    );
+    return entries;
+  };
+  const commandPalette = createCommandPalette({
+    entries: paletteEntries,
+    announce: (message) => shell.announce(message),
+  });
+  shell.on('commandPaletteOpen', () => commandPalette.open());
 
   // First-run onboarding (FR-SET-02): informative, never blocking.
   const onboarding: OnboardingOverlay = createOnboardingOverlay({
@@ -182,6 +267,7 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
       if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
         chrome.runtime.onMessage.removeListener(onRuntimeMessage);
       }
+      commandPalette.dispose();
       duplicates.dispose();
       diagnostics.dispose();
       settings.dispose();

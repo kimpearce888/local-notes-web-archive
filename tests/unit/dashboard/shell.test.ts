@@ -172,13 +172,42 @@ describe('event wiring', () => {
 });
 
 describe('keyboard operability', () => {
-  it('focuses the search field on Ctrl+K', () => {
+  it('emits commandPaletteOpen on Ctrl+K (redesign brief: palette owns the shortcut)', () => {
     const shell = mount();
-    shell.elements.searchInput.focus = vi.fn();
+    const onOpen = vi.fn();
+    shell.on('commandPaletteOpen', onOpen);
     document.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true, cancelable: true }),
     );
-    expect(shell.elements.searchInput.focus).toHaveBeenCalled();
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    // The default is prevented so the browser never binds its own search.
+    // (dispatchEvent returns false when a listener called preventDefault.)
+    const again = document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true, cancelable: true }),
+    );
+    expect(again).toBe(false);
+  });
+
+  it('emits commandPaletteOpen on Cmd+K (macOS meta key)', () => {
+    const shell = mount();
+    const onOpen = vi.fn();
+    shell.on('commandPaletteOpen', onOpen);
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true, cancelable: true }),
+    );
+    expect(onOpen).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers a palette trigger button with an accessible name and shortcut', () => {
+    const shell = mount();
+    expect(shell.elements.paletteButton.getAttribute('aria-label')).toBe(
+      'Open command palette (Ctrl+K)',
+    );
+    expect(shell.elements.paletteButton.getAttribute('aria-keyshortcuts')).toBe('Control+K Meta+K');
+    const onOpen = vi.fn();
+    shell.on('commandPaletteOpen', onOpen);
+    shell.elements.paletteButton.click();
+    expect(onOpen).toHaveBeenCalledTimes(1);
   });
 
   it('focuses the search field on "/" outside text fields', () => {

@@ -1,9 +1,16 @@
 /**
- * Dashboard shell (PRD §4.1): renders the top-to-bottom layout —
- *   1. New Note action
- *   2. Global search field and filter controls
+ * Dashboard shell (PRD §4.1): renders the app layout —
+ *   1. A persistent sidebar: brand, the New Note action, the smart-list
+ *      navigation and the secondary actions (import, settings, diagnostics)
+ *   2. A content column: global search field and filter controls
  *   3. Active filters, saved views and sort controls
  *   4. Cards/list results region
+ *
+ * Redesigned in T-056 (Linear/Arc-style sidebar layout) with 100% feature
+ * parity: every element id, accessible name, aria attribute, data-action
+ * hook and the PRD §4.1 top-to-bottom DOM order (New Note → search →
+ * toolbar → results) is preserved — the sidebar simply precedes the
+ * content column in the document.
  *
  * The shell owns structure, semantics, theming hooks and keyboard
  * operability. Data flow (state manager, messaging client) and result
@@ -12,6 +19,18 @@
 
 import type { ThemePreference } from './theme';
 import { SMART_LISTS, type SmartListId } from './views/smart-lists';
+import { icon, type IconName } from './views/icons';
+
+/** Decorative glyphs per smart list (labels carry the meaning). */
+const SMART_LIST_ICONS: Readonly<Record<SmartListId, IconName>> = {
+  all: 'layers',
+  pinned: 'pin',
+  favorites: 'star',
+  recent: 'clock',
+  overdue: 'alarm',
+  archived: 'archive',
+  trashed: 'trash',
+};
 
 export interface ShellEvents {
   /** New Note action activated (button click or ui-intent). */
@@ -34,6 +53,8 @@ export interface ShellEvents {
   filtersToggle: (open: boolean) => void;
   /** Smart list switched (all/pinned/favorites/recent/overdue/archived/trashed). */
   smartListChange: (list: SmartListId) => void;
+  /** Command palette requested (Ctrl/Cmd+K or the palette button). */
+  commandPaletteOpen: () => void;
   /** Previous results page requested. */
   pagePrev: () => void;
   /** Next results page requested. */
@@ -46,6 +67,10 @@ export interface ShellElements {
   readonly root: HTMLElement;
   readonly skipLink: HTMLAnchorElement;
   readonly newNoteButton: HTMLButtonElement;
+  readonly importNoteButton: HTMLButtonElement;
+  readonly settingsButton: HTMLButtonElement;
+  readonly diagnosticsButton: HTMLButtonElement;
+  readonly paletteButton: HTMLButtonElement;
   readonly searchInput: HTMLInputElement;
   readonly filtersButton: HTMLButtonElement;
   readonly sortSelect: HTMLSelectElement;
@@ -96,16 +121,13 @@ const SORT_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
 export function mountDashboardShell(root: HTMLElement): DashboardShell {
   const disposers: Array<() => void> = [];
 
-  /* ---------------------------- Header ------------------------------ */
+  /* ----------------------------- Sidebar ------------------------------ */
 
-  const header = document.createElement('header');
-  header.className = 'app-header';
+  const sidebar = document.createElement('aside');
+  sidebar.className = 'app-sidebar';
 
-  const headerInner = document.createElement('div');
-  headerInner.className = 'app-header__inner';
-
-  const headerRow = document.createElement('div');
-  headerRow.className = 'app-header__row';
+  const brand = document.createElement('div');
+  brand.className = 'sidebar__brand';
 
   const title = document.createElement('h1');
   title.className = 'app-title';
@@ -115,20 +137,57 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   mark.src = 'icons/icon-32.png';
   mark.alt = '';
   const titleText = document.createElement('span');
+  titleText.className = 'app-title__text';
   titleText.textContent = 'Local Notes & Web Archive';
   title.append(mark, titleText);
+  brand.append(title);
 
   const newNoteButton = document.createElement('button');
   newNoteButton.type = 'button';
-  newNoteButton.className = 'btn btn--primary';
+  newNoteButton.className = 'btn btn--primary btn--block sidebar__new-note';
   newNoteButton.dataset['action'] = 'new-note';
-  newNoteButton.textContent = 'New Note';
+  const newNoteIcon = icon('plus');
+  const newNoteLabel = document.createElement('span');
+  newNoteLabel.textContent = 'New Note';
+  newNoteButton.append(newNoteIcon, newNoteLabel);
+
+  /* ---------------------- Smart list navigation -------------------- */
+
+  const smartNav = document.createElement('nav');
+  smartNav.className = 'smart-nav';
+  smartNav.setAttribute('aria-label', 'Note lists');
+  const smartListButtons = new Map<SmartListId, HTMLButtonElement>();
+  for (const list of SMART_LISTS) {
+    const item = document.createElement('span');
+    item.className = 'smart-nav__item';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'smart-nav__button';
+    button.dataset['smartList'] = list.id;
+    button.append(icon(SMART_LIST_ICONS[list.id]));
+    const label = document.createElement('span');
+    label.className = 'smart-nav__label';
+    label.textContent = list.label;
+    button.append(label);
+    if (list.id === 'all') button.setAttribute('aria-current', 'true');
+    smartListButtons.set(list.id, button);
+    item.append(button);
+    smartNav.append(item);
+  }
+
+  /* ------------------------ Sidebar footer -------------------------- */
+
+  const sidebarFooter = document.createElement('div');
+  sidebarFooter.className = 'sidebar__footer';
 
   const importNoteButton = document.createElement('button');
   importNoteButton.type = 'button';
-  importNoteButton.className = 'btn';
+  importNoteButton.className = 'btn btn--ghost btn--block sidebar__footer-button';
   importNoteButton.dataset['action'] = 'import-note';
-  importNoteButton.textContent = 'Import note…';
+  importNoteButton.append(icon('import'));
+  const importLabel = document.createElement('span');
+  importLabel.textContent = 'Import note…';
+  importNoteButton.append(importLabel);
   importNoteButton.setAttribute('aria-label', 'Import a note file (JSON, Markdown or HTML)');
   importNoteButton.addEventListener('click', () => {
     const picker = document.createElement('input');
@@ -141,21 +200,32 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     picker.click();
   });
 
-  const diagnosticsButton = document.createElement('button');
-  diagnosticsButton.type = 'button';
-  diagnosticsButton.className = 'btn';
-  diagnosticsButton.dataset['action'] = 'open-diagnostics';
-  diagnosticsButton.textContent = 'Diagnostics';
-  diagnosticsButton.setAttribute('aria-label', 'Open the diagnostics page');
-
   const settingsButton = document.createElement('button');
   settingsButton.type = 'button';
-  settingsButton.className = 'btn';
+  settingsButton.className = 'btn btn--ghost btn--block sidebar__footer-button';
   settingsButton.dataset['action'] = 'open-settings';
-  settingsButton.textContent = 'Settings';
+  settingsButton.append(icon('settings'));
+  const settingsLabel = document.createElement('span');
+  settingsLabel.textContent = 'Settings';
+  settingsButton.append(settingsLabel);
   settingsButton.setAttribute('aria-label', 'Open settings');
 
-  headerRow.append(title, settingsButton, diagnosticsButton, importNoteButton, newNoteButton);
+  const diagnosticsButton = document.createElement('button');
+  diagnosticsButton.type = 'button';
+  diagnosticsButton.className = 'btn btn--ghost btn--block sidebar__footer-button';
+  diagnosticsButton.dataset['action'] = 'open-diagnostics';
+  diagnosticsButton.append(icon('activity'));
+  const diagnosticsLabel = document.createElement('span');
+  diagnosticsLabel.textContent = 'Diagnostics';
+  diagnosticsButton.append(diagnosticsLabel);
+  diagnosticsButton.setAttribute('aria-label', 'Open the diagnostics page');
+
+  sidebarFooter.append(importNoteButton, settingsButton, diagnosticsButton);
+
+  const sidebarSpacer = document.createElement('div');
+  sidebarSpacer.className = 'sidebar__spacer';
+
+  sidebar.append(brand, newNoteButton, smartNav, sidebarSpacer, sidebarFooter);
 
   /* -------------------------- Search row ---------------------------- */
 
@@ -180,13 +250,32 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
 
   const filtersButton = document.createElement('button');
   filtersButton.type = 'button';
-  filtersButton.className = 'btn';
+  filtersButton.className = 'btn btn--ghost search-form__filters';
   filtersButton.dataset['action'] = 'toggle-filters';
   filtersButton.textContent = 'Filters';
   filtersButton.setAttribute('aria-expanded', 'false');
   filtersButton.setAttribute('aria-controls', 'filters-region');
 
   searchForm.append(searchLabel, searchInput, filtersButton);
+
+  /* ---------------------- Command palette button -------------------- */
+
+  const paletteButton = document.createElement('button');
+  paletteButton.type = 'button';
+  paletteButton.className = 'btn btn--ghost palette-trigger';
+  paletteButton.dataset['action'] = 'open-command-palette';
+  paletteButton.setAttribute('aria-label', 'Open command palette (Ctrl+K)');
+  paletteButton.setAttribute('aria-keyshortcuts', 'Control+K Meta+K');
+  paletteButton.append(icon('command'));
+  const paletteKbd = document.createElement('span');
+  paletteKbd.className = 'palette-trigger__kbd';
+  paletteKbd.setAttribute('aria-hidden', 'true');
+  paletteKbd.textContent = 'Ctrl K';
+  paletteButton.append(paletteKbd);
+
+  const onPaletteClick = (): void => emit('commandPaletteOpen');
+  paletteButton.addEventListener('click', onPaletteClick);
+  disposers.push(() => paletteButton.removeEventListener('click', onPaletteClick));
 
   /* --------------------------- Toolbar ------------------------------ */
 
@@ -242,28 +331,18 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
 
   toolbar.append(activeFilters, spacer, sortLabel, sortSelect, viewToggle);
 
-  headerInner.append(headerRow, searchForm, toolbar);
-  header.append(headerInner);
+  /* ------------------------- Topbar / content ----------------------- */
 
-  /* ---------------------- Smart list navigation -------------------- */
+  const topbar = document.createElement('header');
+  topbar.className = 'app-topbar';
+  const topbarInner = document.createElement('div');
+  topbarInner.className = 'app-topbar__inner';
+  topbarInner.append(searchForm, paletteButton);
+  topbar.append(topbarInner);
 
-  const smartNav = document.createElement('nav');
-  smartNav.className = 'smart-nav';
-  smartNav.setAttribute('aria-label', 'Note lists');
-  const smartListButtons = new Map<SmartListId, HTMLButtonElement>();
-  for (const list of SMART_LISTS) {
-    const item = document.createElement('span');
-    item.className = 'smart-nav__item';
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'smart-nav__button';
-    button.dataset['smartList'] = list.id;
-    button.textContent = list.label;
-    if (list.id === 'all') button.setAttribute('aria-current', 'true');
-    smartListButtons.set(list.id, button);
-    item.append(button);
-    smartNav.append(item);
-  }
+  const contentToolbar = document.createElement('div');
+  contentToolbar.className = 'content-toolbar';
+  contentToolbar.append(toolbar);
 
   /* ---------------------- Bulk action bar mount -------------------- */
 
@@ -321,7 +400,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   pagination.setAttribute('aria-label', 'Results pages');
   const paginationPrev = document.createElement('button');
   paginationPrev.type = 'button';
-  paginationPrev.className = 'btn';
+  paginationPrev.className = 'btn btn--ghost';
   paginationPrev.textContent = 'Previous page';
   paginationPrev.disabled = true;
   const paginationLabel = document.createElement('span');
@@ -329,7 +408,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   paginationLabel.setAttribute('aria-live', 'polite');
   const paginationNext = document.createElement('button');
   paginationNext.type = 'button';
-  paginationNext.className = 'btn';
+  paginationNext.className = 'btn btn--ghost';
   paginationNext.textContent = 'Next page';
   paginationNext.disabled = true;
   pagination.append(paginationPrev, paginationLabel, paginationNext);
@@ -363,9 +442,13 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   skipLink.href = '#results';
   skipLink.textContent = 'Skip to notes list';
 
+  const content = document.createElement('div');
+  content.className = 'app-content';
+  content.append(topbar, contentToolbar, bulkBarMount, filtersRegion, main, pagination, statusBar);
+
   const app = document.createElement('div');
   app.className = 'app';
-  app.append(header, smartNav, bulkBarMount, filtersRegion, main, pagination, statusBar);
+  app.append(sidebar, content);
   root.replaceChildren(skipLink, app, liveRegion);
 
   type EventKey = keyof ShellEvents;
@@ -380,6 +463,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     viewModeChange: [],
     filtersToggle: [],
     smartListChange: [],
+    commandPaletteOpen: [],
     pagePrev: [],
     pageNext: [],
     selectAllPage: [],
@@ -472,7 +556,11 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   selectAllCheckbox.addEventListener('change', onSelectAllChange);
   disposers.push(() => selectAllCheckbox.removeEventListener('change', onSelectAllChange));
 
-  /** Global keyboard shortcuts: Ctrl/Cmd+K or "/" focuses search. */
+  /**
+   * Global keyboard shortcuts: Ctrl/Cmd+K opens the command palette
+   * (redesign brief) and "/" focuses search. Typing "/" inside a text
+   * field is never hijacked.
+   */
   const onKeyDown = (event: KeyboardEvent): void => {
     const inTextField =
       event.target instanceof HTMLElement &&
@@ -482,8 +570,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
         event.target.isContentEditable);
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
       event.preventDefault();
-      searchInput.focus();
-      searchInput.select();
+      emit('commandPaletteOpen');
       return;
     }
     if (event.key === '/' && !inTextField) {
@@ -499,6 +586,10 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     root,
     skipLink,
     newNoteButton,
+    importNoteButton,
+    settingsButton,
+    diagnosticsButton,
+    paletteButton,
     searchInput,
     filtersButton,
     sortSelect,
