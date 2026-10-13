@@ -386,6 +386,24 @@ Use). Popup-equivalent and content-script-equivalent surfaces verified honestly:
 the manifest has no popup (action opens the dashboard) and no declared content
 scripts (capture injects via chrome.scripting + CDP) — assert the actual paths.
 
+### T-048 Bug fix: image-source privacy guard and pasted-HTML sanitisation
+Added by the bug-fix loop when the T-045 adversarial suite found real issues:
+(1) image nodes accepted arbitrary src values and the node view assigned them
+to the live DOM — pasted remote images would have been fetched by the browser
+(an external network request in a local-first extension, PRD §10) and relative
+srcs produced resource-load noise against the extension origin; (2) the
+sanitize gate's single URI regexp admitted https?: for image srcs (the link
+policy had leaked into the image policy); (3) clipboard HTML entered
+ProseMirror unsanitised (the schema filtered the resulting document, but the
+raw HTML with inline handlers still reached Chromium's parsers); (4) the
+onboarding completion flag lived in chrome.storage.local, which is not durable
+across browser restarts for unpacked installs while IndexedDB is — and the
+onInstalled('install') reset re-armed the walkthrough for returning users.
+Fix: split image-src policy (data:image + attachment: only) with truthful
+removal reporting; render-time refusal with honest status; paste gate through
+sanitizeEditorHtml before parsing; onboarding flag in the IndexedDB settings
+record with no install-time reset. Unit + E2E coverage; full regression.
+
 ### T-047 Release packaging and GitHub Release with ZIP upload
 Regenerate the release artifact (`npm run release`), place
 `release/local-notes-web-archive-1.0.0.zip` + .sha256 + RELEASE_MANIFEST.txt,
