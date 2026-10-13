@@ -460,6 +460,22 @@ in the E2E suite (find bar hidden by default, visible on Ctrl+F, hidden
 again after Close), and the T-050 screenshots re-captured against the
 fixed build.
 
+### T-053 Re-release v1.0.1 with the T-052 fix and final protocol re-run
+The v1.0.0 release artifact predates the T-052 hidden-attribute bug fix (the
+dist was rebuilt with the guard but the release zip was never regenerated, so
+the published artifact still ships the permanently-visible find bar and the
+leaked destructive-restore checkbox). Bump package.json +
+public/manifest.json to 1.0.1 (semver patch for a product bug fix), rebuild
+the production dist, re-run the full gate battery (eslint, tsc strict,
+vitest, perf), regenerate the release zip via npm run release (new sha256),
+run the full Playwright suite (including the zip-acceptance extract-and-load
+suite against the NEW artifact), publish GitHub Release v1.0.1 with the three
+assets via npm run publish-release, update README install links and docs
+pins to 1.0.1, regenerate docs/REPOSITORY_AUDIT.md at the final HEAD, and
+verify the uploaded asset digest through the REST API (download-back +
+byte-identical sha256). The v1.0.0 release stays untouched as the historical
+record.
+
 
 ---
 
