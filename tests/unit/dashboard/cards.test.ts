@@ -378,7 +378,7 @@ describe('bulk action bar', () => {
     bar.update({
       selectedCount: 0,
       totalSelected: 0,
-      viewAllows: { archive: true, restore: false, trash: true, deletePermanently: false, pin: true },
+      viewAllows: { archive: true, restore: false, trash: true, deletePermanently: false, pin: true, favorite: true },
       tags: [],
       categories: [],
     });
@@ -387,7 +387,7 @@ describe('bulk action bar', () => {
     bar.update({
       selectedCount: 2,
       totalSelected: 5,
-      viewAllows: { archive: true, restore: false, trash: true, deletePermanently: false, pin: true },
+      viewAllows: { archive: true, restore: false, trash: true, deletePermanently: false, pin: true, favorite: true },
       tags: [],
       categories: [],
     });
@@ -404,7 +404,7 @@ describe('bulk action bar', () => {
     bar.update({
       selectedCount: 3,
       totalSelected: 3,
-      viewAllows: { archive: false, restore: true, trash: false, deletePermanently: true, pin: false },
+      viewAllows: { archive: false, restore: true, trash: false, deletePermanently: true, pin: false, favorite: false },
       tags: [],
       categories: [],
     });
@@ -423,7 +423,7 @@ describe('bulk action bar', () => {
     bar.update({
       selectedCount: 1,
       totalSelected: 1,
-      viewAllows: { archive: true, restore: false, trash: true, deletePermanently: false, pin: true },
+      viewAllows: { archive: true, restore: false, trash: true, deletePermanently: false, pin: true, favorite: true },
       tags: [],
       categories: [],
     });

@@ -204,6 +204,7 @@ export function createDashboardController(options: {
       totalSelected: state.selection.size,
       viewAllows: {
         pin: list !== 'trashed' && list !== 'archived',
+        favorite: list !== 'trashed' && list !== 'archived',
         archive: list !== 'trashed' && list !== 'archived',
         restore: list === 'archived' || list === 'trashed',
         trash: list !== 'trashed',
@@ -553,6 +554,16 @@ export function createDashboardController(options: {
               return false;
             }
           },
+          // Favorite/unfavorite from the editor (T-064, audit D-01):
+          // mirrors setPinned through the same notes/set-flags RPC.
+          setFavorite: async (noteId, favorite) => {
+            try {
+              await client.request('notes/set-flags', { noteId, favorite });
+              return true;
+            } catch {
+              return false;
+            }
+          },
           // Move to trash from the editor (T-054): the session flushes its
           // pending edits first; after the trash RPC the close flow
           // re-queries so the list reflects the removal.
@@ -698,6 +709,12 @@ export function createDashboardController(options: {
       for (const noteId of targets) {
         await runOne(() => client.request('notes/set-flags', { noteId, pinned: action.value }));
       }
+    } else if (action.kind === 'favorite') {
+      // T-064 (audit D-01): the flag finally has a human UI — the same
+      // notes/set-flags RPC the background always supported.
+      for (const noteId of targets) {
+        await runOne(() => client.request('notes/set-flags', { noteId, favorite: action.value }));
+      }
     } else if (action.kind === 'archive') {
       for (const noteId of targets) {
         await runOne(() => client.request('notes/archive', { noteId }));
@@ -751,7 +768,9 @@ export function createDashboardController(options: {
     const verb =
       action.kind === 'pin'
         ? action.value ? 'Pin' : 'Unpin'
-        : action.kind === 'assign-tags'
+        : action.kind === 'favorite'
+          ? action.value ? 'Favorite' : 'Unfavorite'
+          : action.kind === 'assign-tags'
           ? 'Tag assignment'
           : action.kind === 'assign-category'
             ? 'Category assignment'

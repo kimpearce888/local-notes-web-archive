@@ -215,3 +215,36 @@ test('the exported archive restores for real (full round-trip)', async () => {
     page.getByRole('button', { name: /Open .*T-063 Transport Note.* for editing/ }),
   ).toBeVisible({ timeout: 15_000 });
 });
+
+test('D-01: favorites are reachable from the bulk bar and the editor', async () => {
+  // The audit proved no UI control could set the favorite flag: the
+  // Favorites smart list was a permanent honest empty state.
+  const card = page.locator('.card', { hasText: 'T-063 Transport Note' }).first();
+  await card.getByLabel('Select T-063 Transport Note').check();
+  await page.locator('.bulk-bar').getByRole('button', { name: 'Favorite', exact: true }).click();
+
+  // The card badge appears (same badge family as Pinned).
+  await expect(card.locator('.card__badge--favorite')).toHaveText('Favorite', { timeout: 10_000 });
+
+  // The Favorites smart list — permanently empty before the fix — now
+  // shows the note.
+  await page.locator('.smart-nav').getByRole('button', { name: 'Favorites' }).click();
+  const favoriteCard = page.locator('.card', { hasText: 'T-063 Transport Note' }).first();
+  await expect(favoriteCard).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('#results-count')).toContainText('1');
+
+  // And the editor header offers the inverse action with a live label.
+  await favoriteCard.getByRole('button', { name: 'Open T-063 Transport Note for editing' }).click();
+  const editorHeader = page.locator('.editor-session__header');
+  await expect(editorHeader).toBeVisible({ timeout: 15_000 });
+  await editorHeader.getByRole('button', { name: 'Unfavorite' }).click();
+  await expect(editorHeader.getByRole('button', { name: 'Favorite', exact: true })).toBeVisible({
+    timeout: 10_000,
+  });
+
+  // Back to the list: the smart list honestly emptied.
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+  await expect(
+    page.locator('.card', { hasText: 'T-063 Transport Note' }),
+  ).toHaveCount(0, { timeout: 10_000 });
+});

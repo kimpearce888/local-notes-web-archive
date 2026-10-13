@@ -5,10 +5,6 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
-### T-064 Fix D-01: favorite toggle in the bulk bar and the editor header
-See ai/plan.md §L. Bulk action kind 'favorite' + editor-header toggle wired
-through notes/set-flags so the Favorites smart list becomes reachable.
-
 ### T-065 Fix D-02: build the Filters region UI (FR-SEARCH-03)
 See ai/plan.md §L. Real filter controls in #filters-region, active-filter
 chips, and named saved views persisted via AppSettings.savedViews.

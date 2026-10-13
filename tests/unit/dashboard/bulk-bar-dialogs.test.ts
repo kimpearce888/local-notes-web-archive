@@ -21,7 +21,7 @@ const CATEGORIES: readonly Category[] = [
 const INPUT = {
   selectedCount: 1,
   totalSelected: 1,
-  viewAllows: { archive: true, restore: true, trash: true, deletePermanently: true, pin: true },
+  viewAllows: { archive: true, restore: true, trash: true, deletePermanently: true, pin: true, favorite: true },
   tags: TAGS,
   categories: CATEGORIES,
 };

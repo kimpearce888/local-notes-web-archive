@@ -12,6 +12,7 @@ import type { Category, EntityId, Tag } from '../../core/types';
 
 export type BulkAction =
   | { kind: 'pin'; value: boolean }
+  | { kind: 'favorite'; value: boolean }
   | { kind: 'archive' }
   | { kind: 'restore' }
   | { kind: 'trash' }
@@ -36,6 +37,8 @@ export interface BulkBar {
       trash: boolean;
       deletePermanently: boolean;
       pin: boolean;
+      /** Favorite/unfavorite is offered (T-064, FR-NOTE-05). */
+      favorite: boolean;
     };
     tags: readonly Tag[];
     categories: readonly Category[];
@@ -75,6 +78,12 @@ export function createBulkBar(callbacks: BulkBarCallbacks): BulkBar {
     if (input.viewAllows.pin) {
       button('Pin', () => callbacks.onAction({ kind: 'pin', value: true }));
       button('Unpin', () => callbacks.onAction({ kind: 'pin', value: false }));
+    }
+    // Favorite/unfavorite mirrors Pin (T-064, audit D-01): the flag was
+    // previously settable only through import/AI code paths — no human UI.
+    if (input.viewAllows.favorite) {
+      button('Favorite', () => callbacks.onAction({ kind: 'favorite', value: true }));
+      button('Unfavorite', () => callbacks.onAction({ kind: 'favorite', value: false }));
     }
     button('Assign tags…', () => {
       void (async () => {

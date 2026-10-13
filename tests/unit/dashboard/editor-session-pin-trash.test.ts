@@ -369,3 +369,87 @@ describe('move to trash from the editor (T-054)', () => {
     await session.close();
   });
 });
+
+describe('favorite from the editor (T-064, audit D-01)', () => {
+  const realSetFavorite = async (noteId: EntityId, favorite: boolean): Promise<boolean> => {
+    try {
+      await client().request('notes/set-flags', { noteId, favorite });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  it('favorites and unfavorites through notes/set-flags with honest announcements', async () => {
+    const note = await seedNote('Favorite me', 'favorite target');
+    const mount = document.createElement('div');
+    root.append(mount);
+    const announced: string[] = [];
+    const session = await openEditorSession({
+      mount,
+      note,
+      callbacks: makeCallbacks({
+        setFavorite: realSetFavorite,
+        announce: (message) => announced.push(message),
+      }),
+    });
+
+    const favoriteButton = headerButton(session, 'Favorite');
+    favoriteButton.click();
+    await waitFor(() => announced.includes('Note favorited.'));
+    expect((await client().request('notes/get', { noteId: note.id })).note.favorite).toBe(true);
+    expect(headerButton(session, 'Unfavorite').disabled).toBe(false);
+
+    headerButton(session, 'Unfavorite').click();
+    await waitFor(() => announced.includes('Note unfavorited.'));
+    expect((await client().request('notes/get', { noteId: note.id })).note.favorite).toBe(false);
+    expect(headerButton(session, 'Favorite').textContent).toBe('Favorite');
+
+    await session.close();
+  });
+
+  it('reflects the favorite state on open and announces failures honestly', async () => {
+    const note = await seedNote('Already favorite', 'favorited body');
+    await client().request('notes/set-flags', { noteId: note.id, favorite: true });
+    const mount = document.createElement('div');
+    root.append(mount);
+    const announced: string[] = [];
+    const session = await openEditorSession({
+      mount,
+      note: (await client().request('notes/get', { noteId: note.id })).note,
+      callbacks: makeCallbacks({
+        setFavorite: async () => false, // controller reports failure
+        announce: (message) => announced.push(message),
+      }),
+    });
+
+    // Label mirrors the persisted state on open.
+    expect(headerButton(session, 'Unfavorite').textContent).toBe('Unfavorite');
+
+    headerButton(session, 'Unfavorite').click();
+    await waitFor(() => announced.includes('Updating the favorite failed — please try again.'));
+    // The flag was NOT flipped and the label still mirrors the truth.
+    expect((await client().request('notes/get', { noteId: note.id })).note.favorite).toBe(true);
+    expect(headerButton(session, 'Unfavorite').textContent).toBe('Unfavorite');
+
+    await session.close();
+  });
+
+  it('hides the favorite action when no controller wiring provides it', async () => {
+    const note = await seedNote('No favorite wiring', 'body');
+    const mount = document.createElement('div');
+    root.append(mount);
+    const session = await openEditorSession({
+      mount,
+      note,
+      callbacks: makeCallbacks(), // isolated-test shape: no setFavorite
+    });
+
+    const favorite = [...session.element.querySelectorAll<HTMLButtonElement>('.editor-session__header button')].find(
+      (candidate) => candidate.textContent === 'Favorite' || candidate.textContent === 'Unfavorite',
+    );
+    expect(favorite?.hidden).toBe(true);
+
+    await session.close();
+  });
+});

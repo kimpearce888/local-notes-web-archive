@@ -350,3 +350,61 @@ describe('audit trail from earlier tasks stays intact', () => {
     expect(audit.some((event) => event.action === 'notes/create')).toBe(true);
   });
 });
+
+describe('favorites (T-064, audit D-01)', () => {
+  it('favorites notes in bulk and populates the Favorites smart list', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    const first = await seed('Fav A');
+    const second = await seed('Fav B');
+    await seed('Unloved C');
+    await controller!.requery();
+    await waitFor(() => controller!.store.getState().notes.length === 3);
+
+    toggleCard(first);
+    toggleCard(second);
+    await waitFor(() => controller!.store.getState().selection.size === 2);
+    // The bulk bar actually offers the action the audit proved missing.
+    expect(shell.elements.bulkBarMount.textContent).toContain('Favorite');
+
+    await controller!.applyBulkAction({ kind: 'favorite', value: true });
+    await waitFor(() => controller!.store.getState().selection.size === 0);
+
+    const favA = (await client().request('notes/get', { noteId: first })).note;
+    const favB = (await client().request('notes/get', { noteId: second })).note;
+    expect(favA.favorite).toBe(true);
+    expect(favB.favorite).toBe(true);
+    await flush();
+    expect(shell.elements.liveRegion.textContent).toContain('Favorite: 2 notes updated');
+
+    // The previously permanently-empty smart list now has content.
+    smartListButton('favorites').click();
+    await waitFor(() => controller!.store.getState().smartList === 'favorites');
+    await waitFor(() => controller!.store.getState().total === 2);
+    expect(controller!.store.getState().notes.map((n) => n.title).sort()).toEqual(['Fav A', 'Fav B']);
+    expect(shell.elements.resultsTitle.textContent).toBe('Favorites');
+
+    // Unfavorite from the favorites view removes it honestly.
+    const remaining = controller!.store.getState().notes[0]!.id;
+    toggleCard(remaining);
+    await waitFor(() => controller!.store.getState().selection.size === 1);
+    await controller!.applyBulkAction({ kind: 'favorite', value: false });
+    await waitFor(() => controller!.store.getState().total === 1);
+    const unfavored = (await client().request('notes/get', { noteId: remaining })).note;
+    expect(unfavored.favorite).toBe(false);
+  });
+
+  it('hides the favorite action in views where it is not offered', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    const noteId = await seed('Trash fav target');
+    await client().request('notes/trash', { noteId });
+    smartListButton('trashed').click();
+    await waitFor(() => controller!.store.getState().smartList === 'trashed');
+    await controller!.requery();
+    await waitFor(() => controller!.store.getState().notes.length === 1);
+
+    toggleCard(controller!.store.getState().notes[0]!.id);
+    await waitFor(() => controller!.store.getState().selection.size === 1);
+    // Pin is equally hidden in trash — favorite mirrors it (D-01 fix).
+    expect(shell.elements.bulkBarMount.textContent).not.toContain('Favorite');
+  });
+});

@@ -157,6 +157,11 @@ export interface EditorSessionCallbacks {
    */
   setPinned?(noteId: EntityId, pinned: boolean): Promise<boolean>;
   /**
+   * Favorite/unfavorite the open note from the editor (T-064, audit D-01,
+   * notes/set-flags). Mirrors setPinned; optional for the same reason.
+   */
+  setFavorite?(noteId: EntityId, favorite: boolean): Promise<boolean>;
+  /**
    * Move the open note to trash from the editor (T-054, notes/trash).
    * Called after pending autosave edits are flushed; the session closes
    * back to the list afterwards. Optional for the same reason as setPinned.
@@ -872,6 +877,41 @@ export async function openEditorSession(options: {
   pinButton.addEventListener('click', () => void togglePinned());
 
   /**
+   * Favorite/unfavorite the note being edited (T-064, audit D-01): the
+   * same live-label + honest-failure pattern as the pin button above —
+   * before this existed the favorite flag had NO human UI anywhere, so
+   * the Favorites smart list could never populate.
+   */
+  const favoriteButton = document.createElement('button');
+  favoriteButton.type = 'button';
+  favoriteButton.className = 'btn';
+  favoriteButton.textContent = current.favorite ? 'Unfavorite' : 'Favorite';
+  if (!callbacks.setFavorite) favoriteButton.hidden = true;
+
+  async function toggleFavorite(): Promise<void> {
+    if (!callbacks.setFavorite || favoriteButton.disabled) return;
+    const target = !current.favorite;
+    favoriteButton.disabled = true;
+    try {
+      const ok = await callbacks.setFavorite(noteId, target);
+      if (ok) {
+        current = { ...current, favorite: target };
+        favoriteButton.textContent = target ? 'Unfavorite' : 'Favorite';
+        callbacks.announce(target ? 'Note favorited.' : 'Note unfavorited.');
+      } else {
+        callbacks.announce('Updating the favorite failed — please try again.');
+      }
+    } catch (error) {
+      callbacks.announce(
+        `Updating the favorite failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+    } finally {
+      favoriteButton.disabled = false;
+    }
+  }
+  favoriteButton.addEventListener('click', () => void toggleFavorite());
+
+  /**
    * Move the note being edited to trash (notes/trash through the
    * controller). Pending edits are flushed FIRST so the trashed note keeps
    * its newest content; the confirmed destructive action then closes the
@@ -936,6 +976,7 @@ export async function openEditorSession(options: {
   giveIcon(aiButton, 'command');
   giveIcon(fileButton, 'import');
   giveIcon(pinButton, 'pin');
+  giveIcon(favoriteButton, 'star');
   giveIcon(trashButton, 'trash');
 
   const header = document.createElement('div');
@@ -951,7 +992,7 @@ export async function openEditorSession(options: {
 
   const headerActions = document.createElement('div');
   headerActions.className = 'editor-session__header-group editor-session__header-group--actions';
-  headerActions.append(pinButton, trashButton);
+  headerActions.append(pinButton, favoriteButton, trashButton);
 
   header.append(headerPrimary, headerPanels, headerActions);
   container.prepend(header);
