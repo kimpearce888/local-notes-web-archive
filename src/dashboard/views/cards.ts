@@ -156,6 +156,11 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
   const content = document.createElement('div');
   content.className = 'card__content';
 
+  /* T-060 reading order: title on top, then subtitle, then the body
+     preview, then tags and categories on SEPARATE rows (never inline
+     with each other), then link/reminder indicators, then the meta
+     line. Empty rows are omitted entirely. */
+
   const heading = document.createElement('h3');
   heading.className = 'card__title';
   if (model.pinned) {
@@ -185,6 +190,7 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
     titleText.textContent = model.title;
     heading.append(titleText);
   }
+  content.append(heading);
 
   if (model.subtitle.trim().length > 0) {
     const subtitle = document.createElement('p');
@@ -203,23 +209,27 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
     content.append(preview);
   }
 
-  const meta = document.createElement('p');
-  meta.className = 'card__meta';
-  meta.textContent = `Created ${model.createdLabel} · Modified ${model.modifiedLabel}`;
-
-  const chipsRow = document.createElement('ul');
-  chipsRow.className = 'chips card__chips';
-  chipsRow.setAttribute('aria-label', 'Tags, categories and indicators');
+  const tagsRow = document.createElement('ul');
+  tagsRow.className = 'chips card__chips card__chips--tags';
+  tagsRow.setAttribute('aria-label', 'Tags');
   for (const name of model.tagNames) {
     const item = document.createElement('li');
     item.append(chip(`Tag: ${name}`, 'tag'));
-    chipsRow.append(item);
+    tagsRow.append(item);
   }
+
+  const categoriesRow = document.createElement('ul');
+  categoriesRow.className = 'chips card__chips card__chips--categories';
+  categoriesRow.setAttribute('aria-label', 'Categories');
   for (const name of model.categoryNames) {
     const item = document.createElement('li');
     item.append(chip(`Category: ${name}`, 'category'));
-    chipsRow.append(item);
+    categoriesRow.append(item);
   }
+
+  const indicatorsRow = document.createElement('ul');
+  indicatorsRow.className = 'chips card__chips card__chips--indicators';
+  indicatorsRow.setAttribute('aria-label', 'Link and reminder indicators');
   if (model.hasLinks) {
     const item = document.createElement('li');
     item.append(
@@ -232,7 +242,7 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
         'indicator',
       ),
     );
-    chipsRow.append(item);
+    indicatorsRow.append(item);
   }
   if (model.failedCaptureCount > 0) {
     const item = document.createElement('li');
@@ -243,16 +253,24 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
       ),
     );
     item.title = 'A capture attempt failed — open the note to retry from its snapshots panel.';
-    chipsRow.append(item);
+    indicatorsRow.append(item);
   }
   if (model.reminderChip.kind !== 'none') {
     const item = document.createElement('li');
     const label = model.reminderChip.label;
     item.append(chip(label, model.reminderChip.kind === 'overdue' ? 'reminder-overdue' : 'reminder-ok'));
-    chipsRow.append(item);
+    indicatorsRow.append(item);
   }
 
-  content.append(heading, meta, chipsRow);
+  if (tagsRow.firstElementChild !== null) content.append(tagsRow);
+  if (categoriesRow.firstElementChild !== null) content.append(categoriesRow);
+  if (indicatorsRow.firstElementChild !== null) content.append(indicatorsRow);
+
+  const meta = document.createElement('p');
+  meta.className = 'card__meta';
+  meta.textContent = `Created ${model.createdLabel} · Modified ${model.modifiedLabel}`;
+  content.append(meta);
+
   card.append(select, content);
   return card;
 }

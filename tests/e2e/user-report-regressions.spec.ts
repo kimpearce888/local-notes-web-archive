@@ -18,6 +18,20 @@ import { fileURLToPath } from 'node:url';
  *    the editor header): a user inside a note could neither pin it nor
  *    move it to trash. These tests drive both actions end-to-end through
  *    the real UI and verify the persisted outcomes.
+ *
+ * T-060 regressions for the user-reported defects (2026-10-13, v1.0.3):
+ *
+ * 3. The active "All notes" smart-list button was invisible: the dark
+ *    active-nav override keyed off [data-theme='system'] OUTSIDE any
+ *    media query, so the default system theme on a light OS painted the
+ *    dark navy #23273f pill behind near-black light-theme text. The test
+ *    asserts the REAL computed styles and a WCAG contrast ratio.
+ *
+ * 4. Note cards read body-first: subtitle and preview were appended
+ *    before the title, and tags/categories/indicators shared ONE inline
+ *    chips row. The test builds a note with a subtitle, body, tag AND
+ *    category through the real UI and asserts the card's DOM reading
+ *    order with tags and categories on separate rows.
  */
 
 const distDir = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', 'dist');
@@ -107,6 +121,44 @@ test('first run: onboarding dismissed', async () => {
   await expect(onboarding).toBeVisible({ timeout: 15_000 });
   await onboarding.getByRole('button', { name: 'Get started' }).click();
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
+});
+
+test('sidebar: the active smart-list button is readable under the default system theme (T-060)', async () => {
+  // The default theme preference is 'system' and this Chromium context
+  // renders light — exactly the combination that used to paint the dark
+  // navy pill (#23273f) behind near-black light-theme text, making the
+  // "All notes" button invisible (the user's screenshot).
+  expect(await page.locator('html').getAttribute('data-theme')).toBe('system');
+
+  const styles = await smartNav(page).locator('button[aria-current="true"]').evaluate((el) => {
+    const cs = getComputedStyle(el);
+    return { background: cs.backgroundColor, color: cs.color };
+  });
+
+  // The light-theme token pill (#ececfc), never the dark navy.
+  expect(styles.background, 'the active pill must not be the dark navy #23273f').not.toBe(
+    'rgb(35, 39, 63)',
+  );
+  expect(styles.background).toBe('rgb(236, 236, 252)');
+  expect(styles.color).toBe('rgb(23, 24, 29)');
+
+  // Ground truth: WCAG 2.x contrast of the rendered pair.
+  const parse = (value: string): [number, number, number] => {
+    const parts = value.match(/\d+/g);
+    if (!parts || parts.length < 3) throw new Error(`unparseable computed color: ${value}`);
+    return [Number(parts[0]), Number(parts[1]), Number(parts[2])];
+  };
+  const luminance = ([r, g, b]: [number, number, number]): number => {
+    const channel = (c: number): number => {
+      const s = c / 255;
+      return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  };
+  const light = luminance(parse(styles.background));
+  const dark = luminance(parse(styles.color));
+  const contrast = (Math.max(light, dark) + 0.05) / (Math.min(light, dark) + 0.05);
+  expect(contrast, 'active nav text must meet WCAG AA against its pill').toBeGreaterThanOrEqual(4.5);
 });
 
 test('reminder dialog: fields render at natural height and the zone field is visible', async () => {
@@ -216,6 +268,82 @@ test('editor: move to trash requires confirmation, trashes and returns to the li
     timeout: 15_000,
   });
   await smartNav(page).getByRole('button', { name: 'All notes' }).click();
+});
+
+test('note card: title first, then subtitle, body, separate tags and categories rows (T-060)', async () => {
+  // Build a note carrying every card element through the real UI.
+  const title = 'Card order check';
+  await page.getByRole('button', { name: 'New Note' }).click();
+  await page.getByRole('button', { name: 'Open Untitled for editing' }).first().click();
+  await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
+  await page.locator('.editor-panel__title').fill(title);
+  await page.locator('.editor-panel__subtitle').fill('Order proof subtitle');
+  await page.locator('.ProseMirror').first().click();
+  await page.keyboard.type('Body text for the card reading-order proof.');
+  await expect(page.locator('#save-state')).toHaveText('Saved', { timeout: 20_000 });
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+  await expect(page.getByRole('button', { name: `Open ${title} for editing` })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  // Assign a tag AND a category through the bulk bar, like a real user.
+  const bar = page.locator('.bulk-bar-mount');
+  const locateCard = () => page.locator('.card', { hasText: title }).first();
+
+  await locateCard().getByLabel(`Select ${title}`).check();
+  await expect(bar).toBeVisible();
+  await bar.getByRole('button', { name: 'Assign tags…' }).click();
+  const tagDialog = page.locator('dialog.dialog', { hasText: 'Assign tags' });
+  await expect(tagDialog).toBeVisible({ timeout: 10_000 });
+  await tagDialog.locator('[aria-label="New tags, comma-separated"]').fill('orderproof');
+  await tagDialog.getByRole('button', { name: 'Assign', exact: true }).click();
+  await expect(tagDialog).not.toBeVisible();
+  await locateCard().getByLabel(`Select ${title}`).uncheck();
+
+  await locateCard().getByLabel(`Select ${title}`).check();
+  await expect(bar).toBeVisible();
+  await bar.getByRole('button', { name: 'Assign category…' }).click();
+  const catDialog = page.locator('dialog.dialog', { hasText: 'Assign category' });
+  await expect(catDialog).toBeVisible({ timeout: 10_000 });
+  await catDialog.locator('[aria-label="New category name"]').fill('Proofs');
+  await catDialog.getByRole('button', { name: 'Assign', exact: true }).click();
+  await expect(catDialog).not.toBeVisible();
+  await locateCard().getByLabel(`Select ${title}`).uncheck();
+
+  // Ground truth from the real DOM: strict reading order, tags and
+  // categories NEVER inline on one row.
+  const card = locateCard();
+  await expect(card.locator('.chip', { hasText: 'Tag: orderproof' })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  const order = await card.evaluate((el) => {
+    const content = el.querySelector('.card__content');
+    return content ? [...content.children].map((child) => child.className) : [];
+  });
+  expect(order).toEqual([
+    expect.stringContaining('card__title'),
+    expect.stringContaining('card__subtitle'),
+    expect.stringContaining('card__preview'),
+    expect.stringContaining('card__chips--tags'),
+    expect.stringContaining('card__chips--categories'),
+    expect.stringContaining('card__meta'),
+  ]);
+
+  const separation = await card.evaluate((el) => {
+    const tags = el.querySelector('.card__chips--tags');
+    const categories = el.querySelector('.card__chips--categories');
+    return {
+      sameRow: tags !== null && tags === categories,
+      tagChips: tags ? [...tags.querySelectorAll('.chip')].map((chip) => chip.textContent) : null,
+      categoryChips: categories
+        ? [...categories.querySelectorAll('.chip')].map((chip) => chip.textContent)
+        : null,
+    };
+  });
+  expect(separation.sameRow, 'tags and categories must live on separate rows').toBe(false);
+  expect(separation.tagChips).toEqual(['Tag: orderproof']);
+  expect(separation.categoryChips).toEqual(['Category: Proofs']);
 });
 
 test('session hygiene: zero page errors, console errors or external requests', async () => {

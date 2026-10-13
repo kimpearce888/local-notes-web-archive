@@ -557,6 +557,37 @@ via npm run release, re-run verify-release, publish GitHub Release v1.0.3
 with the three assets, verify the uploaded digest byte-identical, and
 regenerate docs/REPOSITORY_AUDIT.md at the final HEAD.
 
+### T-060 User-reported bug fixes: system-theme active nav contrast and note-card reading order
+Found by the user testing the v1.0.3 redesign (screenshot 2026-10-13,
+pixel-verified against the build). Two real defects, nothing else changes.
+(1) "All notes" button invisible in the sidebar: the active smart-list
+button painted dark navy `#23273f` behind `var(--color-text)` — under the
+DEFAULT theme preference 'system' with a light OS the text token resolves
+to the light-theme near-black `#17181d`, so dark text sat on a dark navy
+pill (contrast ~1.2:1). Root cause: the dark-theme active-nav override
+listed `[data-theme='system']` selectors OUTSIDE any media query, so the
+dark background applied even when the OS was light; the correct
+`@media (prefers-color-scheme: dark)` system rule already existed below
+it. Fix: drop the two unconditional system selectors so the dark override
+keys off explicit dark + the existing OS-dark media query only — system
++light now renders the light `--color-accent-soft` pill with dark text
+(~13:1). (2) Note cards read body-first: renderCard appended subtitle and
+preview BEFORE the title (DOM order subtitle, preview, title, meta, one
+inline chips row), so cards showed body text above the title, and tags,
+categories, link and reminder chips all shared ONE inline row. Fix: strict
+reading order title -> subtitle -> body preview -> tags row -> categories
+row -> indicator row -> meta, with tags and categories on SEPARATE rows
+(never inline with each other), empty rows omitted, and per-row
+aria-labels. Regression coverage: unit CSS guard
+tests/unit/dashboard/smart-nav-theme-css.test.ts (dark override excludes
+system selectors outside the media query; the media block carries the
+system rule; light base uses the token pill), card-order assertions added
+to tests/unit/dashboard/cards.test.ts (exact child order, tags/categories
+row separation, empty-row omission), and E2E additions to
+tests/e2e/user-report-regressions.spec.ts (computed background/color of
+the active nav button under system+light with a WCAG contrast computation;
+card children order through the real UI for a note carrying subtitle,
+body, a tag AND a category).
 
 ---
 

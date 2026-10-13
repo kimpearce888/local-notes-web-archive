@@ -260,6 +260,84 @@ describe('renderCard', () => {
     expect(card.querySelector('.card__badge')?.textContent).toBe('Pinned');
     expect(card.querySelector('.card__badge--favorite')?.textContent).toBe('Favorite');
   });
+
+  it('stacks card content in the user-directed reading order (T-060)', () => {
+    // Title on top, then subtitle, then body text, then tags and
+    // categories on separate rows, then indicators, then meta.
+    const related = makeRelated({
+      tags: [makeTag('work')],
+      categories: [{ id: 'x' as never, name: 'Projects', parentId: null, order: 0, createdAt: NOW, updatedAt: NOW } as Category],
+      links: [makeLink(null)],
+      reminders: [makeReminder()],
+    });
+    const model = cardViewModel(makeNote(), related, NOW);
+    const card = renderCard(model, { viewMode: 'grid', selected: false, onToggleSelect: () => undefined });
+    const content = card.querySelector('.card__content');
+    expect(content).not.toBeNull();
+    const classes = [...(content as HTMLElement).children].map((el) => el.className);
+    expect(classes).toHaveLength(7);
+    expect(classes[0]).toContain('card__title');
+    expect(classes[1]).toContain('card__subtitle');
+    expect(classes[2]).toContain('card__preview');
+    expect(classes[3]).toContain('card__chips--tags');
+    expect(classes[4]).toContain('card__chips--categories');
+    expect(classes[5]).toContain('card__chips--indicators');
+    expect(classes[6]).toContain('card__meta');
+  });
+
+  it('never renders tags and categories inline on one row (T-060)', () => {
+    const related = makeRelated({
+      tags: [makeTag('work'), makeTag('urgent')],
+      categories: [{ id: 'x' as never, name: 'Projects', parentId: null, order: 0, createdAt: NOW, updatedAt: NOW } as Category],
+      links: [makeLink(null)],
+      reminders: [makeReminder()],
+    });
+    const model = cardViewModel(makeNote(), related, NOW);
+    const card = renderCard(model, { viewMode: 'grid', selected: false, onToggleSelect: () => undefined });
+
+    const tagsRow = card.querySelector('.card__chips--tags');
+    const categoriesRow = card.querySelector('.card__chips--categories');
+    const indicatorsRow = card.querySelector('.card__chips--indicators');
+    expect(tagsRow).not.toBeNull();
+    expect(categoriesRow).not.toBeNull();
+    expect(indicatorsRow).not.toBeNull();
+
+    // Each row carries ONLY its own kind of chip.
+    expect([...tagsRow!.querySelectorAll('.chip')].map((el) => el.textContent)).toEqual([
+      'Tag: work',
+      'Tag: urgent',
+    ]);
+    expect([...categoriesRow!.querySelectorAll('.chip')].map((el) => el.textContent)).toEqual([
+      'Category: Projects',
+    ]);
+    expect([...indicatorsRow!.querySelectorAll('.chip')].map((el) => el.textContent)).toEqual([
+      'Link',
+      'Due 2026-11-01',
+    ]);
+    expect(tagsRow!.querySelector('.chip--category')).toBeNull();
+    expect(tagsRow!.querySelector('.chip--indicator')).toBeNull();
+    expect(categoriesRow!.querySelector('.chip--tag')).toBeNull();
+    expect(categoriesRow!.querySelector('.chip--indicator')).toBeNull();
+    expect(indicatorsRow!.querySelector('.chip--tag')).toBeNull();
+    expect(indicatorsRow!.querySelector('.chip--category')).toBeNull();
+  });
+
+  it('omits empty chip rows entirely (T-060)', () => {
+    const model = cardViewModel(makeNote(), EMPTY_RELATED, NOW);
+    const card = renderCard(model, { viewMode: 'grid', selected: false, onToggleSelect: () => undefined });
+    expect(card.querySelector('.card__chips--tags')).toBeNull();
+    expect(card.querySelector('.card__chips--categories')).toBeNull();
+    expect(card.querySelector('.card__chips--indicators')).toBeNull();
+    // makeNote() carries the default subtitle 'Reading list'.
+    const classes = [...(card.querySelector('.card__content') as HTMLElement).children].map(
+      (el) => el.className,
+    );
+    expect(classes).toHaveLength(4); // title, subtitle, preview, meta
+    expect(classes[0]).toContain('card__title');
+    expect(classes[1]).toContain('card__subtitle');
+    expect(classes[2]).toContain('card__preview');
+    expect(classes[3]).toContain('card__meta');
+  });
 });
 
 describe('smart lists', () => {

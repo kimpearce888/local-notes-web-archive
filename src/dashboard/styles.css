@@ -1159,10 +1159,12 @@ dialog::backdrop {
   color: var(--color-text);
 }
 
+/* T-060: the dark pill must key off the EXPLICIT dark theme only — a
+   [data-theme='system'] selector here would paint #23273f behind the
+   light-theme text tokens when the OS is light (invisible "All notes").
+   System-following is handled inside the prefers-color-scheme block. */
 [data-theme='dark'] .smart-nav__button--active,
-[data-theme='dark'] .smart-nav__button[aria-current='true'],
-[data-theme='system'] .smart-nav__button--active,
-[data-theme='system'] .smart-nav__button[aria-current='true'] {
+[data-theme='dark'] .smart-nav__button[aria-current='true'] {
   background: #23273f;
   color: var(--color-text);
 }
