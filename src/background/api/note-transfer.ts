@@ -8,6 +8,7 @@
 
 import type { MessageRouter } from '../router';
 import { repo } from '../db';
+import { auditUserAction } from '../observability';
 import { getNote, NoteNotFoundError } from '../../core/repo/notes';
 import { listNoteTags } from '../../core/repo/tags';
 import { listNoteCategories } from '../../core/repo/categories';
@@ -34,22 +35,22 @@ export interface NoteExportFile {
 }
 
 export function registerNoteTransferApi(router: MessageRouter): void {
-  router.register('notes/export-file', async (payload) => {
+  router.register('notes/export-file', async (payload, ctx) => {
     const p = asObject(payload, 'notes/export-file');
     const noteId = asId(p['noteId'], 'noteId');
-    const ctx = await repo();
-    const note = await getNote(ctx, noteId);
+    const repoCtx = await repo();
+    const note = await getNote(repoCtx, noteId);
     if (!note) throw new NoteNotFoundError(noteId);
 
     const [tags, categories, reminders, snapshots] = await Promise.all([
-      listNoteTags(ctx, noteId),
-      listNoteCategories(ctx, noteId),
-      listNoteReminders(ctx, noteId),
-      listNoteSnapshots(ctx, noteId),
+      listNoteTags(repoCtx, noteId),
+      listNoteCategories(repoCtx, noteId),
+      listNoteReminders(repoCtx, noteId),
+      listNoteSnapshots(repoCtx, noteId),
     ]);
 
     // Links for the note: read the links store by the noteId index.
-    const links = await ctx
+    const links = await repoCtx
       .getByIndex<{ noteId: string; originalUrl: string; captureState: string }>('links', 'noteId', noteId)
       .catch(() => [] as { noteId: string; originalUrl: string; captureState: string }[]);
 
@@ -89,6 +90,16 @@ export function registerNoteTransferApi(router: MessageRouter): void {
 
     const blob = new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' });
     const safeTitle = (note.title.trim() || 'untitled-note').replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, ' ').slice(0, 60).trim();
+    await auditUserAction({
+      action: 'notes/export-file',
+      targetKind: 'note',
+      targetId: note.id,
+      outcome: 'succeeded',
+      detail:
+        `exported note as lnwa-note JSON (${tags.length} tag(s), ${categories.length} categor(y/ies), ` +
+        `${snapshots.length} snapshot(s))`,
+      correlationId: ctx.correlationId,
+    });
     return { blob, filename: `${safeTitle}.json` };
   });
 }

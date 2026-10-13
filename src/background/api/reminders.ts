@@ -8,6 +8,7 @@
 
 import type { MessageRouter } from '../router';
 import { repo } from '../db';
+import { auditUserAction } from '../observability';
 import {
   completeReminder,
   createReminder,
@@ -93,7 +94,7 @@ function parseTimeZone(value: unknown, field: string): TimeZoneName {
 }
 
 export function registerReminderApi(router: MessageRouter): void {
-  router.register('reminders/create', async (payload) => {
+  router.register('reminders/create', async (payload, ctx) => {
     const p = asObject(payload, 'reminders/create');
     const dueAt = asOptionalUtcTimestamp(p['dueAt'], 'dueAt');
     const recurrence = p['recurrence'] === undefined || p['recurrence'] === null
@@ -114,6 +115,17 @@ export function registerReminderApi(router: MessageRouter): void {
       nextDueAt,
     });
     await reconcileReminderAlarms();
+    await auditUserAction({
+      action: 'reminders/create',
+      targetKind: 'reminder',
+      targetId: reminder.id,
+      outcome: 'succeeded',
+      changedFields: recurrence ? ['dueAt', 'recurrence'] : ['dueAt'],
+      detail: recurrence
+        ? `created recurring reminder (${recurrence.kind}) for note ${reminder.noteId}`
+        : `created one-time reminder for note ${reminder.noteId}`,
+      correlationId: ctx.correlationId,
+    });
     return { reminder };
   });
 
@@ -128,7 +140,7 @@ export function registerReminderApi(router: MessageRouter): void {
     return { reminders };
   });
 
-  router.register('reminders/update-rule', async (payload) => {
+  router.register('reminders/update-rule', async (payload, ctx) => {
     const p = asObject(payload, 'reminders/update-rule');
     const reminderId = asId(p['reminderId'], 'reminderId');
     const current = await getReminder(await repo(), reminderId);
@@ -161,31 +173,67 @@ export function registerReminderApi(router: MessageRouter): void {
     patch.nextDueAt = computeNextDueAt(effective, nowUtc());
     const reminder = await updateReminderRule(await repo(), reminderId, patch);
     await reconcileReminderAlarms();
+    await auditUserAction({
+      action: 'reminders/update-rule',
+      targetKind: 'reminder',
+      targetId: reminder.id,
+      outcome: 'succeeded',
+      changedFields: Object.keys(patch),
+      detail: 'updated reminder rule; next occurrence recomputed by the engine',
+      correlationId: ctx.correlationId,
+    });
     return { reminder };
   });
 
-  router.register('reminders/complete', async (payload) => {
+  router.register('reminders/complete', async (payload, ctx) => {
     const p = asObject(payload, 'reminders/complete');
     const reminder = await completeReminder(await repo(), asId(p['reminderId'], 'reminderId'));
     await reconcileReminderAlarms();
+    await auditUserAction({
+      action: 'reminders/complete',
+      targetKind: 'reminder',
+      targetId: reminder.id,
+      outcome: 'succeeded',
+      changedFields: ['state'],
+      detail: 'reminder completed',
+      correlationId: ctx.correlationId,
+    });
     return { reminder };
   });
 
-  router.register('reminders/dismiss', async (payload) => {
+  router.register('reminders/dismiss', async (payload, ctx) => {
     const p = asObject(payload, 'reminders/dismiss');
     const reminder = await dismissReminder(await repo(), asId(p['reminderId'], 'reminderId'));
     await reconcileReminderAlarms();
+    await auditUserAction({
+      action: 'reminders/dismiss',
+      targetKind: 'reminder',
+      targetId: reminder.id,
+      outcome: 'succeeded',
+      changedFields: ['state'],
+      detail: 'reminder dismissed',
+      correlationId: ctx.correlationId,
+    });
     return { reminder };
   });
 
-  router.register('reminders/stop', async (payload) => {
+  router.register('reminders/stop', async (payload, ctx) => {
     const p = asObject(payload, 'reminders/stop');
     const reminder = await stopRecurrence(await repo(), asId(p['reminderId'], 'reminderId'));
     await reconcileReminderAlarms();
+    await auditUserAction({
+      action: 'reminders/stop',
+      targetKind: 'reminder',
+      targetId: reminder.id,
+      outcome: 'succeeded',
+      changedFields: ['recurrence'],
+      detail: 'recurrence stopped',
+      correlationId: ctx.correlationId,
+    });
     return { reminder };
   });
 
-  router.register('reminders/snooze', async (payload) => {
+  router.register('reminders/snooze', async (payload, ctx) => {
     const p = asObject(payload, 'reminders/snooze');
     const reminder = await snoozeReminder(
       await repo(),
@@ -193,13 +241,31 @@ export function registerReminderApi(router: MessageRouter): void {
       asUtcTimestamp(p['until'], 'until'),
     );
     await reconcileReminderAlarms();
+    await auditUserAction({
+      action: 'reminders/snooze',
+      targetKind: 'reminder',
+      targetId: reminder.id,
+      outcome: 'succeeded',
+      changedFields: ['snoozedUntil'],
+      detail: 'reminder snoozed',
+      correlationId: ctx.correlationId,
+    });
     return { reminder };
   });
 
-  router.register('reminders/delete', async (payload) => {
+  router.register('reminders/delete', async (payload, ctx) => {
     const p = asObject(payload, 'reminders/delete');
-    await deleteReminder(await repo(), asId(p['reminderId'], 'reminderId'));
+    const reminderId = asId(p['reminderId'], 'reminderId');
+    await deleteReminder(await repo(), reminderId);
     await reconcileReminderAlarms();
+    await auditUserAction({
+      action: 'reminders/delete',
+      targetKind: 'reminder',
+      targetId: reminderId,
+      outcome: 'succeeded',
+      detail: 'reminder deleted',
+      correlationId: ctx.correlationId,
+    });
     return { deleted: true };
   });
 

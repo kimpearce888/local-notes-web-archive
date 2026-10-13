@@ -7,6 +7,7 @@
 
 import type { MessageRouter } from '../router';
 import { repo } from '../db';
+import { auditUserAction } from '../observability';
 import { getSettings, patchSettings, getOnboardingComplete, setOnboardingComplete } from '../../core/repo/settings';
 import { APP_VERSION, APP_NAME, MIN_CHROME_VERSION, SCHEMA_VERSION } from '../../core/version';
 import { DatabaseUnavailableError, MigrationFailedError } from '../../core/db/open';
@@ -55,7 +56,7 @@ export function registerSettingsApi(router: MessageRouter): void {
    * validates the full record (loopback-only AI URLs, retention floors,
    * budgets) — invalid input surfaces as invalid-request, never persists.
    */
-  router.register('settings/patch', async (payload) => {
+  router.register('settings/patch', async (payload, ctx) => {
     const p = asObject(payload, 'settings/patch');
     const patch = p['patch'];
     if (typeof patch !== 'object' || patch === null || Array.isArray(patch)) {
@@ -63,6 +64,16 @@ export function registerSettingsApi(router: MessageRouter): void {
     }
     try {
       const settings = await patchSettings(await repo(), patch as Record<string, never>);
+      // FR-LOG-02: changed-field NAMES only — setting values (AI endpoint
+      // URLs, budgets) are never recorded in the audit trail.
+      await auditUserAction({
+        action: 'settings/patch',
+        targetKind: 'settings',
+        outcome: 'succeeded',
+        changedFields: Object.keys(patch as Record<string, unknown>),
+        detail: `updated ${Object.keys(patch as Record<string, unknown>).length} setting field(s)`,
+        correlationId: ctx.correlationId,
+      });
       return { settings };
     } catch (error) {
       // Infrastructure failures keep their own coded mapping.
@@ -82,13 +93,21 @@ export function registerSettingsApi(router: MessageRouter): void {
     return { complete };
   });
 
-  router.register('settings/set-onboarding-complete', async (payload) => {
+  router.register('settings/set-onboarding-complete', async (payload, ctx) => {
     const p = asObject(payload, 'settings/set-onboarding-complete');
     const complete = p['complete'];
     if (typeof complete !== 'boolean') {
       throw new PayloadValidationError('settings/set-onboarding-complete: complete must be a boolean');
     }
     await setOnboardingComplete(complete);
+    await auditUserAction({
+      action: 'settings/set-onboarding-complete',
+      targetKind: 'settings',
+      outcome: 'succeeded',
+      changedFields: ['onboardingComplete'],
+      detail: complete ? 'onboarding marked complete' : 'onboarding re-armed',
+      correlationId: ctx.correlationId,
+    });
     return { complete };
   });
 

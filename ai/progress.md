@@ -3,7 +3,6 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-037 Structured logging and audit
 - [ ] T-038 Diagnostics page
 - [ ] T-039 Settings and onboarding
 - [ ] T-040 Documentation bundle

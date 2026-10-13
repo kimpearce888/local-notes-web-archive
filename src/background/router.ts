@@ -30,6 +30,7 @@ import {
   AttachmentTooLargeError,
 } from '../core/repo/attachments';
 import { DatabaseUnavailableError, MigrationFailedError } from '../core/db/open';
+import { logOperation } from './observability';
 
 export interface RpcDispatchContext {
   /** Correlation id of the in-flight request (logs/audit linkage). */
@@ -137,9 +138,25 @@ export class MessageRouter {
       return rpcSuccess(request.id, result);
     } catch (error) {
       const rpcError = toRpcError(error);
-      if (rpcError.code === 'internal-error') {
-        // Full detail goes to the console only; the wire carries a coded error.
+      // Infrastructure-grade failures get a durable structured log entry
+      // (FR-LOG-01): component, operation/correlation ids, coded result and
+      // a sanitized message (toRpcError already bounds the text; appendLog
+      // scrubs secrets and truncates). Log failures never mask the coded
+      // response — logOperation swallows its own failures.
+      if (
+        rpcError.code === 'internal-error' ||
+        rpcError.code === 'migration-failed' ||
+        rpcError.code === 'database-unavailable'
+      ) {
         console.error(`[rpc ${request.type} ${request.id}]`, error);
+        await logOperation({
+          level: 'error',
+          component: 'rpc',
+          operationId: request.type,
+          correlationId: request.id,
+          resultCode: rpcError.code,
+          message: rpcError.message,
+        });
       }
       return rpcFailure(request.id, rpcError.code, rpcError.message);
     }

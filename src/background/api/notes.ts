@@ -27,7 +27,7 @@ import { listNoteTags } from '../../core/repo/tags';
 import { listNoteCategories } from '../../core/repo/categories';
 import { listNoteLinks } from '../../core/repo/links';
 import { listNoteReminders } from '../../core/repo/reminders';
-import { appendAuditEvent } from '../../core/repo/audit';
+import { auditUserAction as recordUserAudit } from '../observability';
 import type { Category, EntityId, Link, Note, NoteState, Reminder, Tag } from '../../core/types';
 import { PayloadValidationError } from '../protocol';
 import {
@@ -49,7 +49,7 @@ async function indexNote(note: Note): Promise<void> {
 /**
  * Audit a user-visible mutation. Correlation ids link the event to the RPC
  * that caused it; audit failures never fail the user's operation (the
- * mutation already committed) but are surfaced on the console.
+ * mutation already committed) — the shared helper swallows and reports them.
  */
 async function auditUserAction(
   ctx: RpcDispatchContext,
@@ -61,20 +61,15 @@ async function auditUserAction(
     detail: string;
   },
 ): Promise<void> {
-  try {
-    await appendAuditEvent(await repo(), {
-      actor: 'user',
-      action: input.action,
-      targetId: input.targetId,
-      targetKind: 'note',
-      outcome: input.outcome,
-      correlationId: ctx.correlationId,
-      changedFields: input.changedFields ?? [],
-      detail: input.detail,
-    });
-  } catch (error) {
-    console.error('[audit] failed to record', input.action, error);
-  }
+  await recordUserAudit({
+    action: input.action,
+    targetKind: 'note',
+    targetId: input.targetId,
+    outcome: input.outcome,
+    changedFields: input.changedFields,
+    detail: input.detail,
+    correlationId: ctx.correlationId,
+  });
 }
 
 const NOTE_STATES: readonly NoteState[] = ['active', 'archived', 'trashed'];
