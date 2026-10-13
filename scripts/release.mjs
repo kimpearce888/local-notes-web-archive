@@ -79,6 +79,11 @@ for (const file of jsFiles) {
 }
 console.log(`[release] static gate passed (${files.length} files, ${jsFiles.length} JS files scanned)`);
 
+// 2b. Manifest/CSP/assets/permissions verification gate (T-043, PRD §13):
+// runs the standalone verifier against the freshly built dist/ so the
+// release pipeline can never produce an artifact that fails it.
+execFileSync('node', [join(root, 'scripts', 'verify-release.mjs')], { cwd: root, stdio: 'inherit' });
+
 // 3-4. Zip + checksum
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
 mkdirSync(releaseDir, { recursive: true });

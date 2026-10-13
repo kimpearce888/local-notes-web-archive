@@ -119,6 +119,7 @@ external, proprietary, user-installed software — never bundled or required.
 | [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md) | Licenses of every bundled runtime dependency |
 | [`DEPENDENCIES.json`](./DEPENDENCIES.json) | Machine-readable pinned dependency inventory |
 | [`docs/EXTENSION_IDENTITY.md`](./docs/EXTENSION_IDENTITY.md) | Stable extension ID and key management |
+| [`docs/RELEASE_VERIFICATION.md`](./docs/RELEASE_VERIFICATION.md) | Release gate results, measured performance, keyboard pass, artifact checksums |
 
 ## Status
 

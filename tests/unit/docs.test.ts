@@ -96,3 +96,33 @@ describe('documentation bundle', () => {
     expect(readDoc('SECURITY.md')).toContain('The model proposes; the app validates');
   });
 });
+
+describe('release verification report (T-043, PRD §13)', () => {
+  it('exists with a PASS verdict and every required section', () => {
+    const report = readDoc('docs/RELEASE_VERIFICATION.md');
+    expect(report).toContain('**PASS**');
+    for (const section of [
+      '## Verification environment',
+      '## Gate matrix',
+      '### Dashboard shell',
+      '### Search over 10,000 notes',
+      '## Accessibility keyboard pass',
+      '## Release artifacts',
+      '## Verification commands',
+    ]) {
+      expect(report, `section ${section} missing`).toContain(section);
+    }
+  });
+
+  it('records measured numbers against the PRD §11 budgets', () => {
+    const report = readDoc('docs/RELEASE_VERIFICATION.md');
+    // Both budgets are stated with their targets and PASS verdicts.
+    expect(report).toContain('< 1,500 ms');
+    expect(report).toMatch(/p95.*< 500 ms → PASS|PASS.*p95 < 500 ms/);
+    // The release artifact is identified with name and checksum.
+    expect(report).toContain('local-notes-web-archive-1.0.0.zip');
+    expect(report).toMatch(/[0-9a-f]{64}/);
+    // Environment honesty is documented, not concealed.
+    expect(report).toContain('Environment honesty');
+  });
+});

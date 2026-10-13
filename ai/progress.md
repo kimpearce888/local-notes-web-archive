@@ -3,4 +3,4 @@
 Contains only incomplete tasks. On completion a task moves to completed.md
 (same commit) per ai/rule.md §8. Do not reorder; execute top-down.
 
-- [ ] T-043 Release verification gate
+(queue empty — all 43 plan.md tasks completed; see ai/completed.md)
