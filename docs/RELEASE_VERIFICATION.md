@@ -1,8 +1,8 @@
 # Release Verification Report
 
 **Task:** T-043 Release verification gate (plan.md; PRD §11, §13) — re-verified for
-v1.0.3 by T-059 (re-release with the T-056..T-058 UI/UX redesign)
-**Version verified:** 1.0.3
+v1.0.4 by T-061 (re-release carrying the T-060 post-redesign fixes)
+**Version verified:** 1.0.4
 **Date:** 2026-10-13
 **Verdict:** **PASS** — every gate green; the artifact is releasable.
 
@@ -30,8 +30,8 @@ assertions are the production ones.
 | 1 | Build (`vite build`) | PASS — 14 files, 0 warnings blocking, `theme-hint.js` external (CSP-safe) |
 | 2 | Static release scan (`release.mjs`) | PASS — 4 shipped JS files scanned: no remote runtime URLs, no `eval`/`new Function`; inert literal allowlist (W3C namespace URIs, dependency doc links) only |
 | 3 | Manifest scan (`verify-release.mjs`) | PASS — MV3, Chrome ≥ 120, stable `key`; CSP `script-src 'self'` / `object-src 'self'` / `connect-src 'self' + loopback`; 6 manifest/html-referenced assets present; icons are real PNGs; permissions match PERMISSIONS.md exactly (8 API, 2 required host, 2 optional host) |
-| 4 | Unit tests | PASS — 791/791 (`vitest run`; +18 redesign tests: command palette semantics/keyboard model, shell Ctrl/Cmd+K wiring) |
-| 5 | E2E smoke + verification | PASS — 56/56 in real Chromium over the unpacked `dist/` (functional smoke incl. the new command-palette spec, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance, the extended 14-test screenshot suite, T-054 user-report regressions) |
+| 4 | Unit tests | PASS — 797/797 (`vitest run`; +6 post-redesign guard tests: system-theme active-nav CSS rule, note-card reading order) |
+| 5 | E2E smoke + verification | PASS — 58/58 in real Chromium over the unpacked `dist/` (functional smoke incl. the command-palette spec, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance against this artifact, the 14-test screenshot suite, and the 7-test user-report regression suite covering both T-054 and T-060 fixes) |
 | 6 | Performance (PRD §11) | PASS — see measurements below |
 | 7 | Accessibility keyboard pass | PASS — see below |
 | 8 | Release artifacts | PASS — see below |
@@ -60,14 +60,14 @@ one authoritative index build:
 
 | Statistic | Value |
 |---|---|
-| p50 | 68 ms |
-| **p95** | **118 ms** |
-| p99 | 301 ms |
-| max | 396 ms |
+| p50 | 76 ms |
+| **p95** | **124 ms** |
+| p99 | 332 ms |
+| max | 369 ms |
 
-Per-shape p95: common term 66 ms, two-term 118 ms, phrase 125 ms,
-title-scoped 133 ms, flag filter + term 56 ms, filter-only 60 ms,
-term + title sort 95 ms, fuzzy 84 ms. **PRD budget: p95 < 500 ms → PASS**
+Per-shape p95: common term 67 ms, two-term 118 ms, phrase 135 ms,
+title-scoped 104 ms, flag filter + term 78 ms, filter-only 65 ms,
+term + title sort 100 ms, fuzzy 117 ms. **PRD budget: p95 < 500 ms → PASS**
 (asserted in `tests/perf/search-p95.test.ts`, runnable via
 `npm run test:perf`).
 
@@ -87,10 +87,16 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
   input and the editor are all reachable by Tab through the full toolbar
   chain; text typed, `Ctrl+A` + `Ctrl+B` bold applied (`<strong>` present),
   autosave reached the durable "Saved" state — no pointer input anywhere.
-- **Command palette (new, v1.0.3):** Ctrl+K opens it, typing filters,
+- **Command palette (v1.0.3):** Ctrl+K opens it, typing filters,
   ArrowDown/Enter run commands, Escape closes, a no-match query shows an
   honest empty state where Enter is a no-op (asserted in
   `tests/e2e/extension.spec.ts`).
+- **Post-redesign regressions (v1.0.4):** under the default system theme
+  with a light OS the active smart-list button renders the light accent-soft
+  pill with a computed WCAG contrast ≥ 4.5:1, and note cards read title →
+  subtitle → body → tags row → categories row → indicators → meta with
+  tags/categories on separate rows (asserted in
+  `tests/e2e/user-report-regressions.spec.ts`).
 - Settings dialog: 12 consecutive Tabs never leave the dialog (focus trap);
   Escape closes it; focus returns to page.
 - Visible focus: keyboard-focused search input renders the `:focus-visible`
@@ -103,10 +109,10 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
 
 | Artifact | Value |
 |---|---|
-| Zip | `release/local-notes-web-archive-1.0.3.zip` (1,532,959 bytes) |
-| SHA-256 | `2cb3d6131c99a054fd0f4ec6f54c35a2683fa6f3595174ec589ade104be9181c` |
+| Zip | `release/local-notes-web-archive-1.0.4.zip` (1,533,418 bytes) |
+| SHA-256 | `8c8650d6ad539518f8d650a135cf6e8815d9dd6288bda8695aa1b1b91fdebe22` |
 | Inventory | `release/RELEASE_MANIFEST.txt` (file list + sizes) |
-| Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). The v1.0.3 artifact supersedes v1.0.2: it ships the complete UI/UX redesign (T-056..T-058 — sidebar app shell, Linear/Arc design language, command palette, component pass; redesign QA evidence in `docs/REDESIGN_QA_REPORT.md`) while preserving 100% feature parity — no change to business logic, data, storage, APIs, permissions, search/AI/reminder/archive logic or import/export behavior; it also carries every earlier fix (T-054 dialog fields + editor pin/trash, T-052 hidden guard). |
+| Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). The v1.0.4 artifact supersedes v1.0.3: it carries the two T-060 post-redesign fixes — the sidebar active "All notes" button invisible under system theme + light OS (dark active-nav override now keys off explicit dark / OS-dark only, ~13:1 contrast restored) and the note-card reading order (title → subtitle → body → tags row → categories row → indicators → meta, tags and categories never inline) — while preserving 100% feature parity; it also carries everything from v1.0.3 (the complete T-056..T-058 UI/UX redesign, redesign QA evidence in `docs/REDESIGN_QA_REPORT.md`) and every earlier fix (T-054 dialog fields + editor pin/trash, T-052 hidden guard). |
 
 The zip and checksums are regenerable via `npm run release`; the manifest
 scan is enforced inside that pipeline (`scripts/verify-release.mjs`) and
@@ -116,8 +122,8 @@ a remote URL, dynamic code, missing asset or undocumented permission.
 ## Verification commands
 
 ```bash
-npm run verify          # lint + tsc strict + 791 unit tests
+npm run verify          # lint + tsc strict + 797 unit tests
 npm run test:perf       # 10k-note search p95 benchmark (< 500 ms budget)
-npm run test:e2e        # 56 Playwright tests over the built extension
+npm run test:e2e        # 58 Playwright tests over the built extension
 npm run release         # build + static gate + manifest scan + zip + sha256
 ```

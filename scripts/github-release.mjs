@@ -103,9 +103,25 @@ Chrome 120+ required. Everything stays on your device.
 - Full gate matrix and measured numbers: [\`docs/RELEASE_VERIFICATION.md\`](https://github.com/${slug}/blob/main/docs/RELEASE_VERIFICATION.md)
 - File inventory: **RELEASE_MANIFEST.txt** below (byte-for-byte with the zip contents)
 - Integrity: **${zipName}.sha256** below
-- Automated acceptance: unit 791/791, Playwright E2E 56/56 over the real
+- Automated acceptance: unit 797/797, Playwright E2E 58/58 over the real
   unpacked build, including a dedicated extract-zip-and-load acceptance suite
   (the artifact in this release is the exact folder layout that was tested)
+
+## What's new in v1.0.4 — post-redesign fixes
+
+Two defects reported against the v1.0.3 redesign are fixed. No other
+changes — 100% feature parity with v1.0.3.
+
+- **Sidebar "All notes" button invisible**: under the default *System*
+  appearance preference with a light OS, the active smart-list pill painted
+  the dark-theme navy behind near-black text (~1.2:1 contrast). The dark
+  active-nav override now applies only to the explicit dark theme (and
+  system + dark OS); system + light renders the light accent-soft pill
+  (~13:1 contrast)
+- **Note cards read body-first with jumbled chips**: cards now read
+  title → subtitle → body preview → **tags row** → **categories row** →
+  link/reminder indicators → dates, with tags and categories on separate
+  rows and empty rows omitted entirely
 
 ## What's new in v1.0.3 — redesigned UI/UX
 
