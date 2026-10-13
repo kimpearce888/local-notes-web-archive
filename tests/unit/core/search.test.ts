@@ -5,7 +5,13 @@ import { createNote, saveNote, setFlags, archiveNote, trashNote } from '../../..
 import { createTag, setNoteTags } from '../../../src/core/repo/tags';
 import { createCategory, setNoteCategories } from '../../../src/core/repo/categories';
 import { createLink } from '../../../src/core/repo/links';
-import { createSnapshot, saveTextArtifact, markMhtmlArtifact, markPngArtifact } from '../../../src/core/repo/snapshots';
+import {
+  createSnapshot,
+  saveTextArtifact,
+  markMhtmlArtifact,
+  markPngArtifact,
+  markTextArtifact,
+} from '../../../src/core/repo/snapshots';
 import { createReminder } from '../../../src/core/repo/reminders';
 import { parseQuery } from '../../../src/core/search/query';
 import { SearchEngine } from '../../../src/core/search/engine';
@@ -246,7 +252,10 @@ describe('search engine (FR-SEARCH-01/02/05/06)', () => {
     await markMhtmlArtifact(ctx, snapshot.id, 'failed');
     await markPngArtifact(ctx, snapshot.id, 'failed');
     expect((await engine.execute({ query: 'has:snapshot' })).total).toBe(1);
-    expect((await engine.execute({ query: '', filters: { snapshot: 'failed' } })).total).toBe(1);
+    // Honest semantics (T-065): this capture is PARTIAL (text saved), not
+    // failed — the whole capture failing means nothing was saved. The old
+    // assertion passed only because 'failed' used to be a no-op filter.
+    expect((await engine.execute({ query: '', filters: { snapshot: 'failed' } })).total).toBe(0);
   });
 
   it('fuzzy matching is optional and off by default', async () => {
@@ -344,5 +353,46 @@ describe('matchedFields decoration (T-041, FR-SEARCH-01 result decoration)', () 
     const result = await engine.execute({ query: '', filters: { pinned: true } });
     expect(result.total).toBe(1);
     expect(result.hits[0]?.matchedFields).toEqual([]);
+  });
+});
+
+describe('snapshot absence and failure filters (T-065, FR-SEARCH-03)', () => {
+  it("snapshot: 'missing' returns notes without any snapshot", async () => {
+    const snapshotted = await seedNote('With snapshot', 'captured body');
+    await createSnapshot(ctx, {
+      noteId: snapshotted.id,
+      linkId: null,
+      sourceUrl: 'https://example.com/page',
+      finalUrl: 'https://example.com/page',
+      title: 'Captured page',
+    });
+    const bare = await seedNote('Bare note', 'no capture here');
+    const missing = await engine.execute({ query: '', filters: { snapshot: 'missing' } });
+    expect(missing.total).toBe(1);
+    expect(missing.hits[0]?.noteId).toBe(bare.id);
+
+    // Presence still works the other way.
+    const present = await engine.execute({ query: '', filters: { snapshot: 'present' } });
+    expect(present.total).toBe(1);
+    expect(present.hits[0]?.noteId).toBe(snapshotted.id);
+  });
+
+  it("snapshot: 'failed' returns notes whose capture failed", async () => {
+    await seedNote('Clean capture', 'body');
+    const failedNote = await createNote(ctx, { title: 'Failed capture' });
+    const snapshot = await createSnapshot(ctx, {
+      noteId: failedNote.id,
+      linkId: null,
+      sourceUrl: 'https://example.com/failed',
+      finalUrl: 'https://example.com/failed',
+      title: 'Failed page',
+    });
+    await markMhtmlArtifact(ctx, snapshot.id, 'failed');
+    await markPngArtifact(ctx, snapshot.id, 'failed');
+    await markTextArtifact(ctx, snapshot.id, 'failed');
+
+    const failed = await engine.execute({ query: '', filters: { snapshot: 'failed' } });
+    expect(failed.total).toBe(1);
+    expect(failed.hits[0]?.noteId).toBe(failedNote.id);
   });
 });

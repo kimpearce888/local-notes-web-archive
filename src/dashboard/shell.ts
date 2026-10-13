@@ -76,6 +76,8 @@ export interface ShellElements {
   readonly sortSelect: HTMLSelectElement;
   readonly viewToggle: HTMLElement;
   readonly activeFilters: HTMLElement;
+  /** Saved named views (FR-SEARCH-03, T-065). */
+  readonly savedViewsHost: HTMLElement;
   readonly filtersRegion: HTMLElement;
   readonly smartNav: HTMLElement;
   readonly bulkBarMount: HTMLElement;
@@ -289,6 +291,13 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   activeFilters.id = 'active-filters';
   activeFilters.setAttribute('aria-label', 'Active filters');
 
+  // Saved named views (T-065, FR-SEARCH-03): clickable chips managed by
+  // the filters panel module — clicking applies the view, × deletes it.
+  const savedViewsHost = document.createElement('ul');
+  savedViewsHost.className = 'chips toolbar__saved-views';
+  savedViewsHost.id = 'saved-views';
+  savedViewsHost.setAttribute('aria-label', 'Saved views');
+
   const spacer = document.createElement('div');
   spacer.className = 'toolbar__spacer';
 
@@ -329,7 +338,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   listOption.textContent = 'List';
   viewToggle.append(gridOption, listOption);
 
-  toolbar.append(activeFilters, spacer, sortLabel, sortSelect, viewToggle);
+  toolbar.append(activeFilters, savedViewsHost, spacer, sortLabel, sortSelect, viewToggle);
 
   /* ------------------------- Topbar / content ----------------------- */
 
@@ -595,6 +604,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     sortSelect,
     viewToggle,
     activeFilters,
+    savedViewsHost,
     filtersRegion,
     smartNav,
     bulkBarMount,

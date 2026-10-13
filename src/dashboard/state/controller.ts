@@ -12,6 +12,7 @@ import { showContent, showEmpty, showError, showLoading } from '../states';
 import { cardViewModel, renderCard, EMPTY_RELATED } from '../views/cards';
 import { effectiveFilters, smartListById, type SmartListId } from '../views/smart-lists';
 import { createBulkBar, type BulkAction, type BulkBar } from '../views/bulk-bar';
+import { createFiltersPanel, type FiltersPanel } from '../views/filters-panel';
 import type { ApiClient } from './client';
 import { RpcClientError } from './client';
 import { createSnapshotsApi } from './snapshot-client';
@@ -25,7 +26,8 @@ import {
   type DashboardStore,
   type DashboardState,
 } from './store';
-import type { EntityId, Note } from '../../core/types';
+import { newId } from '../../core/util/ids';
+import type { EntityId, Filters, Note, SavedView } from '../../core/types';
 import type { RpcErrorCode } from '../../background/protocol';
 import { openEditorSession, type EditorSession, type SaveOutcome } from './editor-session';
 
@@ -68,6 +70,16 @@ export interface DashboardController {
   closeEditor(): Promise<void>;
   /** Re-runs the current query (filters/sort/page changes). */
   requery(): Promise<void>;
+  /** Applies a filter set (FR-SEARCH-03, T-065): page resets, requery runs. */
+  setFilters(filters: Filters): Promise<void>;
+  /** Clears every user filter (T-065). */
+  clearFilters(): Promise<void>;
+  /** Persists the current query + filters as a named view (T-065). */
+  saveCurrentView(name: string): Promise<void>;
+  /** Applies a saved view's query + filters (T-065). */
+  applySavedView(viewId: EntityId): Promise<void>;
+  /** Deletes a saved view (T-065). */
+  deleteSavedView(viewId: EntityId): Promise<void>;
   /** Applies a bulk action to the current selection. */
   applyBulkAction(action: BulkAction): Promise<void>;
   dispose(): void;
@@ -96,6 +108,35 @@ export function createDashboardController(options: {
     onClearSelection: () => store.setState({ selection: new Set<EntityId>() }),
   });
   shell.elements.bulkBarMount.append(bulkBar.element);
+
+  /* ------------------------- filters panel --------------------------- */
+
+  // T-065 (audit D-02): the Filters disclosure finally holds real
+  // FR-SEARCH-03 controls, active-filter chips and saved named views.
+  const filtersPanel: FiltersPanel = createFiltersPanel(
+    {
+      region: shell.elements.filtersRegion,
+      chips: shell.elements.activeFilters,
+      savedViews: shell.elements.savedViewsHost,
+    },
+    {
+      onApply: (filters) => void setFilters(filters),
+      onClear: () => void clearFilters(),
+      onSaveView: (name) => void saveCurrentView(name),
+      onApplyView: (viewId) => void applySavedView(viewId),
+      onDeleteView: (viewId) => void deleteSavedView(viewId),
+    },
+  );
+
+  function syncFiltersPanel(): void {
+    const state = store.getState();
+    filtersPanel.sync({
+      filters: state.filters,
+      tags: state.allTags,
+      categories: state.allCategories,
+      savedViews: state.settings?.savedViews ?? [],
+    });
+  }
 
   /* --------------------------- editor route -------------------------- */
 
@@ -185,6 +226,7 @@ export function createDashboardController(options: {
 
   /** Mirrors store state into shell chrome (pagination, select-all, bulk). */
   function syncChrome(state: DashboardState): void {
+    syncFiltersPanel();
     const pageCount = Math.max(1, Math.ceil(state.total / state.pageSize));
     const from = (state.page - 1) * state.pageSize;
     const to = Math.min(from + state.notes.length, state.total);
@@ -216,6 +258,12 @@ export function createDashboardController(options: {
   }
 
   disposers.push(store.subscribe(render));
+
+  // Opening the Filters disclosure re-syncs the controls with the live
+  // state (T-065): the panel always reflects what is actually applied.
+  disposers.push(shell.on('filtersToggle', (open) => {
+    if (open) syncFiltersPanel();
+  }));
 
   /* ---------------------------- actions ----------------------------- */
 
@@ -323,6 +371,78 @@ export function createDashboardController(options: {
           message: error instanceof Error ? error.message : 'Search failed.',
         },
       });
+    }
+  }
+
+  /* ------------------- filters + saved views (T-065) ----------------- */
+
+  async function setFilters(filters: Filters): Promise<void> {
+    store.setState({ filters, page: 1 });
+    await requery();
+  }
+
+  async function clearFilters(): Promise<void> {
+    await setFilters({});
+  }
+
+  async function saveCurrentView(name: string): Promise<void> {
+    const trimmed = name.trim().slice(0, 60);
+    if (trimmed.length === 0) {
+      shell.announce('Saving the view needs a name.');
+      return;
+    }
+    const state = store.getState();
+    const view: SavedView = {
+      id: newId(),
+      name: trimmed,
+      query: state.query,
+      filters: { ...state.filters },
+      createdAt: nowIso() as SavedView['createdAt'],
+    };
+    try {
+      const { settings } = await client.request('settings/patch', {
+        patch: { savedViews: [...(state.settings?.savedViews ?? []), view] },
+      });
+      if (disposed) return;
+      store.setState({ settings });
+      shell.announce(`Saved view "${trimmed}".`);
+    } catch (error) {
+      shell.announce(
+        `Saving the view failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+    }
+  }
+
+  async function applySavedView(viewId: EntityId): Promise<void> {
+    const view = store.getState().settings?.savedViews.find((candidate) => candidate.id === viewId);
+    if (!view) {
+      shell.announce('That saved view no longer exists.');
+      return;
+    }
+    // The search input mirrors the applied query so the UI stays truthful.
+    shell.elements.searchInput.value = view.query;
+    store.setState({ query: view.query, filters: { ...view.filters }, page: 1 });
+    await requery();
+    shell.announce(`Applied view "${view.name}".`);
+  }
+
+  async function deleteSavedView(viewId: EntityId): Promise<void> {
+    const state = store.getState();
+    const view = state.settings?.savedViews.find((candidate) => candidate.id === viewId);
+    if (!view) return;
+    try {
+      const { settings } = await client.request('settings/patch', {
+        patch: {
+          savedViews: (state.settings?.savedViews ?? []).filter((candidate) => candidate.id !== viewId),
+        },
+      });
+      if (disposed) return;
+      store.setState({ settings });
+      shell.announce(`Deleted view "${view.name}".`);
+    } catch (error) {
+      shell.announce(
+        `Deleting the view failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
     }
   }
 
@@ -871,6 +991,11 @@ export function createDashboardController(options: {
     openEditor,
     closeEditor,
     requery,
+    setFilters,
+    clearFilters,
+    saveCurrentView,
+    applySavedView,
+    deleteSavedView,
     applyBulkAction,
     dispose(): void {
       disposed = true;

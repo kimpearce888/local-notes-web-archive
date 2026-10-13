@@ -554,6 +554,22 @@ async function applyFilters(
     result = result.filter((n) => keep.has(n.id as string));
   }
 
+  // Snapshot absence / failure (T-065, FR-SEARCH-03): the presence block
+  // above cannot express "no snapshots" or "failed captures", so these get
+  // their own pass — keeping every offered filter honest.
+  if (filters.snapshot === 'missing' || filters.snapshot === 'failed') {
+    const keep = new Set<string>();
+    for (const note of result) {
+      const snapshots = await ctx.getByIndex<Snapshot>(Store.Snapshots, 'noteId', note.id);
+      const ok =
+        filters.snapshot === 'missing'
+          ? snapshots.length === 0
+          : snapshots.some((s) => s.status === 'failed');
+      if (ok) keep.add(note.id as string);
+    }
+    result = result.filter((n) => keep.has(n.id as string));
+  }
+
   if (parsed.is.includes('overdue') || filters.reminder === 'overdue') {
     const now = new Date().toISOString();
     const keep = new Set<string>();
@@ -566,6 +582,28 @@ async function applyFilters(
       if (reminders.some((r) => r.state === 'active' && r.nextDueAt !== null && r.nextDueAt <= now)) {
         keep.add(note.id as string);
       }
+    }
+    result = result.filter((n) => keep.has(n.id as string));
+  }
+
+  // Reminder state refinements (T-065, FR-SEARCH-03 "reminder
+  // present/due/overdue/completed"): 'due' keeps notes with a scheduled
+  // upcoming occurrence, 'completed' notes with at least one completed
+  // reminder. The presence block above already ran for these values.
+  if (filters.reminder === 'due' || filters.reminder === 'completed') {
+    const now = new Date().toISOString();
+    const keep = new Set<string>();
+    for (const note of result) {
+      const reminders = await ctx.getByIndex<{ state: string; nextDueAt: string | null }>(
+        Store.Reminders,
+        'noteId',
+        note.id,
+      );
+      const ok =
+        filters.reminder === 'due'
+          ? reminders.some((r) => r.state === 'active' && r.nextDueAt !== null && r.nextDueAt > now)
+          : reminders.some((r) => r.state === 'completed');
+      if (ok) keep.add(note.id as string);
     }
     result = result.filter((n) => keep.has(n.id as string));
   }

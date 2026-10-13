@@ -1456,6 +1456,81 @@ dialog textarea {
   background: var(--color-surface);
 }
 
+/* Filters panel (T-065, FR-SEARCH-03): the real controls that replaced
+   the previously-empty disclosure (audit D-02). */
+.filters-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--space-3) var(--space-4);
+  align-items: start;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+}
+
+.filters-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.filters-panel__field--options {
+  grid-column: span 2;
+}
+
+.filters-panel__label {
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+}
+
+.filters-panel__field .search-input,
+.filters-panel__field .select {
+  width: 100%;
+}
+
+.filters-panel__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  max-height: 9rem;
+  overflow-y: auto;
+}
+
+.filters-panel__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.filters-panel__empty {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.filters-panel__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.toolbar__saved-views:not(:empty) {
+  margin-right: var(--space-2);
+}
+
+.toolbar__saved-views .chip__label {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+
 @media (max-width: 72rem) {
   .filters-region {
     padding-left: var(--space-4);

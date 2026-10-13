@@ -248,3 +248,65 @@ test('D-01: favorites are reachable from the bulk bar and the editor', async () 
     page.locator('.card', { hasText: 'T-063 Transport Note' }),
   ).toHaveCount(0, { timeout: 10_000 });
 });
+
+test('D-02: the Filters disclosure holds real controls, chips and saved views', async () => {
+  // The audit measured ZERO children in #filters-region (with and without
+  // data) and chips that never populate. Now: controls, removable chips and
+  // durable named views (FR-SEARCH-03).
+  // The previous test left the view on the (now empty) Favorites list.
+  await page.locator('.smart-nav').getByRole('button', { name: 'All notes' }).click();
+  await expect(page.locator('#results-count')).toContainText('1 note', { timeout: 10_000 });
+  const filtersButton = page.getByRole('button', { name: 'Filters', exact: true });
+  await filtersButton.click();
+  const region = page.locator('#filters-region');
+  await expect(region).toBeVisible();
+  // The audit measured ZERO children here; now the control families exist.
+  const controlCount = await region.locator('input, select, button').count();
+  expect(controlCount).toBeGreaterThan(10);
+  await expect(region).toContainText('Apply filters');
+  await expect(region).toContainText('Save as view…');
+
+  // Apply a filter: the previously permanently-empty chip region renders
+  // one removable chip and the results honestly narrow to zero.
+  await region.locator('#filter-favorite').check();
+  await region.getByRole('button', { name: 'Apply filters' }).click();
+  const chips = page.locator('#active-filters');
+  await expect(chips).toContainText('Favorites only', { timeout: 10_000 });
+  await expect(page.locator('#results-count')).toContainText('0 notes', { timeout: 10_000 });
+
+  // Removing the chip restores the unfiltered list.
+  await chips.locator('.chip__remove').first().click();
+  await expect(page.locator('#results-count')).toContainText('1 note', { timeout: 10_000 });
+  await expect(chips.locator('.chip')).toHaveCount(0, { timeout: 10_000 });
+
+  // Saved views: the current query + filters persist under a name, survive
+  // a full reload, and re-apply with their query.
+  await page.locator('#search-input').fill('Transport');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#results-count')).toContainText('1 note', { timeout: 10_000 });
+
+  // The disclosure may still be open from the apply flow above — only
+  // click when it is actually closed.
+  if ((await filtersButton.getAttribute('aria-expanded')) !== 'true') {
+    await filtersButton.click();
+  }
+  await expect(region).toBeVisible();
+  await region.getByRole('button', { name: 'Save as view…' }).click();
+  const saveDialog = page.locator('dialog.dialog', { hasText: 'Save current view' });
+  await expect(saveDialog).toBeVisible();
+  await saveDialog.locator('input[type="text"]').fill('Transport view');
+  await saveDialog.getByRole('button', { name: 'Save view' }).click();
+  await expect(saveDialog).not.toBeVisible();
+  const savedViews = page.locator('#saved-views');
+  await expect(savedViews).toContainText('Transport view', { timeout: 10_000 });
+
+  // Reset the search, reload the dashboard, then apply the saved view.
+  await page.locator('#search-input').fill('');
+  await page.keyboard.press('Enter');
+  await page.reload();
+  await expect(page.locator('#results-count')).toContainText('1 note', { timeout: 15_000 });
+  await expect(savedViews).toContainText('Transport view', { timeout: 15_000 });
+  await savedViews.getByRole('button', { name: 'Transport view', exact: true }).click();
+  await expect(page.locator('#search-input')).toHaveValue('Transport', { timeout: 10_000 });
+  await expect(page.locator('#results-count')).toContainText('1 note', { timeout: 10_000 });
+});

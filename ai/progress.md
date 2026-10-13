@@ -5,10 +5,6 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
-### T-065 Fix D-02: build the Filters region UI (FR-SEARCH-03)
-See ai/plan.md §L. Real filter controls in #filters-region, active-filter
-chips, and named saved views persisted via AppSettings.savedViews.
-
 ### T-066 Fix D-03: sort direction control (FR-SEARCH-06)
 See ai/plan.md §L. Ascending/descending select in the toolbar + persisted
 default-sort direction in settings.
