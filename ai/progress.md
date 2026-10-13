@@ -5,6 +5,3 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
-### T-069 Re-release v1.0.5 with the T-063..T-068 audit fixes
-See ai/plan.md §L. Full re-release protocol so the installable artifact
-carries all six audit-fix tasks.
