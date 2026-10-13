@@ -6,8 +6,15 @@
  * requires.
  */
 
-import { isRpcRequest, rpcFailure, RPC_KIND } from './protocol';
-import { MessageRouter } from './router';
+import {
+  containsBlob,
+  decodeBinaries,
+  encodeBinaries,
+  isRpcRequest,
+  rpcFailure,
+  RPC_KIND,
+} from './protocol';
+import { MessageRouter, toRpcError } from './router';
 import { registerAllApi } from './api';
 import { openOrFocusDashboard } from './dashboard-tab';
 import { registerContextMenus, handleContextMenuClick } from './context-menus';
@@ -31,13 +38,30 @@ chrome.runtime.onMessage.addListener(
     if (!isRpcRequest(message)) return false;
     // Only messages from this extension's own contexts are served.
     if (sender.id !== undefined && sender.id !== chrome.runtime.id) return false;
-    void router
-      .dispatch(message)
-      .then(sendResponse)
-      .catch((error: unknown) => {
+    void (async () => {
+      try {
+        // T-063 binary codec (mirror side): the channel JSON-serializes
+        // values, so Blobs arrive as base64 envelopes and must be rebuilt
+        // BEFORE dispatch — handler `instanceof Blob` guards then validate
+        // the real blob. Results take the inverse path: any Blob the
+        // handler returns is encoded back into an envelope so it survives
+        // the return trip to the dashboard.
+        const decoded: typeof message = { ...message, payload: decodeBinaries(message.payload) };
+        const response = await router.dispatch(decoded);
+        const wire =
+          response.ok && containsBlob(response.result)
+            ? { ...response, result: await encodeBinaries(response.result) }
+            : response;
+        sendResponse(wire);
+      } catch (error) {
         console.error('[rpc dispatch] unexpected failure', error);
-        sendResponse(rpcFailure(message.id, 'internal-error', 'dispatch failed'));
-      });
+        // Codec validation failures keep their coded shape (e.g.
+        // invalid-request for a malformed envelope) instead of collapsing
+        // into a generic internal error.
+        const rpcError = toRpcError(error);
+        sendResponse(rpcFailure(message.id, rpcError.code, rpcError.message));
+      }
+    })();
     return true; // keep the channel open for the async response
   },
 );

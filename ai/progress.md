@@ -5,11 +5,6 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
-### T-063 Fix D-04+D-06: base64 binary codec for the RPC channel
-See ai/plan.md §L for the full task description. Transparent envelope codec
-at the two channel boundaries (client request/response + SW onMessage);
-fixes attachments, backup export/restore and every blob-returning RPC.
-
 ### T-064 Fix D-01: favorite toggle in the bulk bar and the editor header
 See ai/plan.md §L. Bulk action kind 'favorite' + editor-header toggle wired
 through notes/set-flags so the Favorites smart list becomes reachable.

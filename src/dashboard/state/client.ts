@@ -3,10 +3,20 @@
  * shared RPC envelope, validates the response shape, and surfaces coded
  * failures as RpcClientError (mapped from the same protocol the service
  * worker emits). The transport is injectable for tests.
+ *
+ * T-063 binary codec: chrome.runtime.sendMessage JSON-serializes message
+ * values, which turns every Blob into `{}` on the wire (audit defects
+ * D-04/D-06). request() therefore encodes payload Blobs into base64
+ * envelopes before sending and rebuilds Blobs from envelope results on the
+ * way back — the service worker entry listener applies the mirror-image
+ * codec, so handlers and call sites stay Blob-typed end to end.
  */
 
 import {
   RPC_KIND,
+  containsBlob,
+  decodeBinaries,
+  encodeBinaries,
   isRpcResponse,
   newCorrelationId,
   type RpcErrorCode,
@@ -51,12 +61,23 @@ export function createApiClient(transport: RpcTransport = chromeTransport): ApiC
       type: K,
       payload: ApiContract[K]['payload'],
     ): Promise<ApiContract[K]['result']> {
-      const message: RpcRequest = {
-        kind: RPC_KIND,
-        id: newCorrelationId(),
-        type,
-        payload,
-      };
+      let message: RpcRequest;
+      try {
+        message = {
+          kind: RPC_KIND,
+          id: newCorrelationId(),
+          type,
+          // Blobs travel as base64 envelopes; the worker rebuilds them
+          // before handler validation (T-063). Blob-free payloads take the
+          // synchronous fast path — no extra microtask hop, no copying.
+          payload: containsBlob(payload) ? await encodeBinaries(payload) : payload,
+        };
+      } catch (error) {
+        throw new RpcClientError(
+          'internal-error',
+          error instanceof Error ? error.message : 'payload encoding failed',
+        );
+      }
       let response: unknown;
       try {
         response = await transport(message);
@@ -72,7 +93,14 @@ export function createApiClient(transport: RpcTransport = chromeTransport): ApiC
         throw new RpcClientError('internal-error', 'malformed response from the service worker');
       }
       if (response.ok) {
-        return response.result as ApiContract[K]['result'];
+        try {
+          return decodeBinaries(response.result) as ApiContract[K]['result'];
+        } catch (error) {
+          throw new RpcClientError(
+            'internal-error',
+            error instanceof Error ? error.message : 'binary result decoding failed',
+          );
+        }
       }
       throw new RpcClientError(response.error.code, response.error.message);
     },

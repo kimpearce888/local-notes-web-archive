@@ -1,8 +1,8 @@
 /**
  * Attachments API (PRD §4.4 media, FR-DATA-01, FR-SEARCH-01, FR-LOG-02):
- * local-file inserts arrive as structured-cloneable Blobs over the RPC
- * channel, are verified from magic bytes, content-hash deduplicated within
- * the note, and persisted in the blob store. Every mutation keeps the
+ * local-file inserts arrive as Blobs rebuilt from base64 envelopes at the
+ * channel boundary (T-063), are verified from magic bytes, content-hash
+ * deduplicated within the note, and persisted in the blob store. Every mutation keeps the
  * note's search projection (attachment filenames are indexed) in sync and
  * appends an audit event with metadata only — never content.
  */

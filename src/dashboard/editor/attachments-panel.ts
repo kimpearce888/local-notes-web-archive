@@ -78,6 +78,10 @@ export function createAttachmentsPanel(
   attachButton.type = 'button';
   attachButton.className = 'btn';
   attachButton.textContent = 'Attach files…';
+  // T-063: the button finally does what its label promises — it opens the
+  // adjacent (visible) file input. It previously had no handler at all, so
+  // the input was the only working control.
+  attachButton.addEventListener('click', () => fileInput.click());
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.multiple = true;

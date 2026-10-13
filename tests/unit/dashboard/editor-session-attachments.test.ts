@@ -2,6 +2,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createApiClient } from '../../../src/dashboard/state/client';
 import {
+  containsBlob,
+  decodeBinaries,
+  encodeBinaries,
+} from '../../../src/background/protocol';
+import {
   openEditorSession,
   type EditorSessionCallbacks,
 } from '../../../src/dashboard/state/editor-session';
@@ -21,6 +26,14 @@ import type { Attachment, Note } from '../../../src/core/types';
  * session blob: URLs), non-image files attach as note files with truthful
  * outcomes, the attachments panel lists/renames/deletes/downloads them, and
  * oversized files are rejected before any write.
+ *
+ * T-063: the transport below emulates the REAL channel —
+ * chrome.runtime.sendMessage JSON-serializes wire messages, and the
+ * service-worker entry listener rebuilds payload Blobs from base64
+ * envelopes before dispatch (encoding Blob results back). The previous
+ * pass-through transport was precisely the blind spot that let audit
+ * defect D-04 ("attachments are broken end-to-end in the built artifact")
+ * ship green unit tests.
  */
 
 type Transport = Parameters<typeof createApiClient>[0];
@@ -30,7 +43,19 @@ let router: MessageRouter;
 let objectUrlCounter = 0;
 const revokedUrls: string[] = [];
 
-const transport: Transport = async (message) => router.dispatch(message);
+const jsonClone = (value: unknown): unknown => JSON.parse(JSON.stringify(value)) as unknown;
+
+const transport: Transport = async (message) => {
+  // Real-channel serialization, then the worker entry codec.
+  const wire = jsonClone(message) as { payload: unknown };
+  const decoded = { ...(message as object), payload: decodeBinaries(wire.payload) };
+  const response = await router.dispatch(decoded as Parameters<MessageRouter['dispatch']>[0]);
+  if (!response.ok) return response;
+  const result = containsBlob(response.result)
+    ? await encodeBinaries(response.result)
+    : response.result;
+  return jsonClone({ ...response, result });
+};
 const client = () => createApiClient(transport);
 
 const PNG_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x01, 0x02]);

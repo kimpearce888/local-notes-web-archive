@@ -243,13 +243,14 @@ export interface ApiContract {
     result: { blob: Blob; filename: string };
   };
 
-  /* attachments (T-019: images and files, structured-cloneable Blobs) */
+  /* attachments (T-019: images and files; T-063 wire format) */
   'attachments/add': {
     payload: {
       noteId: EntityId;
       filename: string;
       declaredMimeType: string;
-      /** Structured-cloneable Blob survives the runtime message channel. */
+      /** Crosses the channel as a base64 envelope; the worker rebuilds the
+       * Blob before handler validation (background/protocol.ts, T-063). */
       data: Blob;
     };
     result: { attachment: Attachment; deduplicated: boolean };

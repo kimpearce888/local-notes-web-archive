@@ -83,3 +83,11 @@ mistaken for external connectivity (per the MCP disclosure requirements).
   recovery entry as you type and offers it on reopen.
 - The `debugger` banner during screenshot capture is Chrome's own UI and
   cannot be suppressed; the debugger is never attached outside captures.
+- Binary data (attachments, backup archives) crosses the dashboard ↔ service
+  worker channel as base64 inside the JSON message envelope, because
+  `chrome.runtime.sendMessage` cannot carry Blobs. The practical ceiling is
+  the 50 MB per-attachment limit (enforced before any write); very large
+  transfers transiently use roughly 2.5× the file size in memory while the
+  envelope is built, so attaching or backing up near the limit on a
+  memory-constrained machine can fail honestly with a storage/channel error
+  rather than silently truncating.
