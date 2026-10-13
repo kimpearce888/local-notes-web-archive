@@ -5,15 +5,6 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## J. Final QA, Playwright & release protocol (post-plan acceptance round)
 
-### T-045 Human-simulation and adversarial Playwright suite
-New E2E spec driving the app exactly like a real user: fast/repeated clicks,
-invalid and empty inputs, malicious inputs (XSS payloads via real clipboard
-paste, javascript: URL in the link dialog), multiple dashboard tabs, full
-browser-restart persistence, navigation sweep, permanent delete from Trash,
-theme persistence across reload, zero uncaught page errors and zero
-non-loopback network requests. Persona coverage: new/returning/power/
-invalid-malicious users (auth N/A — account-less by design, PRD §1).
-
 ### T-046 ZIP package acceptance test (extract → load → use)
 Extract `release/local-notes-web-archive-1.0.0.zip` into a scratch directory
 with fflate, verify inventory against RELEASE_MANIFEST.txt, load the EXTRACTED
