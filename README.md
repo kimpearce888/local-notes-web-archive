@@ -57,8 +57,8 @@ Retina captures (2880 px wide); the social banner is 1280x640 for link previews.
 
 The published package is fully built and tested — nothing to compile:
 
-1. Download `local-notes-web-archive-1.0.1.zip` from the
-   [v1.0.1 release](https://github.com/kimpearce888/local-notes-web-archive/releases/tag/v1.0.1).
+1. Download `local-notes-web-archive-1.0.2.zip` from the
+   [v1.0.2 release](https://github.com/kimpearce888/local-notes-web-archive/releases/tag/v1.0.2).
 2. Extract the ZIP anywhere on your machine.
 3. Open `chrome://extensions` and enable **Developer mode**.
 4. Click **Load unpacked** and select the **extracted** folder.

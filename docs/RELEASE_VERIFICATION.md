@@ -1,8 +1,8 @@
 # Release Verification Report
 
 **Task:** T-043 Release verification gate (plan.md; PRD §11, §13) — re-verified for
-v1.0.1 by T-053 (re-release with the T-052 hidden-attribute fix)
-**Version verified:** 1.0.1
+v1.0.2 by T-055 (re-release with the T-054 user-reported fixes)
+**Version verified:** 1.0.2
 **Date:** 2026-10-13
 **Verdict:** **PASS** — every gate green; the artifact is releasable.
 
@@ -30,8 +30,8 @@ assertions are the production ones.
 | 1 | Build (`vite build`) | PASS — 14 files, 0 warnings blocking, `theme-hint.js` external (CSP-safe) |
 | 2 | Static release scan (`release.mjs`) | PASS — 4 shipped JS files scanned: no remote runtime URLs, no `eval`/`new Function`; inert literal allowlist (W3C namespace URIs, dependency doc links) only |
 | 3 | Manifest scan (`verify-release.mjs`) | PASS — MV3, Chrome ≥ 120, stable `key`; CSP `script-src 'self'` / `object-src 'self'` / `connect-src 'self' + loopback`; 6 manifest/html-referenced assets present; icons are real PNGs; permissions match PERMISSIONS.md exactly (8 API, 2 required host, 2 optional host) |
-| 4 | Unit tests | PASS — 762/762 (`vitest run`) |
-| 5 | E2E smoke + verification | PASS — 44/44 in real Chromium over the unpacked `dist/` (functional smoke, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance, screenshot suite) |
+| 4 | Unit tests | PASS — 773/773 (`vitest run`) |
+| 5 | E2E smoke + verification | PASS — 49/49 in real Chromium over the unpacked `dist/` (functional smoke, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance, screenshot suite, T-054 user-report regressions) |
 | 6 | Performance (PRD §11) | PASS — see measurements below |
 | 7 | Accessibility keyboard pass | PASS — see below |
 | 8 | Release artifacts | PASS — see below |
@@ -98,10 +98,10 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
 
 | Artifact | Value |
 |---|---|
-| Zip | `release/local-notes-web-archive-1.0.1.zip` (1,515,526 bytes) |
-| SHA-256 | `1fcc1295ac832c9f09bd72ac6b2a99d6f7ad4713053139989e52a40297cc6a39` |
+| Zip | `release/local-notes-web-archive-1.0.2.zip` (1,517,813 bytes) |
+| SHA-256 | `aecb14997c5a8df3c048852923d1536793b00e9003065eb5442e7755196339b9` |
 | Inventory | `release/RELEASE_MANIFEST.txt` (file list + sizes) |
-| Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). The v1.0.1 artifact supersedes v1.0.0: it ships the T-052 fix (the `[hidden] { display: none !important }` global guard) that v1.0.0 predates. |
+| Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). The v1.0.2 artifact supersedes v1.0.1: it ships the T-054 user-reported fixes (natural-height reminder-dialog fields — the 22rem flex-basis defect — and the editor Pin / Move-to-trash actions) that v1.0.1 predates; it also carries the T-052 hidden-attribute guard from v1.0.1. |
 
 The zip and checksums are regenerable via `npm run release`; the manifest
 scan is enforced inside that pipeline (`scripts/verify-release.mjs`) and
@@ -111,8 +111,8 @@ a remote URL, dynamic code, missing asset or undocumented permission.
 ## Verification commands
 
 ```bash
-npm run verify          # lint + tsc strict + 762 unit tests
+npm run verify          # lint + tsc strict + 773 unit tests
 npm run test:perf       # 10k-note search p95 benchmark (< 500 ms budget)
-npm run test:e2e        # 44 Playwright tests over the built extension
+npm run test:e2e        # 49 Playwright tests over the built extension
 npm run release         # build + static gate + manifest scan + zip + sha256
 ```
