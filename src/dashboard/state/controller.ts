@@ -459,7 +459,12 @@ export function createDashboardController(options: {
 
   async function createNote(): Promise<EntityId | null> {
     // Optimistic placeholder entry — replaced by the persisted note, or
-    // rolled back truthfully on failure.
+    // rolled back truthfully on failure. T-068 (audit D-07): when the page
+    // slice is already full, prepending would break the page-1 invariant
+    // (the audit saw 52 cards on "Page 1 of 2"), so the placeholder is
+    // skipped and the persisted note arrives through a paginated requery
+    // instead — at its honest sorted position.
+    const pageWasFull = store.getState().notes.length >= store.getState().pageSize;
     const optimistic: Note = {
       id: `optimistic-${Date.now()}` as EntityId,
       title: 'Untitled',
@@ -476,21 +481,38 @@ export function createDashboardController(options: {
       revisionId: null,
       duplicatedFrom: null,
     };
-    store.setState({ notes: [optimistic, ...store.getState().notes], total: store.getState().total + 1 });
+    if (pageWasFull) {
+      // Full page: no placeholder (the invariant holds), only the honest
+      // total bump until the requery lands.
+      store.setState({ total: store.getState().total + 1 });
+    } else {
+      store.setState({ notes: [optimistic, ...store.getState().notes], total: store.getState().total + 1 });
+    }
     try {
       const { note } = await client.request('notes/create', { title: 'Untitled' });
       if (disposed) return null;
-      store.setState({
-        notes: [note, ...store.getState().notes.filter((n) => n.id !== optimistic.id)],
-      });
+      if (pageWasFull) {
+        // The paginated window stays truthful: the new note enters at its
+        // sorted position, the slice never exceeds pageSize, and the
+        // pagination chrome stays consistent with the rendered cards.
+        await requery();
+      } else {
+        store.setState({
+          notes: [note, ...store.getState().notes.filter((n) => n.id !== optimistic.id)],
+        });
+      }
       shell.announce('Note created.');
       return note.id;
     } catch (error) {
       if (disposed) return null;
-      store.setState({
-        notes: store.getState().notes.filter((n) => n.id !== optimistic.id),
-        total: store.getState().total - 1,
-      });
+      if (pageWasFull) {
+        store.setState({ total: store.getState().total - 1 });
+      } else {
+        store.setState({
+          notes: store.getState().notes.filter((n) => n.id !== optimistic.id),
+          total: store.getState().total - 1,
+        });
+      }
       shell.announce(
         `Creating the note failed: ${error instanceof Error ? error.message : 'unknown error'}`,
       );

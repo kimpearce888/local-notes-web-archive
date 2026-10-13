@@ -408,3 +408,42 @@ describe('favorites (T-064, audit D-01)', () => {
     expect(shell.elements.bulkBarMount.textContent).not.toContain('Favorite');
   });
 });
+
+describe('page-slice invariant (T-068, audit D-07)', () => {
+  it('rapid creation never renders more cards than the page size', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    // The audit's scenario: 52 New Note clicks on an empty library
+    // rendered 52 cards on "Page 1 of 2" until a reload self-healed.
+    const total = PAGE_SIZE + 2;
+    for (let i = 0; i < total; i += 1) {
+      await controller!.createNote();
+      // The invariant at EVERY step — the audit observed it breaking from
+      // creation #51 onward (51+ cards on "Page 1 of 2").
+      expect(controller!.store.getState().notes.length).toBeLessThanOrEqual(PAGE_SIZE);
+    }
+    await waitFor(() => controller!.store.getState().total === total);
+
+    // The invariant holds at every step: the slice never exceeds pageSize
+    // and the pagination chrome stays consistent with the rendered cards.
+    expect(controller!.store.getState().notes.length).toBeLessThanOrEqual(PAGE_SIZE);
+    await waitFor(() => controller!.store.getState().notes.length === PAGE_SIZE);
+    expect(root.querySelectorAll('.card').length).toBe(PAGE_SIZE);
+    expect(shell.elements.paginationLabel.textContent).toContain(`of ${total}`);
+    expect(shell.elements.paginationLabel.textContent).toContain('Page 1 of 2');
+
+    // The overflow notes are honestly on page 2.
+    shell.elements.paginationNext.click();
+    await waitFor(() => controller!.store.getState().page === 2);
+    await waitFor(() => controller!.store.getState().notes.length === 2);
+    expect(root.querySelectorAll('.card').length).toBe(2);
+  });
+
+  it('creation on a non-full page keeps the instant optimistic placeholder', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    const noteId = await controller!.createNote();
+    expect(noteId).not.toBeNull();
+    // The optimistic swap-in kept the card visible without a requery.
+    expect(controller!.store.getState().notes.length).toBe(1);
+    expect(controller!.store.getState().notes[0]?.id).toBe(noteId);
+  });
+});

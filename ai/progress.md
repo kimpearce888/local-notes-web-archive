@@ -5,10 +5,6 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
-### T-068 Fix D-07: keep the page-1 slice invariant after rapid creation
-See ai/plan.md §L. Requery instead of unbounded optimistic prepend when the
-page slice is already full.
-
 ### T-069 Re-release v1.0.5 with the T-063..T-068 audit fixes
 See ai/plan.md §L. Full re-release protocol so the installable artifact
 carries all six audit-fix tasks.
