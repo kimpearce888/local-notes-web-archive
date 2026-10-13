@@ -103,9 +103,42 @@ Chrome 120+ required. Everything stays on your device.
 - Full gate matrix and measured numbers: [\`docs/RELEASE_VERIFICATION.md\`](https://github.com/${slug}/blob/main/docs/RELEASE_VERIFICATION.md)
 - File inventory: **RELEASE_MANIFEST.txt** below (byte-for-byte with the zip contents)
 - Integrity: **${zipName}.sha256** below
-- Automated acceptance: unit 797/797, Playwright E2E 58/58 over the real
+- Automated acceptance: unit 835/835, Playwright E2E 66/66 over the real
   unpacked build, including a dedicated extract-zip-and-load acceptance suite
   (the artifact in this release is the exact folder layout that was tested)
+
+## What's new in v1.0.5 — QA-audit defect fixes
+
+A full external human-behavior QA audit of v1.0.4 (7 defects, 34 workflows
+verified, evidence on file) drove this release. All seven findings are fixed;
+no feature was removed or changed beyond the fixes.
+
+- **Attachments and backups work again (critical)**: \`chrome.runtime.sendMessage\`
+  JSON-serializes message values, which silently turned every attached file and
+  every backup archive into an empty object on the wire — attachments failed
+  with "data must be a Blob", backup export failed at \`createObjectURL\`, and
+  restore could never read the archive. Binary data now travels as base64
+  envelopes at the channel boundary and is rebuilt into real Blobs; the
+  attachments panel's "Attach files…" button also finally opens the picker it
+  always promised
+- **Favorites are reachable**: the favorite flag had no user interface anywhere
+  — the Favorites smart list was permanently empty. It now has bulk-bar
+  actions and an editor-header toggle (mirroring Pin)
+- **The Filters panel exists**: the topbar Filters button opened an empty
+  region. It now holds the full FR-SEARCH-03 control set (date ranges, tags,
+  categories, state, reminder and snapshot filters, pinned/favorites/links/
+  attachments, capture date, source domain) with removable active-filter chips
+  and combinable **saved named views** that persist across restarts
+- **Sort direction control**: sorting was hard-coded descending with no
+  ascending control anywhere. The toolbar now offers ascending/descending
+  (hidden for relevance, where direction is meaningless) and the persisted
+  default sort finally seeds new sessions
+- **Re-shown onboarding can be completed**: Settings → "Show the introduction
+  again" presented a permanently disabled Get-started button (Escape was the
+  only way out). The button now resets on every presentation
+- **Rapid creation keeps the page honest**: creating notes quickly beyond the
+  page size rendered 52 cards on "Page 1 of 2" until reload; the paginated
+  window now keeps its size invariant at every step
 
 ## What's new in v1.0.4 — post-redesign fixes
 

@@ -1,6 +1,6 @@
 {
   "name": "local-notes-web-archive",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "description": "Local-first Chrome MV3 extension for notes, web archiving, reminders and local AI (LM Studio). Production source per PRD.md.",
   "type": "module",

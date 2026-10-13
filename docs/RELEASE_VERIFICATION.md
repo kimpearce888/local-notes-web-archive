@@ -1,9 +1,9 @@
 # Release Verification Report
 
 **Task:** T-043 Release verification gate (plan.md; PRD §11, §13) — re-verified for
-v1.0.4 by T-061 (re-release carrying the T-060 post-redesign fixes)
-**Version verified:** 1.0.4
-**Date:** 2026-10-13
+v1.0.5 by T-069 (re-release carrying the T-063..T-068 QA-audit defect fixes)
+**Version verified:** 1.0.5
+**Date:** 2026-10-14
 **Verdict:** **PASS** — every gate green; the artifact is releasable.
 
 ## Verification environment
@@ -30,8 +30,8 @@ assertions are the production ones.
 | 1 | Build (`vite build`) | PASS — 14 files, 0 warnings blocking, `theme-hint.js` external (CSP-safe) |
 | 2 | Static release scan (`release.mjs`) | PASS — 4 shipped JS files scanned: no remote runtime URLs, no `eval`/`new Function`; inert literal allowlist (W3C namespace URIs, dependency doc links) only |
 | 3 | Manifest scan (`verify-release.mjs`) | PASS — MV3, Chrome ≥ 120, stable `key`; CSP `script-src 'self'` / `object-src 'self'` / `connect-src 'self' + loopback`; 6 manifest/html-referenced assets present; icons are real PNGs; permissions match PERMISSIONS.md exactly (8 API, 2 required host, 2 optional host) |
-| 4 | Unit tests | PASS — 797/797 (`vitest run`; +6 post-redesign guard tests: system-theme active-nav CSS rule, note-card reading order) |
-| 5 | E2E smoke + verification | PASS — 58/58 in real Chromium over the unpacked `dist/` (functional smoke incl. the command-palette spec, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance against this artifact, the 14-test screenshot suite, and the 7-test user-report regression suite covering both T-054 and T-060 fixes) |
+| 4 | Unit tests | PASS — 835/835 (`vitest run`; +38 since v1.0.4: binary-transport codec + real-channel regression, favorites wiring, filters panel/controller/engine, sort direction, onboarding re-show, page-slice invariant) |
+| 5 | E2E smoke + verification | PASS — 66/66 in real Chromium over the unpacked `dist/` (functional smoke incl. the command-palette spec, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance against this artifact, the 14-test screenshot suite, the 7-test user-report regression suite, and the new 8-test audit-defect regression suite covering all seven T-062 findings in the real browser) |
 | 6 | Performance (PRD §11) | PASS — see measurements below |
 | 7 | Accessibility keyboard pass | PASS — see below |
 | 8 | Release artifacts | PASS — see below |
@@ -60,19 +60,19 @@ one authoritative index build:
 
 | Statistic | Value |
 |---|---|
-| p50 | 76 ms |
-| **p95** | **124 ms** |
-| p99 | 332 ms |
-| max | 369 ms |
+| p50 | 79 ms |
+| **p95** | **125 ms** |
+| p99 | 338 ms |
+| max | 378 ms |
 
-Per-shape p95: common term 67 ms, two-term 118 ms, phrase 135 ms,
-title-scoped 104 ms, flag filter + term 78 ms, filter-only 65 ms,
-term + title sort 100 ms, fuzzy 117 ms. **PRD budget: p95 < 500 ms → PASS**
+Per-shape p95: common term 119 ms, two-term 123 ms, phrase 129 ms,
+title-scoped 81 ms, flag filter + term 96 ms, filter-only 83 ms,
+term + title sort 104 ms, fuzzy 90 ms. **PRD budget: p95 < 500 ms → PASS**
 (asserted in `tests/perf/search-p95.test.ts`, runnable via
 `npm run test:perf`).
 
 Documented observation: a full index **rebuild** of the 10k corpus took
-~102 s under Node + fake-indexeddb. Rebuild is the rare recovery path
+~113 s under Node + fake-indexeddb. Rebuild is the rare recovery path
 (corruption/migration); production indexing is incremental per save. Users
 should expect a one-time longer rebuild on very large corpora after a
 corruption recovery.
@@ -91,6 +91,14 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
   ArrowDown/Enter run commands, Escape closes, a no-match query shows an
   honest empty state where Enter is a no-op (asserted in
   `tests/e2e/extension.spec.ts`).
+- **QA-audit defect regressions (v1.0.5):** the eight-spec
+  `audit-defect-regressions` suite drives the audit's exact repros in the
+  real browser — a real file attaches through the panel and downloads with
+  byte-verified content, backup export produces a PK-signed zip that
+  restores end-to-end, favorites work from the bulk bar and the editor,
+  the Filters panel applies filters/chips/saved views across a reload, the
+  sort direction flips Title ordering, and the re-shown onboarding's
+  Get-started completes (asserted in `tests/e2e/audit-defect-regressions.spec.ts`).
 - **Post-redesign regressions (v1.0.4):** under the default system theme
   with a light OS the active smart-list button renders the light accent-soft
   pill with a computed WCAG contrast ≥ 4.5:1, and note cards read title →
@@ -109,10 +117,10 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
 
 | Artifact | Value |
 |---|---|
-| Zip | `release/local-notes-web-archive-1.0.4.zip` (1,533,418 bytes) |
-| SHA-256 | `8c8650d6ad539518f8d650a135cf6e8815d9dd6288bda8695aa1b1b91fdebe22` |
+| Zip | `release/local-notes-web-archive-1.0.5.zip` (1,555,953 bytes) |
+| SHA-256 | `ead1a27de5ee06bc332efadeea92efd87fc77bd618b9c5fc9fe79a88527c54f8` |
 | Inventory | `release/RELEASE_MANIFEST.txt` (file list + sizes) |
-| Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). The v1.0.4 artifact supersedes v1.0.3: it carries the two T-060 post-redesign fixes — the sidebar active "All notes" button invisible under system theme + light OS (dark active-nav override now keys off explicit dark / OS-dark only, ~13:1 contrast restored) and the note-card reading order (title → subtitle → body → tags row → categories row → indicators → meta, tags and categories never inline) — while preserving 100% feature parity; it also carries everything from v1.0.3 (the complete T-056..T-058 UI/UX redesign, redesign QA evidence in `docs/REDESIGN_QA_REPORT.md`) and every earlier fix (T-054 dialog fields + editor pin/trash, T-052 hidden guard). |
+| Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). The v1.0.5 artifact supersedes v1.0.4: it fixes all seven confirmed defects from the external human-behavior QA audit (2026-10-14, 34 workflows verified, evidence on file) — attachments and backup export/restore work again through a base64 binary codec for the RPC channel (D-04/D-06, both critical), favorites are reachable from the bulk bar and the editor (D-01), the Filters disclosure holds the full FR-SEARCH-03 control set with removable chips and durable saved named views (D-02), the sort direction control exists and the persisted default sort seeds new sessions (D-03), the re-shown onboarding's Get-started always works (D-05), and rapid creation keeps the page-slice invariant (D-07). It carries everything from v1.0.4/v1.0.3 (post-redesign fixes and the complete UI/UX redesign) and every earlier fix (T-054 dialog fields + editor pin/trash, T-052 hidden guard). |
 
 The zip and checksums are regenerable via `npm run release`; the manifest
 scan is enforced inside that pipeline (`scripts/verify-release.mjs`) and
@@ -122,8 +130,8 @@ a remote URL, dynamic code, missing asset or undocumented permission.
 ## Verification commands
 
 ```bash
-npm run verify          # lint + tsc strict + 797 unit tests
+npm run verify          # lint + tsc strict + 835 unit tests
 npm run test:perf       # 10k-note search p95 benchmark (< 500 ms budget)
-npm run test:e2e        # 58 Playwright tests over the built extension
+npm run test:e2e        # 66 Playwright tests over the built extension
 npm run release         # build + static gate + manifest scan + zip + sha256
 ```
