@@ -26,6 +26,7 @@ import { createSnapshotsPanel, type SnapshotsPanel } from '../editor/snapshots-p
 import { createRemindersPanel, type RemindersPanel } from '../editor/reminders-panel';
 import { createAiPanel, type AiPanel } from '../ai/ai-panel';
 import { confirmDialog } from '../views/bulk-bar';
+import { icon } from '../views/icons';
 import {
   noteMarkdownExport,
   noteHtmlExport,
@@ -918,19 +919,41 @@ export async function openEditorSession(options: {
   }
   trashButton.addEventListener('click', () => void trashFromEditor());
 
+  /* -------------------- Redesigned header (T-057) ------------------- */
+  /* Three decorative groups — primary (Back), panel toggles, note
+     actions — purely visual. Every button keeps its accessible name and
+     the .editor-session__header button queries used by the tests are
+     unchanged (group wrappers are not buttons; icons carry no text). */
+
+  const giveIcon = (button: HTMLButtonElement, name: Parameters<typeof icon>[0]): void => {
+    button.prepend(icon(name));
+  };
+  giveIcon(closeButton, 'arrow-left');
+  giveIcon(revisionsButton, 'clock');
+  giveIcon(attachmentsButton, 'note');
+  giveIcon(snapshotsButton, 'archive');
+  giveIcon(remindersButton, 'alarm');
+  giveIcon(aiButton, 'command');
+  giveIcon(fileButton, 'import');
+  giveIcon(pinButton, 'pin');
+  giveIcon(trashButton, 'trash');
+
   const header = document.createElement('div');
   header.className = 'editor-session__header';
-  header.append(
-    closeButton,
-    revisionsButton,
-    attachmentsButton,
-    snapshotsButton,
-    remindersButton,
-    aiButton,
-    fileButton,
-    pinButton,
-    trashButton,
-  );
+
+  const headerPrimary = document.createElement('div');
+  headerPrimary.className = 'editor-session__header-group editor-session__header-group--primary';
+  headerPrimary.append(closeButton);
+
+  const headerPanels = document.createElement('div');
+  headerPanels.className = 'editor-session__header-group editor-session__header-group--panels';
+  headerPanels.append(revisionsButton, attachmentsButton, snapshotsButton, remindersButton, aiButton, fileButton);
+
+  const headerActions = document.createElement('div');
+  headerActions.className = 'editor-session__header-group editor-session__header-group--actions';
+  headerActions.append(pinButton, trashButton);
+
+  header.append(headerPrimary, headerPanels, headerActions);
   container.prepend(header);
   mount.append(container);
 
