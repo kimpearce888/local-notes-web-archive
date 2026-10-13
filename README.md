@@ -8,6 +8,22 @@ The complete product specification is [`PRD.md`](./PRD.md) (v1.0, approved
 architecture baseline). This repository contains the full production source,
 tests, build tooling and the bundled third-party dependency inventory.
 
+## Install from the release (no build steps)
+
+The published package is fully built and tested — nothing to compile:
+
+1. Download `local-notes-web-archive-1.0.0.zip` from the
+   [v1.0.0 release](https://github.com/kimpearce888/local-notes-web-archive/releases/tag/v1.0.0).
+2. Extract the ZIP anywhere on your machine.
+3. Open `chrome://extensions` and enable **Developer mode**.
+4. Click **Load unpacked** and select the **extracted** folder.
+5. Use the extension — the toolbar action opens the notes dashboard
+   (Chrome 120+, everything stays on your device).
+
+The release carries the SHA-256 checksum (`.sha256` asset) and a
+byte-for-byte file inventory (`RELEASE_MANIFEST.txt`); the exact artifact
+layout is what the automated extract-and-load acceptance suite verifies.
+
 ---
 
 ## What it does
