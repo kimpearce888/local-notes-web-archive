@@ -1,14 +1,14 @@
 import type { AppSettings } from '../types';
-import { ONBOARDING_DONE_KEY, SETTINGS_KEY } from '../version';
+import { SETTINGS_KEY } from '../version';
 import { Store } from '../db/schema';
 import type { RepoContext } from './context';
 
 /**
  * Settings repository (FR-DATA-01, FR-SET-01): the full AppSettings object is
- * canonical in IndexedDB (Settings store, single record). chrome.storage.local
- * holds only tiny extension flags (e.g. onboarding completion) that must be
- * readable before the database opens; the chrome-backed accessor is isolated
- * in `chromeFlags` so the repository itself stays testable.
+ * canonical in IndexedDB (Settings store, single record) — including the
+ * onboarding completion flag, which must survive browser restarts for
+ * unpacked installs (T-048: chrome.storage.local proved non-durable in that
+ * launch mode, while IndexedDB persists).
  */
 
 /** Defaults per PRD FR-SET-01 and §10. */
@@ -19,6 +19,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   savedViews: [],
   autoCaptureOnPaste: true,
   allowedOrigins: [],
+  onboardingComplete: false,
   capture: {
     maxArchiveBytes: 100 * 1024 * 1024,
     maxScreenshotPixels: 100_000_000,
@@ -116,21 +117,16 @@ function validateSettings(settings: AppSettings): void {
 }
 
 /**
- * chrome.storage.local flag access (onboarding). Kept separate from the
- * database path; returns false when the chrome API is unavailable (tests).
+ * Onboarding completion flag (FR-SET-02), stored inside the settings record
+ * (T-048). IndexedDB is the durable store for unpacked installs —
+ * chrome.storage.local proved non-durable across browser restarts in that
+ * launch mode. Reads through the forward-compatible merge, so records from
+ * older builds default the flag to false.
  */
-export async function getOnboardingComplete(): Promise<boolean> {
-  if (typeof chrome === 'undefined' || !chrome.storage?.local) return false;
-  return new Promise<boolean>((resolve) => {
-    chrome.storage.local.get([ONBOARDING_DONE_KEY], (result) => {
-      resolve(result[ONBOARDING_DONE_KEY] === true);
-    });
-  });
+export async function getOnboardingComplete(ctx: RepoContext): Promise<boolean> {
+  return (await getSettings(ctx)).onboardingComplete;
 }
 
-export async function setOnboardingComplete(value: boolean): Promise<void> {
-  if (typeof chrome === 'undefined' || !chrome.storage?.local) return;
-  await new Promise<void>((resolve) => {
-    chrome.storage.local.set({ [ONBOARDING_DONE_KEY]: value }, () => resolve());
-  });
+export async function setOnboardingComplete(ctx: RepoContext, value: boolean): Promise<void> {
+  await patchSettings(ctx, { onboardingComplete: value });
 }

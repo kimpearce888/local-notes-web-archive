@@ -12,6 +12,5 @@ export const SCHEMA_VERSION = 2;
 export const DB_NAME = 'local-notes-web-archive';
 export const MIN_CHROME_VERSION = 120;
 
-/** Storage keys used in chrome.storage.local for small settings (FR-DATA-01). */
+/** IndexedDB Settings-store key for the single AppSettings record (FR-DATA-01). */
 export const SETTINGS_KEY = 'app-settings';
-export const ONBOARDING_DONE_KEY = 'onboarding-complete';

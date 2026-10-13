@@ -55,6 +55,18 @@ const ALLOWED_URI_REGEXP = new RegExp(
   'i',
 );
 
+/**
+ * Image sources are stricter than link hrefs (PRD §10 local-first): the
+ * dashboard must never fetch remote content, so only inline `data:` images
+ * and durable `attachment:` references may ever load. Remote (https?:) and
+ * relative srcs are stripped at sanitisation time and refused at render
+ * time — the link policy and the image policy are deliberately separate.
+ */
+const IMAGE_SRC_URI_REGEXP = new RegExp(
+  `^(?:data:image/(?:png|jpeg|gif|webp);base64,|${ATTACHMENT_URI})`,
+  'i',
+);
+
 /** The editor's inline CSS vocabulary — anything else is dropped. */
 const ALLOWED_CSS_PROPERTIES: readonly string[] = [
   'color',
@@ -93,6 +105,15 @@ DOMPurify.addHook('uponSanitizeElement', (node, data) => {
 
 DOMPurify.addHook('afterSanitizeAttributes', (node) => {
   if (!removedCollector || !(node instanceof HTMLElement)) return;
+  // Image src policy (PRD §10): remote or relative sources would make the
+  // browser fetch content — strip them and report the removal truthfully.
+  if (node instanceof HTMLImageElement) {
+    const src = node.getAttribute('src');
+    if (src !== null && src.length > 0 && !IMAGE_SRC_URI_REGEXP.test(src.trim())) {
+      node.removeAttribute('src');
+      removedCollector.push(`img:src:${src.slice(0, 60)}`);
+    }
+  }
   const original = node.getAttribute('style');
   if (original === null) return;
   const filtered = filterInlineStyle(original);
@@ -130,6 +151,16 @@ export function sanitizeEditorHtml(html: string): { html: string; removed: strin
  */
 export function isSafeLinkHref(href: string): boolean {
   return ALLOWED_URI_REGEXP.test(href.trim());
+}
+
+/**
+ * Structural safety report for image sources (PRD §10 local-first): only
+ * inline `data:` images and durable `attachment:` references are loadable.
+ * Remote and relative srcs are refused — the dashboard never fetches remote
+ * content, and relative srcs would resolve against the extension origin.
+ */
+export function isSafeImageSrc(src: string): boolean {
+  return IMAGE_SRC_URI_REGEXP.test(src.trim());
 }
 
 /**

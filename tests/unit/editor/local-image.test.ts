@@ -214,3 +214,63 @@ describe('sanitisation gate', () => {
     expect(html).not.toContain('attachment:not-a-uuid');
   });
 });
+
+describe('image-source privacy guard (T-048)', () => {
+  it('strips remote image srcs at sanitisation time and reports the removal', () => {
+    const dirty = '<p>text <img src="https://tracker.example/pixel.gif" alt="x"> more</p>';
+    const { html, removed } = sanitizeEditorHtml(dirty);
+    expect(html).not.toContain('https://tracker.example');
+    expect(removed.some((entry) => entry.startsWith('img:src:'))).toBe(true);
+  });
+
+  it('strips relative image srcs (they would resolve against the extension origin)', () => {
+    // Relative srcs fail DOMPurify's generic URI gate (no approved scheme),
+    // so they are removed silently by that layer; the T-048 hook catches the
+    // remote-src case (previous test) and reports it. Either way the src never
+    // survives the gate.
+    const { html } = sanitizeEditorHtml('<img src="x" alt="rel">');
+    expect(html).not.toContain('src="x"');
+  });
+
+  it('keeps inline data: image srcs through the gate', () => {
+    const dataUrl = 'data:image/png;base64,iVBORw0KGgo=';
+    const { html, removed } = sanitizeEditorHtml(`<img src="${dataUrl}" alt="ok">`);
+    expect(html).toContain(`src="${dataUrl}"`);
+    expect(removed.some((entry) => entry.startsWith('img:src:'))).toBe(false);
+  });
+
+  it('keeps http(s) hrefs for links while stripping them for images (split policies)', () => {
+    const { html } = sanitizeEditorHtml(
+      '<p><a href="https://example.com/page">link</a> <img src="https://example.com/img.png"></p>',
+    );
+    expect(html).toContain('href="https://example.com/page"');
+    expect(html).not.toContain('img src');
+  });
+
+  it('refuses remote and relative srcs at render time — never assigns them to the DOM', () => {
+    const editor = newEditor();
+    for (const src of ['https://example.com/pixel.gif', 'x']) {
+      insertImage(editor, { src });
+      const figure = editor.view.dom.querySelector('figure.editor-image');
+      expect(figure).not.toBeNull();
+      const img = figure?.querySelector('img') as HTMLImageElement;
+      // The src attribute is never set on the live element...
+      expect(img.getAttribute('src')).toBeNull();
+      // ...and the honest error status is shown instead.
+      const status = figure?.querySelector('.editor-image__status') as HTMLElement;
+      expect(status?.hidden).toBe(false);
+      expect(status?.textContent).toContain('never fetched');
+      editor.commands.clearContent();
+    }
+    editor.destroy();
+  });
+
+  it('still renders inline data: images directly', () => {
+    const editor = newEditor();
+    const dataUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACw='; // 1x1 transparent GIF
+    insertImage(editor, { src: dataUrl });
+    const img = editor.view.dom.querySelector('img') as HTMLImageElement;
+    expect(img.src).toBe(dataUrl);
+    editor.destroy();
+  });
+});

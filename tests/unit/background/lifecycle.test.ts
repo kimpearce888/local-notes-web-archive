@@ -10,9 +10,9 @@ import {
 import { dashboardUrl } from '../../../src/background/dashboard-tab';
 import { createNote } from '../../../src/core/repo/notes';
 import { createReminder } from '../../../src/core/repo/reminders';
-import { getOnboardingComplete } from '../../../src/core/repo/settings';
+import { getOnboardingComplete, setOnboardingComplete } from '../../../src/core/repo/settings';
 import { reminderAlarmName } from '../../../src/background/alarms';
-import { DB_NAME, ONBOARDING_DONE_KEY } from '../../../src/core/version';
+import { DB_NAME } from '../../../src/core/version';
 import type { TimeZoneName, UtcTimestamp } from '../../../src/core/types';
 
 function isoIn(ms: number): UtcTimestamp {
@@ -38,7 +38,7 @@ describe('runtime lifecycle (install/update/startup)', () => {
     installed.uninstall();
   });
 
-  it('on install: resets the onboarding flag, reconciles alarms and opens the dashboard', async () => {
+  it('on install: onboarding stays armed on a fresh profile, alarms reconcile, dashboard opens', async () => {
     const when = isoIn(3600_000);
     const ctx = await repo();
     const note = await createNote(ctx, { title: 'host' });
@@ -53,15 +53,27 @@ describe('runtime lifecycle (install/update/startup)', () => {
 
     await handleRuntimeInstalled({ reason: 'install' } as chrome.runtime.InstalledDetails);
 
-    expect(await getOnboardingComplete()).toBe(false);
-    expect(installed.storage.get(ONBOARDING_DONE_KEY)).toBe(false);
+    expect(await getOnboardingComplete(await repo())).toBe(false);
     expect(installed.tabs.size).toBe(1);
     expect([...installed.tabs.values()][0]?.url).toBe(dashboardUrl());
     expect(installed.alarms.has(reminderAlarmName(reminder.id))).toBe(true);
   });
 
+  it('on install over existing data: the completion flag is never reset (T-048)', async () => {
+    await setOnboardingComplete(await repo(), true);
+    await closeWorkerResources(); // simulate a cold worker before install
+
+    await handleRuntimeInstalled({ reason: 'install' } as chrome.runtime.InstalledDetails);
+
+    // Chrome re-fires onInstalled('install') whenever an unpacked extension
+    // is reloaded over an existing profile — a returning user with existing
+    // data must not see the first-run walkthrough again.
+    expect(await getOnboardingComplete(await repo())).toBe(true);
+    expect(installed.tabs.size).toBe(1);
+  });
+
   it('on update: reconciles alarms without touching onboarding or opening tabs', async () => {
-    installed.storage.set(ONBOARDING_DONE_KEY, true);
+    await setOnboardingComplete(await repo(), true);
     const when = isoIn(3600_000);
     const ctx = await repo();
     const note = await createNote(ctx, { title: 'host' });
@@ -76,7 +88,7 @@ describe('runtime lifecycle (install/update/startup)', () => {
 
     await handleRuntimeInstalled({ reason: 'update' } as chrome.runtime.InstalledDetails);
 
-    expect(await getOnboardingComplete()).toBe(true);
+    expect(await getOnboardingComplete(await repo())).toBe(true);
     expect(installed.tabs.size).toBe(0);
     expect(installed.alarms.has(reminderAlarmName(reminder.id))).toBe(true);
   });
@@ -144,8 +156,8 @@ describe('runtime lifecycle (install/update/startup)', () => {
     await handleRuntimeInstalled({ reason: 'install' } as chrome.runtime.InstalledDetails);
     (indexedDB as unknown as { open: unknown }).open = originalOpen;
 
-    // Onboarding flag (chrome.storage) and dashboard still work.
-    expect(await getOnboardingComplete()).toBe(false);
+    // The DB-backed onboarding reset failed honestly (caught + logged
+    // internally) and the first-run dashboard still opened — nothing threw.
     expect(installed.tabs.size).toBe(1);
     // No alarms could be scheduled — and none are reported.
     expect(installed.alarms.size).toBe(0);

@@ -89,7 +89,7 @@ export function registerSettingsApi(router: MessageRouter): void {
   });
 
   router.register('settings/get-onboarding-complete', async () => {
-    const complete = await getOnboardingComplete();
+    const complete = await getOnboardingComplete(await repo());
     return { complete };
   });
 
@@ -99,7 +99,7 @@ export function registerSettingsApi(router: MessageRouter): void {
     if (typeof complete !== 'boolean') {
       throw new PayloadValidationError('settings/set-onboarding-complete: complete must be a boolean');
     }
-    await setOnboardingComplete(complete);
+    await setOnboardingComplete(await repo(), complete);
     await auditUserAction({
       action: 'settings/set-onboarding-complete',
       targetKind: 'settings',

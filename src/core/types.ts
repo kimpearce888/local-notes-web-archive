@@ -445,6 +445,10 @@ export interface AppSettings {
   };
   /** Revision retention per note (>= 20 per PRD FR-NOTE-06). */
   revisionRetention: number;
+  /** First-run onboarding completion (FR-SET-02). Persisted in the settings
+   *  record so it survives browser restarts and travels with backups
+   *  (T-048: chrome.storage.local is not durable for unpacked installs). */
+  onboardingComplete: boolean;
   backup: {
     /** Warn when last backup older than N days; 0 disables. */
     warnAfterDays: number;

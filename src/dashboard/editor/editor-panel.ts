@@ -99,9 +99,13 @@ export function createEditorPanel(
     }),
     content: options.initial?.editorDoc ?? { type: 'doc', content: [{ type: 'paragraph' }] },
     editorProps: {
-      // Rich paste is retained (ProseMirror parses the clipboard HTML
-      // against our constrained schema); plain-text paste arrives when the
-      // clipboard has no text/html flavour. Both paths pass the schema gate.
+      // Rich paste is sanitised BEFORE ProseMirror parses it (T-048): the
+      // clipboard's raw text/html never reaches a live parsing context with
+      // scripts or event handlers intact. DOMPurify strips them under the
+      // lockdown profile; the schema gate then constrains the resulting
+      // document. Plain-text paste arrives when the clipboard has no
+      // text/html flavour and needs no HTML gate.
+      transformPastedHTML: (html) => sanitizeEditorHtml(html).html,
       handleClick: (view, pos, event) => {
         const target = event.target as HTMLElement | null;
         const anchor = target?.closest('a');

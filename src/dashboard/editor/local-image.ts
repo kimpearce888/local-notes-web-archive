@@ -9,13 +9,17 @@
  * node view resolves that reference to a session object URL through the
  * injected resolver — nothing is fetched over the network, and the saved
  * document never contains session-limited blob: URLs. Inline `data:image`
- * sources keep working as before.
+ * sources keep working as before; every other source kind (remote, relative)
+ * is refused at render time so the dashboard never fetches remote content
+ * (PRD §10 local-first, T-048).
  */
 
 import { Image } from '@tiptap/extension-image';
 import { NodeSelection } from '@tiptap/pm/state';
 import type { Editor } from '@tiptap/core';
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
+
+import { isSafeImageSrc } from './sanitize';
 
 /** Resize presets offered on a selected image (percent of the text column). */
 export const IMAGE_WIDTH_PRESETS: readonly number[] = [25, 50, 75, 100];
@@ -156,9 +160,18 @@ export const LocalImage = Image.extend<LocalImageOptions>({
           return;
         }
         if (!isAttachmentSrc(src)) {
-          // data: URLs (and nothing else passes the sanitisation gate).
-          img.src = src;
-          hideStatus();
+          // Inline data: images only — remote or relative srcs must never be
+          // assigned to the live DOM (no network fetches, no accidental loads
+          // against the extension origin). Refuse honestly instead.
+          if (isSafeImageSrc(src)) {
+            img.src = src;
+            hideStatus();
+          } else {
+            showStatus(
+              'This image source was not loaded: remote images are never fetched. Insert a local file or a data: image instead.',
+              true,
+            );
+          }
           return;
         }
         const token = ++resolveToken;

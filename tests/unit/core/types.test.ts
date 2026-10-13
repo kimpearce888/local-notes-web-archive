@@ -149,6 +149,7 @@ describe('domain types', () => {
         permissionMode: 'ask-per-write',
       },
       logs: { maxBytes: 5_242_880, auditRetentionDays: 365 },
+      onboardingComplete: false,
     } satisfies AppSettings;
     expect(settings.capture.maxArchiveBytes).toBe(100_000_000);
     expect(settings.ai.baseUrl).toBe('http://127.0.0.1:1234/v1');

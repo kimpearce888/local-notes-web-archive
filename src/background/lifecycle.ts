@@ -13,7 +13,6 @@ import { openOrFocusDashboard } from './dashboard-tab';
 import { reconcileReminderAlarms } from './alarms';
 import { reconcileMissedReminders } from './reminders/fire';
 import { getCaptureQueue } from './capture/pipeline';
-import { setOnboardingComplete } from '../core/repo/settings';
 import { appendLog } from '../core/repo/logs';
 import { APP_VERSION } from '../core/version';
 
@@ -35,7 +34,12 @@ async function logLifecycle(operationId: string, resultCode: string, message: st
 export async function handleRuntimeInstalled(details: chrome.runtime.InstalledDetails): Promise<void> {
   const reason = details.reason;
   if (reason === 'install') {
-    await setOnboardingComplete(false);
+    // No onboarding reset (T-048): the flag lives in the settings record and
+    // defaults to false on a fresh database, so a first install arms the
+    // walkthrough naturally. Chrome re-fires onInstalled('install') whenever
+    // an unpacked extension is (re)loaded over an existing profile — blindly
+    // resetting there would re-show the walkthrough to returning users whose
+    // data — and completion flag — are right there in the database.
     await logLifecycle('runtime-installed', 'install', `version ${APP_VERSION} installed`);
   } else if (reason === 'update') {
     await logLifecycle('runtime-installed', 'update', `updated to version ${APP_VERSION}`);
