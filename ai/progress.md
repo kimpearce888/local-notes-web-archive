@@ -5,11 +5,6 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## J. Final QA, Playwright & release protocol (post-plan acceptance round)
 
-### T-044 Production rebuild and full-suite baseline
-Fresh `npm run build`; `npm run verify` (lint + tsc strict + full vitest);
-`npm run test:e2e` over the real dist/ in persistent Chromium — re-verify every
-existing gate before new coverage lands. Zero failures allowed.
-
 ### T-045 Human-simulation and adversarial Playwright suite
 New E2E spec driving the app exactly like a real user: fast/repeated clicks,
 invalid and empty inputs, malicious inputs (XSS payloads via real clipboard
