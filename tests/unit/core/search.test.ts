@@ -256,3 +256,93 @@ describe('search engine (FR-SEARCH-01/02/05/06)', () => {
     expect((await engine.execute({ query: 'wrodd', fuzzy: true })).total).toBe(1);
   });
 });
+
+describe('matchedFields decoration (T-041, FR-SEARCH-01 result decoration)', () => {
+  it('reports title and body matches for plain terms', async () => {
+    await seedNote('Chrome tips', 'browser keyboard shortcuts for chrome');
+    const titleOnly = await engine.execute({ query: 'tips' });
+    expect(titleOnly.hits[0]?.matchedFields).toEqual(['title']);
+
+    const bodyOnly = await engine.execute({ query: 'keyboard' });
+    expect(bodyOnly.hits[0]?.matchedFields).toEqual(['body']);
+
+    const both = await engine.execute({ query: 'chrome' });
+    expect([...(both.hits[0]?.matchedFields ?? [])].sort()).toEqual(['body', 'title']);
+  });
+
+  it('reports only the scoped field for in: queries', async () => {
+    await seedNote('Alpha report', 'quarterly alpha report');
+    const inTitle = await engine.execute({ query: 'in:title alpha' });
+    expect(inTitle.hits[0]?.matchedFields).toEqual(['title']);
+
+    const inBody = await engine.execute({ query: 'in:body alpha' });
+    expect(inBody.hits[0]?.matchedFields).toEqual(['body']);
+  });
+
+  it('reports the verified field for exact phrases', async () => {
+    await seedNote('One', 'local notes archive for chrome');
+    const phrase = await engine.execute({ query: '"local notes archive"' });
+    expect(phrase.hits[0]?.matchedFields).toEqual(['body']);
+
+    const titlePhrase = await engine.execute({ query: '"local notes"' });
+    expect(titlePhrase.hits[0]?.matchedFields).toEqual(['body']);
+
+    await seedNote('Local Notes deep dive', 'unrelated body text');
+    const inTitlePhrase = await engine.execute({ query: 'in:title "local notes"' });
+    expect(inTitlePhrase.total).toBe(1);
+    expect(inTitlePhrase.hits[0]?.matchedFields).toEqual(['title']);
+  });
+
+  it('reports relationship fields: tags, categories, snapshot text', async () => {
+    const note = await seedNote('Tagged note', 'plain body words');
+    const tag = await createTag(ctx, 'projectx');
+    await setNoteTags(ctx, note.id, [tag.id]);
+    const category = await createCategory(ctx, 'Research', null);
+    await setNoteCategories(ctx, note.id, [category.id]);
+    await createSnapshot(ctx, {
+      noteId: note.id,
+      linkId: null,
+      sourceUrl: 'https://example.com/post',
+      finalUrl: 'https://example.com/post',
+      title: 'Externally hosted article',
+    }).then(async (snapshot) => {
+      await saveTextArtifact(ctx, snapshot.id, 'zygomatic arch discussion');
+    });
+    await engine.rebuild();
+
+    const tagHit = await engine.execute({ query: 'projectx' });
+    expect(tagHit.hits[0]?.matchedFields).toEqual(['tags']);
+
+    const categoryHit = await engine.execute({ query: 'research' });
+    expect(categoryHit.hits[0]?.matchedFields).toEqual(['categories']);
+
+    const snapshotHit = await engine.execute({ query: 'zygomatic' });
+    expect(snapshotHit.hits[0]?.matchedFields).toEqual(['snapshots']);
+  });
+
+  it('keeps matchedFields through a non-relevance sort', async () => {
+    await seedNote('Bravo chrome', 'chrome appears in body too');
+    await seedNote('Alpha other', 'chrome in body only');
+    const sorted = await engine.execute({
+      query: 'chrome',
+      sort: { field: 'title', direction: 'asc' },
+    });
+    expect(sorted.total).toBe(2);
+    const byTitle = new Map(
+      sorted.hits.map((hit) => [hit.noteId as string, hit.matchedFields]),
+    );
+    const notes = await ctx.getAll<{ id: string; title: string }>('notes');
+    const alpha = notes.find((n) => n.title === 'Alpha other');
+    const bravo = notes.find((n) => n.title === 'Bravo chrome');
+    expect(alpha && [...(byTitle.get(alpha.id) ?? [])]).toEqual(['body']);
+    expect(bravo && [...(byTitle.get(bravo.id) ?? [])].sort()).toEqual(['body', 'title']);
+  });
+
+  it('reports empty matchedFields for filter-only queries (no text terms)', async () => {
+    const note = await seedNote('Pinned one', 'body');
+    await setFlags(ctx, note.id, { pinned: true });
+    const result = await engine.execute({ query: '', filters: { pinned: true } });
+    expect(result.total).toBe(1);
+    expect(result.hits[0]?.matchedFields).toEqual([]);
+  });
+});

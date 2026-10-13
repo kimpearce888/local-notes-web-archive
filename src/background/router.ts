@@ -103,6 +103,19 @@ export function toRpcError(error: unknown): RpcError {
       message: 'The local database could not be upgraded; writes are stopped to protect your data (FR-DATA-06).',
     };
   }
+  // Storage-full is a distinct, actionable state (PRD §12): IndexedDB raises
+  // QuotaExceededError (Firefox: NS_ERROR_FILE_NO_DEVICE_SPACE) when the
+  // profile's storage is exhausted. Data is safe — the write simply failed.
+  if (
+    error instanceof Error &&
+    (/quota/i.test(error.name) || /no device space|not enough space/i.test(error.message))
+  ) {
+    return {
+      code: 'storage-full',
+      message:
+        'Storage is full — the change was not saved. Free up space (remove large snapshots or attachments) or export a backup, then try again.',
+    };
+  }
   const code: RpcErrorCode = 'internal-error';
   const message = error instanceof Error ? error.message : String(error);
   // Never leak stacks or paths; the console keeps the full detail locally.
@@ -146,7 +159,8 @@ export class MessageRouter {
       if (
         rpcError.code === 'internal-error' ||
         rpcError.code === 'migration-failed' ||
-        rpcError.code === 'database-unavailable'
+        rpcError.code === 'database-unavailable' ||
+        rpcError.code === 'storage-full'
       ) {
         console.error(`[rpc ${request.type} ${request.id}]`, error);
         await logOperation({

@@ -39,6 +39,8 @@ export type RpcErrorCode =
   | 'unsupported'
   /** Attachment exceeds the configured byte limit (PRD §10). */
   | 'attachment-too-large'
+  /** Storage quota exhausted during a write (PRD §12 storage-full). */
+  | 'storage-full'
   /** Unexpected internal failure. */
   | 'internal-error';
 

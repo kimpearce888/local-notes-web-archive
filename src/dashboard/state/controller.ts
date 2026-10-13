@@ -408,7 +408,9 @@ export function createDashboardController(options: {
       shell.announce(
         code === 'conflict'
           ? 'Save failed: this note changed in another tab. Reload or save as a duplicate.'
-          : 'Save failed. Your latest edit was not written.',
+          : code === 'storage-full'
+            ? 'Save failed: storage is full. Free up space (remove large snapshots or attachments) or export a backup, then try again.'
+            : 'Save failed. Your latest edit was not written.',
       );
       return { ok: false, code };
     }

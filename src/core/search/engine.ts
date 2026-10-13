@@ -225,9 +225,9 @@ export class SearchEngine {
       if (!this.mini) await this.rebuild();
       const scores = this.textSearch(parsed, input.fuzzy ?? false, errors);
       const noteMap = new Map(notes.map((n) => [n.id as string, n]));
-      const matched: Array<{ noteId: string; score: number; fields: Set<string> }> = [];
-      for (const [id, score] of scores) {
-        if (noteMap.has(id)) matched.push({ noteId: id, score, fields: new Set() });
+      const matched: Array<{ noteId: string; score: number; fields: Set<SearchField> }> = [];
+      for (const [id, hit] of scores) {
+        if (noteMap.has(id)) matched.push({ noteId: id, score: hit.score, fields: hit.fields });
       }
       notes = matched
         .map((m) => noteMap.get(m.noteId) as Note)
@@ -242,10 +242,19 @@ export class SearchEngine {
         const hits = matched.map((m) => ({
           noteId: m.noteId as EntityId,
           score: m.score,
-          matchedFields: [] as SearchField[],
+          matchedFields: [...m.fields].filter(isSearchField),
         }));
         return paginate(hits, notes, input, errors);
       }
+      // Non-relevance sort: keep the matched-field decoration for the hits.
+      const fieldsOf = new Map(matched.map((m) => [m.noteId, m.fields]));
+      const sorted = await sortNotes(this.ctx, notes, sort);
+      const sortedHits = sorted.map((n) => ({
+        noteId: n.id,
+        score: fieldsOf.get(n.id as string)?.size ? (scores.get(n.id as string)?.score ?? 0) : 0,
+        matchedFields: [...(fieldsOf.get(n.id as string) ?? [])].filter(isSearchField),
+      }));
+      return paginate(sortedHits, sorted, input, errors);
     }
 
     // 3. Sort (relevance already handled above).
@@ -264,11 +273,19 @@ export class SearchEngine {
     parsed: ParsedQuery,
     fuzzy: boolean,
     errors: string[],
-  ): Map<string, number> {
+  ): Map<string, { score: number; fields: Set<SearchField> }> {
     const mini = this.mini;
     if (!mini) return new Map();
     let ids: Set<string> | null = null;
-    const scores = new Map<string, number>();
+    const scores = new Map<string, { score: number; fields: Set<SearchField> }>();
+
+    const addFields = (id: string, fields: Iterable<string>): void => {
+      const entry = scores.get(id) ?? { score: 0, fields: new Set<SearchField>() };
+      for (const field of fields) {
+        if (isSearchField(field)) entry.fields.add(field);
+      }
+      scores.set(id, entry);
+    };
 
     for (const term of parsed.terms.filter((t) => !t.exclude)) {
       const fields = scopeToFields(term.scope);
@@ -297,13 +314,22 @@ export class SearchEngine {
           }
         }
         const candidates = phraseIds ?? new Set<string>();
-        const verified = new Set(
-          [...candidates].filter((id: string) =>
-            this.phraseInDoc(id, term.text, fields),
-          ),
+        const verified = new Map<string, SearchField[]>();
+        for (const id of candidates) {
+          const matchedFields = this.phraseFieldsInDoc(id, term.text, fields);
+          if (matchedFields.length > 0) verified.set(id, matchedFields);
+        }
+        ids = combine(
+          ids,
+          new Set(verified.keys()),
+          'AND',
         );
-        ids = combine(ids, verified, 'AND');
-        for (const id of verified) scores.set(id, (scores.get(id) ?? 0) + 1);
+        for (const [id, matchedFields] of verified) {
+          const entry = scores.get(id) ?? { score: 0, fields: new Set<SearchField>() };
+          entry.score += 1;
+          entry.fields = new Set([...entry.fields, ...matchedFields]);
+          scores.set(id, entry);
+        }
       } else {
         const result = mini.search(term.text, {
           fields: fields ?? [...FIELDS],
@@ -312,7 +338,14 @@ export class SearchEngine {
         });
         const termIds = new Set(result.map((r) => String(r.id)));
         for (const hit of result) {
-          scores.set(String(hit.id), (scores.get(String(hit.id)) ?? 0) + hit.score);
+          const id = String(hit.id);
+          const entry = scores.get(id) ?? { score: 0, fields: new Set<SearchField>() };
+          entry.score += hit.score;
+          scores.set(id, entry);
+          // MiniSearch's match info: which fields each matched term was found in.
+          for (const matchedFields of Object.values(hit.match ?? {})) {
+            addFields(id, matchedFields);
+          }
         }
         ids = combine(ids, termIds, 'AND');
       }
@@ -339,7 +372,7 @@ export class SearchEngine {
           }
         }
         for (const id of phraseIds ?? new Set<string>()) {
-          if (this.phraseInDoc(id, term.text, fields)) ids?.delete(id);
+          if (this.phraseFieldsInDoc(id, term.text, fields).length > 0) ids?.delete(id);
         }
       } else {
         const result = mini.search(term.text, { fields: fields ?? [...FIELDS], prefix: true });
@@ -351,21 +384,34 @@ export class SearchEngine {
       errors.push('query has terms but the index is empty');
       return new Map();
     }
-    const filteredScores = new Map<string, number>();
-    for (const id of ids) filteredScores.set(id, scores.get(id) ?? 0);
+    const filteredScores = new Map<string, { score: number; fields: Set<SearchField> }>();
+    for (const id of ids) {
+      const entry = scores.get(id);
+      filteredScores.set(id, entry ?? { score: 0, fields: new Set<SearchField>() });
+    }
     return filteredScores;
   }
 
-  private phraseInDoc(id: string, phrase: string, scope: readonly SearchField[] | null): boolean {
+  private phraseFieldsInDoc(
+    id: string,
+    phrase: string,
+    scope: readonly SearchField[] | null,
+  ): SearchField[] {
     const doc = this.docs.get(id);
-    if (!doc) return false;
+    if (!doc) return [];
     const fields = scope ?? FIELDS;
     const needle = phrase.toLocaleLowerCase('en-US');
-    return fields.some((field) => {
+    const matched: SearchField[] = [];
+    for (const field of fields) {
       const value = (doc[field as keyof SearchDoc] as string | undefined) ?? '';
-      return value.toLocaleLowerCase('en-US').includes(needle);
-    });
+      if (value.toLocaleLowerCase('en-US').includes(needle)) matched.push(field);
+    }
+    return matched;
   }
+}
+
+function isSearchField(value: string): value is SearchField {
+  return (FIELDS as readonly string[]).includes(value);
 }
 
 function combine(current: Set<string> | null, incoming: Set<string>, op: 'AND'): Set<string> {
