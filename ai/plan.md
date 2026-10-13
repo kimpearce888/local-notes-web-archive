@@ -350,6 +350,50 @@ versioned zip + SHA-256 checksums; performance spot-check documented (dashboard
 shell < 1.5 s, 10k-note search < 500 ms p95 with seeded index); accessibility
 keyboard pass; final commit of verification report into `docs/RELEASE_VERIFICATION.md`.
 
+## J. Final QA, Playwright & release protocol (post-plan acceptance round)
+
+User-mandated final acceptance round before COMPLETE. Any issue found enters the
+bug-fix loop: add task → fix → test → move to completed.md → commit → push.
+
+### T-044 Production rebuild and full-suite baseline
+Fresh `npm run build`; `npm run verify` (lint + tsc strict + full vitest);
+`npm run test:e2e` over the real dist/ in persistent Chromium — re-verify every
+existing gate before new coverage lands. Zero failures allowed.
+
+### T-045 Human-simulation and adversarial Playwright suite
+New E2E spec driving the app exactly like a real user: fast/repeated clicks
+(rapid New Note, double-submit guards), invalid and empty inputs (empty title,
+empty search, non-numeric values in numeric settings fields), malicious inputs
+(XSS payloads in title/body via real clipboard paste, javascript: URL in the
+link dialog), multiple dashboard tabs, full browser-restart persistence (context
+close → relaunch same profile), navigation sweep across all smart lists,
+permanent delete from Trash, theme setting persisting across reload, zero
+uncaught page errors and zero non-loopback network requests during the session.
+Persona coverage: new user (first-run onboarding), returning user (restart +
+persisted data), power user (bulk ops, keyboard), invalid/malicious user (above).
+Auth flow N/A — the extension is account-less by design (PRD §1); first-run
+onboarding is the equivalent entry journey.
+
+### T-046 ZIP package acceptance test (extract → load → use)
+Playwright spec that treats the release ZIP as the product: extract
+`release/local-notes-web-archive-<version>.zip` into a scratch directory with
+fflate, verify the extracted inventory against RELEASE_MANIFEST.txt, then load
+the EXTRACTED folder (not dist/) as an unpacked extension in a fresh persistent
+context and verify installation, service worker, dashboard shell, note
+create/save/search, settings dialog — no build steps, usable immediately after
+extraction exactly like the user workflow (Download → Extract → Load Unpacked →
+Use). Popup-equivalent and content-script-equivalent surfaces verified honestly:
+the manifest has no popup (action opens the dashboard) and no declared content
+scripts (capture injects via chrome.scripting + CDP) — assert the actual paths.
+
+### T-047 Release packaging and GitHub Release with ZIP upload
+Regenerate the release artifact (`npm run release`), place
+`release/local-notes-web-archive-1.0.0.zip` + .sha256 + RELEASE_MANIFEST.txt,
+then create GitHub Release v1.0.0 (tag on main) via the GitHub REST API using
+credentials read at runtime from the local git credential store (never committed)
+and upload the ZIP (+ checksum + manifest) as release assets; verify the release
+and asset download URLs; add the download/install workflow to README.
+
 ---
 
 ## Task → PRD traceability
@@ -357,5 +401,7 @@ keyboard pass; final commit of verification report into `docs/RELEASE_VERIFICATI
 All FR-IDs (NOTE 01–08, SEARCH 01–06, CAP 01–10, REM 01–07, AI 01–10, MCP 01–03,
 DATA 01–07, LOG 01–05, SET 01–04), §4.4 editor matrix, §6 invariants, §8 architecture,
 §9 AI safety, §10 privacy/security, §11 NFRs, §12 error states, §13 acceptance gates
-and §14 documentation are covered by tasks T-001..T-043 above. No requirement is
-scheduled for a later phase.
+and §14 documentation are covered by tasks T-001..T-043 above; the post-plan
+acceptance round T-044..T-047 (final QA, human-simulation Playwright, ZIP
+acceptance, GitHub Release) closes the user-mandated release protocol. No
+requirement is scheduled for a later phase.
