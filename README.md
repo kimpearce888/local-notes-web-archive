@@ -250,11 +250,3 @@ dependencies are free/open-source, pinned and vendored into the release folder:
 [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md) and
 [`DEPENDENCIES.json`](./DEPENDENCIES.json). LM Studio (optional AI runtime) is
 external, proprietary, user-installed software — never bundled or required.
-
-## Status
-
-Implementation is complete against the PRD: every feature area (notes,
-search, capture, reminders, local AI, data lifecycle, observability,
-settings/onboarding) is implemented, tested and verified by the release
-gate. See [`ai/plan.md`](./ai/plan.md) and [`ai/completed.md`](./ai/completed.md)
-for the task-level record.
