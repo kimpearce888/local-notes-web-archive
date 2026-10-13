@@ -488,3 +488,30 @@ and §14 documentation are covered by tasks T-001..T-043 above; the post-plan
 acceptance round T-044..T-047 (final QA, human-simulation Playwright, ZIP
 acceptance, GitHub Release) closes the user-mandated release protocol. No
 requirement is scheduled for a later phase.
+
+### T-054 User-reported bug fixes: reminder dialog field sizing and editor pin/trash actions
+Found by the user testing the released build (screenshots 2026-10-13). Two
+real defects: (1) The "Add reminder" dialog fields render ~352px (22rem)
+tall and the dialog overflows the viewport so the Time zone field is cut
+off — root cause: `.search-input { flex: 1 1 22rem }` was authored for the
+horizontal dashboard search form, but inside `.dialog__field` (a
+flex-direction: column container) the 22rem flex-BASIS applies to HEIGHT
+and flex-grow stretches each select/input into a giant empty box (the
+Kind select, the datetime-local picker, month/day/time, final year, Feb-29
+policy, zone). Fix: a scoped rule resetting dialog field sizing (flex: 0 0
+auto; width: 100%) so form controls render at natural height. (2) Pin and
+Trash are impossible from the editor: the editor header only offers
+Back/Revisions/Attachments/Snapshots/Reminders/AI/File-export, so a user
+working inside a note has no pin or trash path at all (the reported "pin,
+trash is not working from editor"). Fix: add Pin/Unpin and a confirmed
+Move-to-trash action to the editor header via new session callbacks
+(notes/set-flags, notes/trash) wired through the controller, with honest
+announcements, the confirm dialog pattern from the bulk bar, autosave
+flush before trash, and the editor closing back to the list after the
+note moves to trash. Regression coverage: unit tests for the new CSS rule
+order + the pin/trash session flow, and an E2E spec asserting the reminder
+dialog fields are natural-height with the zone field visible, and that
+pin/trash work end-to-end from the editor. (The find-bar regression the
+user also screenshotted is the T-052 defect already fixed and
+regression-covered in v1.0.1 — the screenshot predates that release; no
+code change needed there, only the version note to the user.)
