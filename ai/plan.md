@@ -412,6 +412,36 @@ credentials read at runtime from the local git credential store (never committed
 and upload the ZIP (+ checksum + manifest) as release assets; verify the release
 and asset download URLs; add the download/install workflow to README.
 
+## K. Repository audit, screenshots and marketing README
+
+User-mandated presentation round. Same bug-fix loop discipline applies.
+
+### T-049 Complete repository audit
+Full audit for the record and for honest marketing numbers: repo structure
+and tracked-file stats, commit history, source/test line counts, secrets scan
+(worktree + full git history), npm audit over pinned dependencies, permission
+and CSP verification re-run, docs completeness, release artifact integrity
+re-verification. Findings recorded in completed.md and reflected truthfully
+in the README quality section.
+
+### T-050 Professional screenshots from the live extension
+Load the built extension in a persistent Chromium context, drive it through
+the real UI to seed realistic demo data (rich notes, tags, categories, pinned
+note), and capture retina-quality screenshots: dashboard (light), rich-text
+editor, search with results, dashboard (dark), diagnostics. Compose a social
+banner (1280x640) for link previews. Store under docs/screenshots/ with
+README-referenced alt text. No mocks — the real app, really working.
+
+### T-051 Marketing-ready README and GitHub metadata
+Rewrite README.md production-first: value proposition, badges, screenshots,
+features, install-from-release workflow, search syntax, local AI, privacy
+guarantees, quality/verification numbers from the audit, documentation table,
+FAQ, development-from-source, license. SEO/SMO: keyword-rich headings and
+copy, descriptive image alt text, social banner, GitHub repository
+description + topics + homepage updated through the REST API (token read at
+runtime from the credential store, never committed). All docs tests stay
+green; relative links resolve; honest limits stay visible.
+
 ---
 
 ## Task → PRD traceability
