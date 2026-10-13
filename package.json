@@ -19,7 +19,9 @@
     "verify-release": "node scripts/verify-release.mjs",
     "verify": "npm run lint && npm run check && npm run test",
     "deps": "node scripts/generate-dependencies.mjs",
-    "publish-release": "node scripts/github-release.mjs"
+    "publish-release": "node scripts/github-release.mjs",
+    "repo-metadata": "node scripts/github-metadata.mjs",
+    "audit:repo": "node scripts/audit.mjs"
   },
   "dependencies": {
     "@tiptap/core": "3.31.4",

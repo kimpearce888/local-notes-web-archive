@@ -191,3 +191,49 @@ describe('screenshot gallery (T-050)', () => {
     expect(galleryRefs.length).toBeGreaterThanOrEqual(6);
   });
 });
+
+describe('marketing README (T-051)', () => {
+  it('leads with the value proposition, badges and the social banner', () => {
+    const readme = readDoc('README.md');
+    expect(readme).toContain('no cloud, no accounts, no telemetry, no remote code');
+    expect(readme).toContain('./docs/screenshots/social-banner.png');
+    expect(readme).toMatch(/img\.shields\.io/);
+    // SEO keywords in the leading copy.
+    expect(readme).toContain('Chrome note-taking extension');
+    expect(readme).toContain('MHTML web page archiving');
+  });
+
+  it('documents the search syntax truthfully (FR-SEARCH-04 operators)', () => {
+    const readme = readDoc('README.md');
+    for (const op of [
+      '"exact phrase"',
+      'tag:work',
+      'category:projects',
+      'is:pinned',
+      'has:snapshot',
+      'before:2026-01-01',
+      'after:2026-06-01',
+      'in:title',
+    ]) {
+      expect(readme, `search syntax operator ${op} missing`).toContain(op);
+    }
+  });
+
+  it('carries the FAQ and honest privacy/limits copy', () => {
+    const readme = readDoc('README.md');
+    expect(readme).toContain('## FAQ');
+    expect(readme).toContain('Where is my data?');
+    expect(readme).toContain('Will reminders fire while my computer is off?');
+    expect(readme).toContain('loopback');
+    expect(readme).toContain('KNOWN_LIMITATIONS.md');
+  });
+
+  it('states the measured quality numbers from the audit', () => {
+    const readme = readDoc('README.md');
+    expect(readme).toContain('762/762');
+    expect(readme).toContain('44/44');
+    expect(readme).toContain('0 vulnerabilities');
+    expect(readme).toContain('docs/REPOSITORY_AUDIT.md');
+    expect(readme).toContain('docs/RELEASE_VERIFICATION.md');
+  });
+});
