@@ -646,6 +646,123 @@ stays clean; only this ai/ record is committed.
 
 ---
 
+## L. QA-audit defect remediation and v1.0.5 re-release
+
+The T-062 universal human-behavior QA audit (external brief, 2026-10-14)
+confirmed 7 defects with reproducible evidence across the shipped v1.0.4
+build. Per the maintainer's go-ahead the defects are now FIXED (the audit
+itself stayed hands-off per its §9). Each defect gets a full
+implement-validate-commit-push cycle; T-069 then re-releases so the
+installable artifact carries every fix, following the established
+re-release protocol (T-048/T-055/T-059/T-061).
+
+### T-063 Fix D-04+D-06: base64 binary codec for the RPC channel (attachments, backup, blob returns)
+Both critical audit findings share one root cause: chrome.runtime.sendMessage
+JSON-serializes payloads/results, so every File/Blob crossing the channel
+arrives as `{}` — killing attachments end-to-end (D-04: 'data must be a
+Blob'), backup export AND restore (D-06: createObjectURL overload failure /
+'expected the backup file'), and by the same class the not-yet-audited
+blob-returning RPCs (attachments/get-blob, snapshots/get-png,
+snapshots/export, notes/export-file). Fix: a transparent binary transfer
+codec at the two channel boundaries only — the dashboard client's
+request() encodes payload Blobs into a `{__lnwaBinary: true, mimeType,
+base64}` envelope and decodes envelope results back into Blobs; the service
+worker's onMessage listener decodes incoming payloads before router dispatch
+and encodes Blob results before sendResponse. Handlers, call sites and the
+ApiContract stay Blob-typed — the envelope is purely the wire format, and
+handler `instanceof Blob` guards now validate the REBUILT blobs (honest
+validation semantics preserved). Codec: depth-bounded deep walk (plain
+objects/arrays only), chunked btoa/atob (32 KiB slices, no stack overflow),
+strict envelope validation on decode (PayloadValidationError on malformed
+base64/shape). Tests: codec round-trip units (nested payloads, File subclass,
+empty and large blobs, malformed envelopes, depth bound), a JSON-clone
+transport regression test that emulates the REAL channel semantics
+(JSON.parse(JSON.stringify(message)) — the exact test whose absence let D-04
+ship), and E2E specs exercising a real file attach through the panel
+file-picker plus backup export/restore round-trip in the built artifact.
+
+### T-064 Fix D-01: favorite toggle in the bulk bar and the editor header (FR-NOTE-05)
+Favorites were unreachable: the background fully supports `favorite` in
+notes/set-flags, the smart list and card badge exist, but no UI control ever
+set the flag. Fix: add `{ kind: 'favorite'; value: boolean }` to the bulk
+action union with Favorite/Unfavorite buttons (mirroring Pin, gated by a new
+viewAllows.favorite), wire it in the controller through notes/set-flags, and
+add a Favorite editor-header toggle mirroring the T-054 Pin button
+(callbacks.setFavorite → notes/set-flags, live label swap, honest failure
+announcements, disabled while in flight). The Favorites smart list then
+populates truthfully.
+
+### T-065 Fix D-02: build the Filters region UI (FR-SEARCH-03)
+The topbar Filters button opens an empty disclosure: shell.ts creates
+#filters-region and emits filtersToggle with no listener and no controls —
+while the underlying Filters engine (search/query) fully supports every
+FR-SEARCH-03 field. Fix: a filters panel module that renders real controls
+into the region — created/modified date ranges, tag and category
+multi-selects (from allTags/allCategories), pinned/favorite/has-attachment
+tri-state selects, note-state select, reminder-state select, snapshot-status
+select, capture-date range, source-domain input — wired to a controller
+handler that merges the selections into state.filters, re-queries at page 1,
+and renders removal chips into #active-filters (one chip per active filter,
+click to remove; Clear all). Saved views: persisted via the existing
+AppSettings.savedViews (already typed, never used) — save the current
+query+filters under a name, list saved-view chips in the toolbar, click to
+apply, remove to delete (settings/patch persists). Unit tests for the panel
+state mapping (Filters ⇄ controls) and chip rendering; E2E: open filters,
+apply a tag filter, observe narrowed results + chip, remove chip, save a
+named view, reload, apply it.
+
+### T-066 Fix D-03: sort direction control (FR-SEARCH-06)
+Sort direction was hard-coded desc with no ascending control anywhere
+(store default, toolbar, settings). Fix: an ascending/descending select in
+the toolbar next to the field select (aria-labelled, data-action hook),
+emitting a shell event the controller wires into
+store.setState({sort:{field,direction}}) + requery at page 1; settings'
+default-sort gains the same direction pair so the persisted default
+honors FR-SEARCH-06 on startup; 'relevance' keeps direction hidden where
+meaningless per the PRD's "where meaningful" wording. Unit tests for the
+event wiring and settings persistence; E2E asserts Title asc puts
+'Alpha' before 'Gamma' (the audit's exact repro, now inverted to PASS).
+
+### T-067 Fix D-05: re-enable Get started when onboarding re-shows
+The re-shown onboarding's primary button is permanently disabled: the click
+handler sets startButton.disabled = true and only re-enables on failure, so
+after the first successful completion the persisted overlay presents the
+already-spent button (Escape-only exit, verified by the audit). Fix: reset
+the button state whenever the overlay is re-opened (open() sets
+startButton.disabled = false) — one line, plus a regression test that
+completes onboarding once, re-shows it, and asserts the button is enabled
+and completes again.
+
+### T-068 Fix D-07: keep the page-1 slice invariant after rapid creation
+createNote() optimistically prepends every new note to state.notes without
+any page-boundary check, so 52 rapid creations render 52 cards on "Page 1
+of 2" until a reload self-heals. Fix: when the current page slice is already
+full (notes.length >= pageSize), skip the optimistic prepend and requery()
+after the create RPC resolves instead — the honest paginated window with the
+new note at its sorted position; otherwise keep the existing optimistic
+prepend (page not full → placeholder remains instant). Regression test:
+fill a page beyond pageSize through rapid creation and assert the rendered
+card count never exceeds pageSize with the pagination label consistent.
+
+### T-069 Re-release v1.0.5 with the T-063..T-068 audit fixes
+The v1.0.4 zip predates all six fix tasks, so the installable artifact
+carries the two critical transport breakages and the four requirement
+mismatches. Re-run the full re-release protocol (T-061 pattern): version
+1.0.4 -> 1.0.5 in all five authoritative places (package.json,
+package-lock.json, public/manifest.json, src/core/version.ts, README install
+links), update the three version-pinning tests and doc zip-name pins, add
+the release-notes section describing the audit fixes, re-run the full gate
+battery (build, eslint, tsc strict, vitest, perf, full Playwright suite
+including zip-acceptance against the NEW artifact and the audit-defect
+regression specs), regenerate release/local-notes-web-archive-1.0.5.zip +
+.sha256 + RELEASE_MANIFEST.txt, publish GitHub Release v1.0.5 with API
+verification (asset digest match, tag == HEAD, byte-identical download),
+re-verify docs/RELEASE_VERIFICATION.md, regenerate
+docs/REPOSITORY_AUDIT.md at the release HEAD, and record the audit-deliverable
+supersession note (the defects.md fixes are now shipped).
+
+---
+
 ## Task → PRD traceability
 
 All FR-IDs (NOTE 01–08, SEARCH 01–06, CAP 01–10, REM 01–07, AI 01–10, MCP 01–03,
