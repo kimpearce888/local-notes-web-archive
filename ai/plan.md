@@ -589,6 +589,27 @@ the active nav button under system+light with a WCAG contrast computation;
 card children order through the real UI for a note carrying subtitle,
 body, a tag AND a category).
 
+### T-061 Re-release v1.0.4 with the T-060 fixes
+The T-060 fixes (system-theme active-nav contrast, note-card reading
+order) live on main but the installable v1.0.3 zip predates them — a user
+installing from the release page would still hit both defects. Re-release
+so the shipped artifact carries them: version bump 1.0.3 -> 1.0.4 in all
+five authoritative places (package.json, package-lock.json via
+npm install --package-lock-only, public/manifest.json, src/core/version.ts
+APP_VERSION, README install links) plus the three version-pinning tests
+(manifest mirror, core/types metadata, diagnostics-api overview.app.version)
+and the docs zip-name pins; refresh the release-notes template with a
+"What's new in v1.0.4" section describing the two fixes and correct the
+stale gate numbers to the measured 797/797 vitest + 58/58 Playwright;
+re-verify docs/RELEASE_VERIFICATION.md for 1.0.4; run the full gate battery
+on the final code (eslint, tsc strict, vitest 797/797, perf suite,
+Playwright 58/58 including zip-acceptance against the NEW artifact);
+npm run release to regenerate the zip + .sha256 + RELEASE_MANIFEST.txt;
+publish GitHub Release v1.0.4 with the three assets; verify the uploaded
+digest and download the zip back through the API byte-identical; regenerate
+docs/REPOSITORY_AUDIT.md at the final HEAD. No source changes beyond the
+version pins and docs — the fixes themselves are already merged (T-060).
+
 ---
 
 ## Task → PRD traceability
