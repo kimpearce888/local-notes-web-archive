@@ -539,6 +539,10 @@ export function createDashboardController(options: {
         callbacks: {
           getRevisions: async (id) => (await client.request('notes/revisions', { noteId: id })).revisions,
           saveNoteDetailed,
+          // "Back to notes" routes through the full controller close flow
+          // (flush, teardown, return to list view) — never a bare session
+          // close that would strand the hidden results region.
+          onRequestClose: () => void closeEditor(),
           getNote: async (id) => (await client.request('notes/get', { noteId: id })).note,
           duplicateWithContent: async (input) => {
             try {

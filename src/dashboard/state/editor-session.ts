@@ -140,6 +140,14 @@ export interface EditorSessionCallbacks {
   announce(message: string): void;
   /** Safe external link opening. */
   onOpenLink(url: string): void;
+  /**
+   * The "Back to notes" action: routed through the CONTROLLER's close flow
+   * (flush + teardown + return to list view) when provided — the session
+   * never closes itself in production, so the results view can never be
+   * left hidden behind the editor. Falls back to a bare session close in
+   * isolated tests that have no controller.
+   */
+  onRequestClose?(): void;
   /** Attachment pipeline (T-019). */
   attachments: AttachmentApi;
   /** Snapshot management (T-026, FR-CAP-06/07/08). */
@@ -805,7 +813,13 @@ export async function openEditorSession(options: {
   closeButton.type = 'button';
   closeButton.className = 'btn';
   closeButton.textContent = 'Back to notes';
-  closeButton.addEventListener('click', () => void session.close());
+  // Route through the controller when wired: it owns the flush + teardown
+  // + the return-to-list view switch. Closing directly (the fallback)
+  // would leave the results region hidden (found by the T-042 E2E suite).
+  closeButton.addEventListener('click', () => {
+    if (callbacks.onRequestClose) callbacks.onRequestClose();
+    else void session.close();
+  });
 
   const header = document.createElement('div');
   header.className = 'editor-session__header';
