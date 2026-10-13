@@ -166,3 +166,28 @@ describe('repository audit report (T-049)', () => {
     expect(report).toContain('Environment honesty');
   });
 });
+
+describe('screenshot gallery (T-050)', () => {
+  it('ships five app screenshots and the social banner, referenced with alt text', () => {
+    const readme = readDoc('README.md');
+    const PNG_MAGIC = '89504e47';
+    for (const name of [
+      'dashboard-light.png',
+      'editor.png',
+      'search.png',
+      'dashboard-dark.png',
+      'diagnostics.png',
+      'social-banner.png',
+    ]) {
+      const path = join(root, 'docs', 'screenshots', name);
+      expect(existsSync(path), `docs/screenshots/${name} is missing`).toBe(true);
+      const bytes = readFileSync(path);
+      expect(bytes.length, `${name} is stub-sized`).toBeGreaterThan(50_000);
+      expect(bytes.subarray(0, 4).toString('hex'), `${name} is not a PNG`).toBe(PNG_MAGIC);
+      expect(readme, `README must reference ${name}`).toContain(`](./docs/screenshots/${name})`);
+    }
+    // Every gallery reference carries descriptive alt text.
+    const galleryRefs = [...readme.matchAll(/!\[([^\]]{20,})\]\(\.\/docs\/screenshots\//g)];
+    expect(galleryRefs.length).toBeGreaterThanOrEqual(6);
+  });
+});

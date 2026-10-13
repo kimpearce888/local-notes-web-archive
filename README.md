@@ -57,6 +57,22 @@ layout is what the automated extract-and-load acceptance suite verifies.
   permissions, optional AI, reminder limits and data-loss risk; nothing is
   gated behind it.
 
+## Screenshots
+
+Real screenshots of the released build, captured by the automated
+screenshot suite ([`tests/e2e/screenshots.spec.ts`](./tests/e2e/screenshots.spec.ts))
+from the live extension — the demo library was seeded through the real UI
+(notes authored in the rich-text editor, tags and categories assigned
+through the bulk bar, one note pinned).
+
+| | |
+|---|---|
+| ![Dashboard in the light theme with a grid of six notes, tag and category chips and a pinned note](./docs/screenshots/dashboard-light.png) | ![Rich-text editor showing a research note with headings, bold text, bullet lists and a table](./docs/screenshots/editor.png) |
+| ![Search results for the prefix query chrom showing three matching notes and a result count](./docs/screenshots/search.png) | ![Dashboard in the dark theme showing the same library of notes](./docs/screenshots/dashboard-dark.png) |
+| ![Diagnostics dialog showing storage, permissions and local AI status sections](./docs/screenshots/diagnostics.png) | ![Social banner with the extension icon, product name, tagline and feature chips](./docs/screenshots/social-banner.png) |
+
+Retina captures (2880 px wide); the social banner is 1280x640 for link previews.
+
 ## Requirements
 
 - Desktop **Google Chrome 120 or newer** (or a compatible Chromium distribution

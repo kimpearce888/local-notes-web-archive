@@ -2326,3 +2326,19 @@ dialog::backdrop {
 .onboarding__actions {
   justify-content: flex-end;
 }
+
+/* ------------------------------------------------------------------ */
+/* Hidden-attribute guard (T-052)                                     */
+/*                                                                    */
+/* Components toggle visibility with the `hidden` attribute (editor   */
+/* find bar, image node controls, the destructive-restore confirm     */
+/* checkbox, diagnostics self-test region, …). Any author `display`   */
+/* rule above (flex/inline-flex/grid) overrides the UA stylesheet's   */
+/* [hidden] { display: none } and leaks the element on screen. This   */
+/* guard makes the attribute win for every current and future         */
+/* element — asserted by tests/unit/dashboard/css-guard.test.ts and   */
+/* the E2E computed-style regression in tests/e2e/extension.spec.ts.  */
+/* ------------------------------------------------------------------ */
+[hidden] {
+  display: none !important;
+}

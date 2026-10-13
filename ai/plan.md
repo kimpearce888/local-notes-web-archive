@@ -442,6 +442,25 @@ description + topics + homepage updated through the REST API (token read at
 runtime from the credential store, never committed). All docs tests stay
 green; relative links resolve; honest limits stay visible.
 
+### T-052 Added by the bug fix loop when the T-050 screenshot review (vision QA over the
+real UI) noticed the editor's find/replace bar visible without ever pressing
+Ctrl+F. Root cause: components toggle visibility with the `hidden` attribute
+while their CSS classes carry author `display` rules, which override the UA
+stylesheet's `[hidden] { display: none }`: `.editor-find` (display: flex — the
+find bar rendered permanently in the editor) and `.settings__check`
+(display: inline-flex — the destructive restore confirmation checkbox
+revealed regardless of the chosen restore mode, weakening the data-loss
+safety flow). `.editor-image__controls` already carried a specific per-class
+[hidden] rule and never leaked; the global guard generalises that pattern.
+Fix: a single global `[hidden] { display: none !important }` guard at
+the end of styles.css so the attribute always wins for every current and
+future element; regression tests: a static CSS guard test (guard present
+and ordered after every display rule), a real-browser computed-style check
+in the E2E suite (find bar hidden by default, visible on Ctrl+F, hidden
+again after Close), and the T-050 screenshots re-captured against the
+fixed build.
+
+
 ---
 
 ## Task → PRD traceability

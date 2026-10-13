@@ -128,6 +128,32 @@ test('create a note and edit it with bold, heading, list and link', async () => 
   await expect(editorHost).toContainText('a listed item');
 });
 
+test('the editor find bar stays hidden until Ctrl+F (T-052 hidden guard)', async () => {
+  // The find bar carries the hidden attribute AND a display:flex class rule;
+  // without the global [hidden] { display: none !important } guard in
+  // styles.css it leaked on screen permanently (found by vision QA over the
+  // T-050 screenshots). Computed-style truth in the real browser.
+  const findBar = page.locator('.editor-find');
+  await expect(findBar).toHaveCount(1);
+  await expect(findBar).toBeHidden();
+  await expect
+    .poll(async () => page.locator('.editor-find').evaluate((el) => getComputedStyle(el).display))
+    .toBe('none');
+
+  await page.locator('.ProseMirror').first().click();
+  await page.keyboard.press('Control+f');
+  await expect(findBar).toBeVisible();
+  await expect
+    .poll(async () => page.locator('.editor-find').evaluate((el) => getComputedStyle(el).display))
+    .toBe('flex');
+
+  await findBar.getByRole('button', { name: 'Close' }).click();
+  await expect(findBar).toBeHidden();
+  await expect
+    .poll(async () => page.locator('.editor-find').evaluate((el) => getComputedStyle(el).display))
+    .toBe('none');
+});
+
 test('search finds the note and the results region announces counts', async () => {
   await page.getByRole('button', { name: 'Back to notes' }).click();
   await page.locator('#search-input').fill('E2E Smoke Note');
