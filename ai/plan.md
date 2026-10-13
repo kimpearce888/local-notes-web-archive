@@ -492,6 +492,72 @@ publish-release, refresh the verification-doc numbers, and verify the
 uploaded asset digest through the REST API (download-back +
 byte-identical sha256).
 
+### T-056 UI/UX redesign — design system, sidebar app shell, command palette
+The user-supplied redesign brief (Google Docs, 2026-10-13) directs a full
+visual redesign toward "a local-first Obsidian alternative with Linear's
+polish and Arc's modern feel" while preserving 100% feature parity: no
+changes to business logic, behavior, data structures, storage, APIs,
+permissions, search/AI/reminder/archive logic or import/export — only UI,
+UX, layouts, navigation, typography, colors, spacing, components,
+animations, accessibility, information architecture, responsiveness and
+empty/loading/error states. Foundation task: (1) a refreshed token system
+in styles.css (Linear-style dark-first palette, tighter type scale,
+consistent radii/spacing/motion) with the light/system themes kept in
+WCAG-AA parity; (2) the dashboard shell restructured from the stacked
+top-heavy layout into a persistent left sidebar (brand, New Note CTA,
+vertical smart-lists navigation, secondary actions footer) plus a content
+column with a topbar (search with Ctrl+K affordance, filters, sort, view
+toggle) — every existing element id, accessible name, aria attribute,
+data-action hook and the PRD §4.1 DOM order preserved so all 773 unit
+tests and 49 E2E tests keep passing; responsive breakpoints collapse the
+sidebar gracefully; (3) a NEW view-layer command palette (Ctrl+K) that
+surfaces EXISTING actions only (new note, import, smart-list navigation,
+settings, diagnostics, theme preference) with keyboard-first
+filtering/arrow navigation, Radix-style focus containment and Escape
+close — no business logic, purely navigation/UX as the brief's
+"Command Palette (Ctrl+K)" item requires. Unit tests for the palette
+semantics and the preserved shell contract ship with the task.
+
+### T-057 UI/UX redesign — component visual pass
+Second redesign task, same parity constraints: restyle every remaining
+surface to the new design language — note cards (hierarchy, chips, hover
+elevation, selected state), region states (empty/loading/error glyphs and
+copy hierarchy), all dialogs (backdrop, header structure, field
+grouping), the editor session (header action grouping with Back primary,
+panel toolbars, prose typography with readable measure), revision /
+attachments / snapshots / reminders / AI panels, settings and diagnostics
+dialogs (section rhythm, row hierarchy), onboarding, bulk action bar
+(floating centered bar), pagination, status bar, and the responsive
+passes for each. DOM changes are limited to decorative structure (icons,
+grouping wrappers) that never alters accessible names, roles or the
+pinned CSS regressions (T-052 hidden guard, T-054 dialog-field sizing).
+
+### T-058 UI/UX redesign — mandatory QA, human testing, screenshot proof
+The brief mandates: do not assume anything works; test like a real user;
+validate notes CRUD + restore, search, archives, reminders, AI features,
+settings, navigation, keyboard shortcuts, command palette, responsive
+layouts, accessibility; run lint, type checks, unit, integration, E2E and
+production build; fix every issue found; continue until none remain.
+Execute the full battery (eslint, tsc strict, vitest 773+, perf suite,
+all Playwright suites against the rebuilt dist/ including
+human-simulation personas and zip acceptance), extend the screenshot
+suite to prove every surface the brief lists (dashboard, notes/editor,
+search, archives/trash view, reminders dialog, AI panel, settings,
+command palette, responsive layouts, plus light and dark themes), and
+drive the app like a real user to catch regressions. Any defect found is
+fixed and re-tested in this task.
+
+### T-059 UI/UX redesign — v1.0.3 release
+Per the brief's release requirements: verify all tests pass, verify no
+functionality changed and no regressions remain, generate the production
+build, increment the version (1.0.2 -> 1.0.3 in all five authoritative
+places plus the three version-pinning tests and README/docs pins), write
+release notes and a redesign QA report (docs), package the final release
+via npm run release, re-run verify-release, publish GitHub Release v1.0.3
+with the three assets, verify the uploaded digest byte-identical, and
+regenerate docs/REPOSITORY_AUDIT.md at the final HEAD.
+
+
 ---
 
 ## Task → PRD traceability
