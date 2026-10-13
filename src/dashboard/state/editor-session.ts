@@ -25,6 +25,7 @@ import { createAttachmentsPanel, type AttachmentsPanel } from '../editor/attachm
 import { createSnapshotsPanel, type SnapshotsPanel } from '../editor/snapshots-panel';
 import { createRemindersPanel, type RemindersPanel } from '../editor/reminders-panel';
 import { createAiPanel, type AiPanel } from '../ai/ai-panel';
+import { confirmDialog } from '../views/bulk-bar';
 import {
   noteMarkdownExport,
   noteHtmlExport,
@@ -148,6 +149,18 @@ export interface EditorSessionCallbacks {
    * isolated tests that have no controller.
    */
   onRequestClose?(): void;
+  /**
+   * Pin/unpin the open note from the editor (T-054, notes/set-flags).
+   * Optional: isolated tests without a controller can omit it; the session
+   * then hides the pin action.
+   */
+  setPinned?(noteId: EntityId, pinned: boolean): Promise<boolean>;
+  /**
+   * Move the open note to trash from the editor (T-054, notes/trash).
+   * Called after pending autosave edits are flushed; the session closes
+   * back to the list afterwards. Optional for the same reason as setPinned.
+   */
+  trashNote?(noteId: EntityId): Promise<boolean>;
   /** Attachment pipeline (T-019). */
   attachments: AttachmentApi;
   /** Snapshot management (T-026, FR-CAP-06/07/08). */
@@ -821,6 +834,90 @@ export async function openEditorSession(options: {
     else void session.close();
   });
 
+  /* -------------------- Pin / trash from the editor (T-054) ---------- */
+
+  /**
+   * Pin/unpin the note being edited (notes/set-flags through the
+   * controller). The label mirrors the live state; failures announce
+   * honestly instead of pretending the flag changed.
+   */
+  const pinButton = document.createElement('button');
+  pinButton.type = 'button';
+  pinButton.className = 'btn';
+  pinButton.textContent = current.pinned ? 'Unpin' : 'Pin';
+  if (!callbacks.setPinned) pinButton.hidden = true;
+
+  async function togglePinned(): Promise<void> {
+    if (!callbacks.setPinned || pinButton.disabled) return;
+    const target = !current.pinned;
+    pinButton.disabled = true;
+    try {
+      const ok = await callbacks.setPinned(noteId, target);
+      if (ok) {
+        current = { ...current, pinned: target };
+        pinButton.textContent = target ? 'Unpin' : 'Pin';
+        callbacks.announce(target ? 'Note pinned.' : 'Note unpinned.');
+      } else {
+        callbacks.announce('Updating the pin failed — please try again.');
+      }
+    } catch (error) {
+      callbacks.announce(
+        `Updating the pin failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+    } finally {
+      pinButton.disabled = false;
+    }
+  }
+  pinButton.addEventListener('click', () => void togglePinned());
+
+  /**
+   * Move the note being edited to trash (notes/trash through the
+   * controller). Pending edits are flushed FIRST so the trashed note keeps
+   * its newest content; the confirmed destructive action then closes the
+   * editor through the controller's close flow, which re-queries the list
+   * so the note honestly disappears from it (and shows up in Trash).
+   */
+  const trashButton = document.createElement('button');
+  trashButton.type = 'button';
+  trashButton.className = 'btn btn--danger';
+  trashButton.textContent = 'Move to trash…';
+  if (!callbacks.trashNote) trashButton.hidden = true;
+
+  async function trashFromEditor(): Promise<void> {
+    if (!callbacks.trashNote || trashButton.disabled) return;
+    const confirmed = await confirmDialog(
+      'Move this note to trash?',
+      'The note moves to trash with its current content and stays recoverable until permanently deleted.',
+      'Move to trash',
+    );
+    if (!confirmed) return;
+    trashButton.disabled = true;
+    try {
+      // Keep the newest edits: flush BEFORE the note changes state.
+      await autosave.flush();
+    } catch {
+      // The flush's own failure path already surfaced a save state; the
+      // last durable revision is what will be trashed.
+    }
+    try {
+      const ok = await callbacks.trashNote(noteId);
+      if (!ok) {
+        trashButton.disabled = false;
+        callbacks.announce('Moving the note to trash failed — please try again.');
+        return;
+      }
+      callbacks.announce('Note moved to trash.');
+      if (callbacks.onRequestClose) callbacks.onRequestClose();
+      else void session.close();
+    } catch (error) {
+      trashButton.disabled = false;
+      callbacks.announce(
+        `Moving the note to trash failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+    }
+  }
+  trashButton.addEventListener('click', () => void trashFromEditor());
+
   const header = document.createElement('div');
   header.className = 'editor-session__header';
   header.append(
@@ -831,6 +928,8 @@ export async function openEditorSession(options: {
     remindersButton,
     aiButton,
     fileButton,
+    pinButton,
+    trashButton,
   );
   container.prepend(header);
   mount.append(container);

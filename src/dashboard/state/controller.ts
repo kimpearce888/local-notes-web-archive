@@ -543,6 +543,27 @@ export function createDashboardController(options: {
           // (flush, teardown, return to list view) — never a bare session
           // close that would strand the hidden results region.
           onRequestClose: () => void closeEditor(),
+          // Pin/unpin from the editor (T-054): notes/set-flags with an
+          // honest success/failure surface.
+          setPinned: async (noteId, pinned) => {
+            try {
+              await client.request('notes/set-flags', { noteId, pinned });
+              return true;
+            } catch {
+              return false;
+            }
+          },
+          // Move to trash from the editor (T-054): the session flushes its
+          // pending edits first; after the trash RPC the close flow
+          // re-queries so the list reflects the removal.
+          trashNote: async (noteId) => {
+            try {
+              await client.request('notes/trash', { noteId });
+              return true;
+            } catch {
+              return false;
+            }
+          },
           getNote: async (id) => (await client.request('notes/get', { noteId: id })).note,
           duplicateWithContent: async (input) => {
             try {

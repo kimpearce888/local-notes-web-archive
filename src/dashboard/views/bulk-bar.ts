@@ -146,7 +146,11 @@ export function createBulkBar(callbacks: BulkBarCallbacks): BulkBar {
 /* Dialogs                                                             */
 /* ------------------------------------------------------------------ */
 
-function confirmDialog(title: string, detail: string, confirmLabel: string): Promise<boolean> {
+/**
+ * Shared confirmation dialog (T-054): used by the bulk bar's destructive
+ * actions and by the editor's Move-to-trash flow.
+ */
+export function confirmDialog(title: string, detail: string, confirmLabel: string): Promise<boolean> {
   return new Promise((resolve) => {
     const dialog = document.createElement('dialog');
     dialog.className = 'dialog dialog--confirm';

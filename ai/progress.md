@@ -5,12 +5,12 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## K. User-reported bug-fix round
 
-### T-054 User-reported bug fixes: reminder dialog field sizing and editor pin/trash actions
-Two user-reported defects (screenshots 2026-10-13): (1) the Add-reminder
-dialog fields render ~352px tall with the Time zone field cut off —
-`.search-input`'s `flex: 1 1 22rem` (authored for the horizontal search
-form) applies its flex-basis to HEIGHT inside the column-flex
-`.dialog__field`; (2) pin and trash actions are entirely absent from the
-editor, so a user inside a note cannot pin it or move it to trash. Fix
-both with scoped CSS + editor-header actions wired through new session
-callbacks, plus unit and E2E regression coverage.
+### T-055 Re-release v1.0.2 with the T-054 fixes
+The v1.0.1 release artifact predates the T-054 user-reported fixes
+(reminder dialog field sizing + editor pin/trash). Bump package.json +
+public/manifest.json + src/core/version.ts to 1.0.2, update the version
+pinning tests and README install links, rebuild dist, re-run the full
+gate battery, regenerate the release zip, run the full Playwright suite
+(including zip-acceptance against the NEW artifact), publish GitHub
+Release v1.0.2 with the three assets, refresh the verification docs
+numbers, and verify the uploaded asset digest through the REST API.

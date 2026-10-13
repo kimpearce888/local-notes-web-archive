@@ -942,6 +942,20 @@ dialog::backdrop {
   margin-top: var(--space-3);
 }
 
+/*
+ * Dialog form controls (T-054): `.search-input` was authored for the
+ * horizontal dashboard search form, where `flex: 1 1 22rem` sizes the
+ * field's WIDTH. Inside `.dialog__field` — a flex-direction: column
+ * container — that same declaration applies the 22rem basis (and the
+ * grow) to the HEIGHT, blowing every reminder-dialog select/input up to
+ * ~352px tall and pushing the Time zone field out of the viewport.
+ * Reset the flex sizing inside dialog fields: natural height, full width.
+ */
+.dialog__field > .search-input {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
 /* --------------------------- Editor panel ----------------------------- */
 
 .editor-panel {
