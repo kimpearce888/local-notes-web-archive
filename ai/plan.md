@@ -610,6 +610,40 @@ digest and download the zip back through the API byte-identical; regenerate
 docs/REPOSITORY_AUDIT.md at the final HEAD. No source changes beyond the
 version pins and docs — the fixes themselves are already merged (T-060).
 
+### T-062 Universal human-behavior QA audit (external brief)
+User-supplied audit brief (Google Drive, 2026-10-14): act as a meticulous
+human user, exploratory QA engineer, accessibility tester and
+test-coverage analyst over the ENTIRE application at the current build.
+This is an audit/testing task, NOT an implementation task: no product code
+changes, no test weakening, no fixes during the audit. Deliverables are
+saved OUTSIDE the repository (user-accessible download directory), per the
+brief: environment + test-target record (repo URL, branch, HEAD SHA,
+working-tree status, OS, Node/npm, Chromium/Playwright versions);
+discovered test counts from the runners' own list commands (not badges);
+the repo's declared checks re-run fresh at the audit HEAD; a discovery
+ledger built from product UI + source tree + docs + test tree + runtime
+(application-map.md, control-inventory.csv, feature-workflow-matrix.csv,
+state-transition-matrix.csv, existing-test-coverage.md); scenario
+generation from the actual app inventory across the 17 brief-defined
+classes; exploration passes A-G (unscripted discovery, control sweep,
+end-to-end workflows, boundary/invalid/cancel/failure, cross-feature and
+timing, persistence/restart/round-trip, regression repeat); state-model
+coverage accounting with PASS/FAIL/BLOCKED/NOT RUN/INCONCLUSIVE statuses
+per control and transition; evidence rules (real UI actions only — no RPC
+or database shortcuts — screenshots, console/network observation, synthetic
+marker strings, persisted-outcome verification); honest handling of
+environment-blocked areas (local LM Studio absent, capture permissions,
+reminder wake limits); defect handling per brief §9 (preserve, repeat,
+classify against requirements vs documented limits, hypothesis labeling);
+final deliverables (executive summary, application map, control inventory,
+feature/workflow/state/cross-feature matrices, scenario catalog, test
+command results, defects, coverage gaps, existing test coverage, evidence
+directory) with exact counts computed from the ledgers and explicit
+separation of observed fact vs code-inspection finding vs requirement
+mismatch vs hypothesis vs environment limitation. Audit automation lives
+outside the tracked tree (local exclude only); the repository working tree
+stays clean; only this ai/ record is committed.
+
 ---
 
 ## Task → PRD traceability
