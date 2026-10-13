@@ -403,6 +403,143 @@ test('screenshot: diagnostics page', async () => {
   await expect(dialog).not.toBeVisible();
 });
 
+
+test('screenshot: reminders panel and add-reminder dialog', async () => {
+  await page.getByRole('button', { name: 'Open Chromium storage internals — research digest for editing' }).click();
+  await expect(page.locator('.editor-panel__title')).toHaveValue(
+    'Chromium storage internals — research digest',
+    { timeout: 15_000 },
+  );
+  await page.getByRole('button', { name: 'Reminders', exact: true }).click();
+  const panel = page.locator('.reminders-panel');
+  await expect(panel).toBeVisible({ timeout: 10_000 });
+  await panel.getByRole('button', { name: 'Add reminder…' }).click();
+  const dialog = page.locator('dialog.dialog--form');
+  await expect(dialog).toBeVisible({ timeout: 10_000 });
+  // Real form controls at natural height (T-054 regression guard).
+  await expect(dialog.getByRole('heading', { name: 'Add reminder' })).toBeVisible();
+  // Fill a valid due date so the capture shows the dialog ready to act.
+  await dialog.locator('input[type="datetime-local"]').fill('2027-03-01T09:30');
+  await page.waitForTimeout(300);
+  await page.screenshot({
+    path: join(shotsDir, 'reminders.png'),
+    animations: 'disabled',
+    caret: 'hide',
+  });
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+  await expect(page.getByRole('button', { name: 'New Note' })).toBeVisible({ timeout: 15_000 });
+});
+
+test('screenshot: local AI workspace panel', async () => {
+  await page.getByRole('button', { name: 'Open Chromium storage internals — research digest for editing' }).click();
+  await expect(page.locator('.editor-panel__title')).toHaveValue(
+    'Chromium storage internals — research digest',
+    { timeout: 15_000 },
+  );
+  await page.getByRole('button', { name: 'AI', exact: true }).click();
+  const panel = page.locator('.ai-panel');
+  await expect(panel).toBeVisible({ timeout: 10_000 });
+  // The honest offline disclosure is part of the story.
+  await expect(panel).toContainText('LM Studio');
+  await page.waitForTimeout(300);
+  await page.screenshot({
+    path: join(shotsDir, 'ai-panel.png'),
+    animations: 'disabled',
+    caret: 'hide',
+  });
+  await page.getByRole('button', { name: 'AI', exact: true }).click();
+  await expect(panel).toHaveCount(0, { timeout: 10_000 });
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+  await expect(page.getByRole('button', { name: 'New Note' })).toBeVisible({ timeout: 15_000 });
+});
+
+test('screenshot: settings dialog', async () => {
+  await page.getByRole('button', { name: 'Open settings' }).click();
+  const dialog = page.locator('dialog.dialog--settings');
+  await expect(dialog).toBeVisible({ timeout: 15_000 });
+  await expect(dialog.locator('.settings__panel')).toBeVisible({ timeout: 15_000 });
+  await expect(dialog).toContainText('Appearance');
+  await page.waitForTimeout(300);
+  await page.screenshot({
+    path: join(shotsDir, 'settings.png'),
+    animations: 'disabled',
+  });
+  await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+});
+
+test('screenshot: archives view with a real archived note', async () => {
+  // Archive one note through the real flow, like a user.
+  const card = page.locator('.card', { hasText: 'Offsite notes — Q4 planning' }).first();
+  await card.getByLabel('Select Offsite notes — Q4 planning').check();
+  await page.locator('.bulk-bar-mount').getByRole('button', { name: 'Archive', exact: true }).click();
+  await expect(card).toHaveCount(0, { timeout: 10_000 });
+
+  await page.getByRole('button', { name: 'Archived' }).click();
+  const archived = page.locator('.card', { hasText: 'Offsite notes — Q4 planning' }).first();
+  await expect(archived).toBeVisible({ timeout: 15_000 });
+  await page.waitForTimeout(300);
+  await page.screenshot({
+    path: join(shotsDir, 'archives.png'),
+    animations: 'disabled',
+  });
+
+  // Leave the library the way it was found.
+  await archived.getByLabel('Select Offsite notes — Q4 planning').check();
+  await page.locator('.bulk-bar-mount').getByRole('button', { name: 'Restore', exact: true }).click();
+  await page.getByRole('button', { name: 'All notes' }).click();
+  await expect(page.locator('.card')).toHaveCount(SEED_NOTES.length, { timeout: 15_000 });
+});
+
+test('screenshot: command palette', async () => {
+  await page.keyboard.press('Control+k');
+  const palette = page.locator('dialog.dialog--command-palette');
+  await expect(palette).toBeVisible({ timeout: 5_000 });
+  await page.waitForTimeout(300);
+  await page.screenshot({
+    path: join(shotsDir, 'command-palette.png'),
+    animations: 'disabled',
+  });
+  await page.keyboard.press('Escape');
+  await expect(palette).not.toBeVisible();
+});
+
+test('screenshot: responsive layouts keep the app usable', async () => {
+  // Medium width: the sidebar collapses to a compact icon rail.
+  await page.setViewportSize({ width: 900, height: 900 });
+  await page.waitForTimeout(300);
+  const newNote = page.getByRole('button', { name: 'New Note' });
+  await expect(newNote).toBeVisible();
+  await page.screenshot({
+    path: join(shotsDir, 'responsive-rail.png'),
+    animations: 'disabled',
+  });
+
+  // Narrow width: the sidebar folds into a top strip; search still works.
+  await page.setViewportSize({ width: 480, height: 900 });
+  await page.waitForTimeout(300);
+  await expect(newNote).toBeVisible();
+  await page.locator('#search-input').fill('chrom');
+  await page.keyboard.press('Enter');
+  await expect(
+    page.getByRole('button', { name: 'Open Chromium storage internals — research digest for editing' }),
+  ).toBeVisible({ timeout: 15_000 },
+  );
+  await page.screenshot({
+    path: join(shotsDir, 'responsive-narrow.png'),
+    animations: 'disabled',
+  });
+  await page.locator('#search-input').fill('');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.card')).toHaveCount(SEED_NOTES.length, { timeout: 15_000 });
+
+  // Restore the desktop viewport for the remaining captures.
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.waitForTimeout(300);
+});
+
 test('compose the 1280x640 social banner from the real brand assets', async () => {
   const iconBase64 = readFileSync(join(distDir, 'icons', 'icon-128.png')).toString('base64');
   const bannerContext = await chromium.launch({ headless: true });

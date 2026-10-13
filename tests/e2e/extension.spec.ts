@@ -326,3 +326,51 @@ test('AI unavailable is reported honestly from Settings', async () => {
   await expect(dialog).toContainText('no external MCP server');
   await dialog.getByRole('button', { name: 'Close', exact: true }).click();
 });
+
+test('the command palette opens with Ctrl+K, filters, and runs commands (T-056)', async () => {
+  // Ctrl+K opens the palette over the dashboard.
+  await page.keyboard.press('Control+k');
+  const palette = page.locator('dialog.dialog--command-palette');
+  await expect(palette).toBeVisible({ timeout: 5_000 });
+  await expect(palette.getByLabel('Filter commands')).toBeFocused();
+
+  // Typing filters case-insensitively; the arrow keys move the active
+  // option; Escape closes without running anything.
+  await page.keyboard.type('trash');
+  await expect(palette.locator('.palette__option')).toHaveCount(1, { timeout: 5_000 });
+  await expect(palette.locator('.palette__option-label')).toHaveText('Go to Trash');
+  await page.keyboard.press('Escape');
+  await expect(palette).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: 'All notes' })).toBeVisible();
+
+  // Re-open, activate with the keyboard: the palette navigates to the
+  // Trash smart list through the very same button the sidebar uses.
+  await page.keyboard.press('Control+k');
+  await expect(palette).toBeVisible({ timeout: 5_000 });
+  await page.keyboard.type('trash');
+  await page.keyboard.press('Enter');
+  await expect(palette).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Trash', exact: true })).toBeVisible({
+    timeout: 10_000,
+  });
+
+  // The trigger button is a pointer path to the same palette.
+  await page.getByRole('button', { name: 'Open command palette (Ctrl+K)' }).click();
+  await expect(palette).toBeVisible({ timeout: 5_000 });
+  await page.keyboard.type('all notes');
+  await page.keyboard.press('Enter');
+  await expect(palette).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: 'All notes' })).toBeVisible({
+    timeout: 10_000,
+  });
+
+  // A no-match query shows an honest empty state and Enter is a no-op.
+  await page.keyboard.press('Control+k');
+  await expect(palette).toBeVisible({ timeout: 5_000 });
+  await page.keyboard.type('zzz-no-match');
+  await expect(palette).toContainText('No matching command.');
+  await page.keyboard.press('Enter');
+  await expect(palette).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(palette).not.toBeVisible();
+});
