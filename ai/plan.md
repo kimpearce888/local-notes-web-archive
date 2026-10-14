@@ -799,3 +799,114 @@ pin/trash work end-to-end from the editor. (The find-bar regression the
 user also screenshotted is the T-052 defect already fixed and
 regression-covered in v1.0.1 — the screenshot predates that release; no
 code change needed there, only the version note to the user.)
+
+---
+
+## M. Full QA & release validation program (external protocol, Google Doc 2026-10-14)
+
+The maintainer supplied a second external brief (Google Docs
+`1v4E7RF7HxM10KodNikRSGT68cAYYY39ES9p0A8-gNNE`) that shifts the agent's
+role from feature implementation to QA Engineer / Test Engineer /
+Automation Engineer / Security Tester / Performance Engineer / Bug Hunter /
+Release Manager, under a ZERO-TRUST principle (documentation, prior
+validation, green gates and completion claims are not trusted — everything
+is re-verified through actual execution). The mandated cycle is
+DISCOVER → TEST → BREAK → FIX → RETEST → REGRESSION TEST → VALIDATE →
+RELEASE. Unlike the T-062 audit (hands-off), this protocol REQUIRES fixing
+every discovered defect (fix → retest → regression loop) and re-releasing
+only after every release gate passes, including two consecutive
+independent verification passes that find no new defects. Evidence lives
+under /home/z/my-project/qa-evidence/{screenshots,videos,logs}/ (the
+brief's /qa-evidence path mapped inside the sandbox); final reports are
+also copied to /home/z/my-project/download/ for the maintainer.
+
+### T-070 Program queue + zero-trust baseline re-validation
+Queue this program (this section + progress.md), then re-run EVERY declared
+check fresh at HEAD 92fece2 with recorded exact commands, exit codes and
+discovered counts (npm ci state, eslint, tsc strict, vitest with the
+runner's own count, perf, full Playwright battery incl. zip-acceptance,
+verify-release, audit:repo). Nothing from the T-069 record is trusted
+without a fresh execution. Output: /home/z/my-project/qa-evidence/logs/
+baseline-gates.txt.
+
+### T-071 Fake-implementation detection + feature completeness validation
+Full-source scan for TODO/FIXME/HACK/MOCK/STUB/PLACEHOLDER/TEMP markers,
+simulated responses, fake success messages, dummy data, mock APIs,
+incomplete handlers and disabled functionality (test fixtures are the sole
+sanctioned exception per rule.md §2). Cross-check the implementation
+against PRD.md feature matrix (FR-NOTE/SEARCH/CAP/REM/AI/MCP/DATA/LOG/SET,
+§4.4 editor matrix, §6 invariants) + README + KNOWN_LIMITATIONS: identify
+missing, partially implemented, broken, hidden, stub or placeholder
+features. Output: feature-gap-report.md (Feature Gap Report).
+
+### T-072 Feature / screen / interaction / workflow inventories (live re-verification)
+Regenerate the four discovery inventories against the CURRENT v1.0.5 build
+(the T-062 ledgers predate the filters panel, favorites controls, sort
+direction, working attachments/backup): feature inventory, screen
+inventory, interaction inventory (every button/input/select/shortcut/
+dialog action with stable id + aria name), workflow inventory (recursive:
+action → dialog → workflow → screen → further actions). Source tree +
+live UI as equal authorities; docs are not. Output: coverage ledgers under
+qa-evidence/ + updated control-inventory.csv.
+
+### T-073 Security testing + permission audit + secret scan
+E2E security battery in the real browser: note titles/content/tags with
+XSS payloads (`<script>`, `<img onerror>`, event handlers, `javascript:`
+links), stored-XSS persistence across reload, imported-HTML sanitization
+(DOMPurify boundary), capture URL gate (internal schemes, credentials-in-
+URL, localhost/private ranges — loopback only for LM Studio), no unexpected
+network calls (CSP + remote-origin assertion), storage-leak check
+(diagnostics export content audit). Permission audit: every manifest
+permission justified against PERMISSIONS.md; no unused permissions; no
+unused host_permissions. Secret scan of the repository AND the release
+artifact (token/credential/API-key patterns, .gitignore coverage, git
+history spot-check). Any security defect blocks release.
+
+### T-074 Performance testing + memory-leak testing
+Measured, recorded numbers in the real browser: dashboard initial load,
+route/panel transitions (editor open/close, palette, filters), search
+performance at 10k-corpus scale (already budgeted p95 < 500ms — re-measured
+fresh), large-dataset rendering (1k+ visible cards pagination), and memory
+growth over repeated loops (navigation cycles, modal open/close ×N, search
+×N, workflow executions ×N) monitoring heap size, listener counts and
+detached-DOM growth via CDP metrics. Regression thresholds: load < 2s,
+transition < 500ms, search p95 < 500ms, heap growth bounded (< 25% after
+10 cycles). Output: performance-report.md with raw measurements.
+
+### T-075 Data integrity + network resiliency
+CRUD matrix with durable verification: persistence after refresh, after
+extension reload, after browser restart, second-tab consistency, import/
+export round-trip byte-fidelity, trash/restore/purge boundaries, revision
+recovery. Network resiliency: offline mode (fully local by design —
+assert no network dependency), slow/timeout LM Studio endpoint degradation
+(honest fail-closed errors, no fake success), service-worker restart
+mid-operation. Any data integrity issue blocks release.
+
+### T-076 Accessibility + control-state sweep + human-like input patterns
+Keyboard-only full walkthrough (tab order, visible focus, dialog focus
+containment, Escape/Enter semantics), ARIA names for every inventoried
+control (re-verified live), contrast spot-checks, zoom/narrow-viewport
+behavior. State sweep: every control in default/hover/focus/active/
+loading/success/error/empty/disabled states where reachable. Human-like
+patterns: slow usage, rapid clicking, double-click guards, keyboard-only,
+mouse-only, mixed input, large content, empty content, invalid content,
+special characters/emoji, navigation interruptions, session restoration.
+Output: a11y-state-report.md; screenshots of every failure.
+
+### Continuation (queued dynamically per findings, following the T-062 → T-063..T-069 pattern)
+Fix tasks for every defect confirmed in T-070..T-076 (numbered from the
+next free ID, one task = one commit = one push, fix → retest → regression
+suite), then: upgrade testing (install v1.0.4 → create real data → upgrade
+to the current build → data/settings/migrations survive; same from
+v1.0.5), rollback validation (previous version restorable, data intact,
+downgrade path documented), artifact inspection (zip contents: required
+files, no dev/test/debug/temp files, no secrets), Chrome extension
+validation (manifest valid, SW operates, reload/restart/upgrade survival),
+dependency audit (vulnerable/abandoned/duplicate dependencies), evidence
+consolidation (screenshots for every listed area + video walkthrough under
+qa-evidence/), coverage matrix (screen × interaction × status × evidence
+targeting 100% of discovered items), QA report, completion-challenge loop
+(two consecutive independent verification passes discovering no new
+defects — re-running the full gate battery + QA specs twice), and only
+then the release: version increment, changelog, release notes, package,
+validate, publish with API verification.
