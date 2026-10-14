@@ -85,6 +85,10 @@ export interface SnapshotsApi {
   /** QA-D06: ask Chrome for the origin permission and resume the capture
    *  (the previously unreachable links/request-capture-permission flow). */
   requestCapturePermission(linkId: EntityId): Promise<{ granted: boolean }>;
+  /** QA-D07: re-queue a failed capture through capture/retry (the RPC that
+   *  previously had no UI caller — the failed-capture tooltip promised a
+   *  retry affordance that did not exist). */
+  retryCapture(linkId: EntityId): Promise<boolean>;
 }
 
 /** Reminder operations the session needs (T-027, RPC-backed). */
@@ -787,6 +791,7 @@ export async function openEditorSession(options: {
       listForNote: (id) => snapshotsApi.listForNote(id),
       listLinks: (id) => snapshotsApi.listLinks(id),
       requestCapturePermission: (linkId) => snapshotsApi.requestCapturePermission(linkId),
+      retryCapture: (linkId) => snapshotsApi.retryCapture(linkId),
       getPng: (id) => snapshotsApi.getPng(id),
       exportArtifact: (id, format) => snapshotsApi.exportArtifact(id, format),
       rename: (id, title) => snapshotsApi.rename(id, title),

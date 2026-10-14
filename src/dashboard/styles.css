@@ -3349,3 +3349,28 @@ surface, hairline border, heading row, consistent rows. */
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
+
+/* QA-D07: retry-capture affordance for links whose capture failed — the
+ * card's failed-capture tooltip sends the user here for exactly this. */
+.snapshots-panel__retry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+}
+
+.snapshots-panel__retry-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, var(--color-sidebar));
+}
+
+.snapshots-panel__retry-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}

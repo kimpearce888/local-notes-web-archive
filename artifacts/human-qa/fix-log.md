@@ -90,3 +90,22 @@ the RPC hop).
 save → queue → pipeline → link `captured`, snapshot record with PNG saved +
 text saved + honest partial-MHTML reporting (screenshots/final/
 e2e-capture-snapshots-panel.png + d06-grant-affordance.png, final video).
+
+## Fix QA-D07 — Retry-capture affordance for failed links (Phase 3 discovery)
+
+**Committed:** pending (this entry) · **Verification:** real UI + 2 regression tests
+
+- `src/dashboard/editor/snapshots-panel.ts`: new `.snapshots-panel__retry` rows
+  for links in `failed` state with a `Retry capture` button; honest inline
+  status on failure; announce + auto-refresh on success.
+- `src/dashboard/state/editor-session.ts`, `src/dashboard/state/snapshot-client.ts`:
+  `retryCapture` wired to the previously UI-less `capture/retry` RPC.
+- `src/dashboard/styles.css`: retry row styling.
+- `tests/unit/dashboard/snapshots-panel.test.ts`: +2 regression tests
+  (re-queue on click; hidden when nothing failed + honest failure status).
+- Gates: 907/907 tests (was 905), tsc both configs, eslint clean, dist rebuilt.
+- Real-UI verification (verify-d07 session, phase2h profile): failed link
+  (qa-fail-host2.invalid, produced by closing the capture tab mid-flight) →
+  Retry capture visible → click → re-queued → link `failed → captured` with
+  snapshot; affordance gone. Screenshots `d07-retry-affordance.png`,
+  `d07-after-retry.png`.

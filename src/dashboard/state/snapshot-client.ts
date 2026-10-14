@@ -35,5 +35,7 @@ export function createSnapshotsApi(client: ApiClient): SnapshotsApi {
       (await client.request('links/list-for-note', { noteId })).links,
     requestCapturePermission: (linkId) =>
       client.request('links/request-capture-permission', { linkId }).then((r) => ({ granted: r.granted })),
+    retryCapture: (linkId) =>
+      client.request('capture/retry', { linkId }).then((r) => r.retried),
   };
 }

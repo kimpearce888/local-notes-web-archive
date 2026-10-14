@@ -281,6 +281,56 @@ Every entry links evidence and the regression tests that pin the fix.
 
 ---
 
+## QA-D07 — Failed captures cannot be retried from the UI (the tooltip promises otherwise)
+
+- **Status:** FIXED (regression-verified + real-UI verified end-to-end).
+- **Affected feature/action:** Every failed web capture; the card failed-capture
+  chip's tooltip ("A capture attempt failed — open the note to retry from its
+  snapshots panel"); PRD FR-CAP-07 recovery path; workflow-inventory WF-18.
+- **Discovered:** Phase 3 workflow inventory construction (T-095): preparing the
+  "capture failure → retry" workflow surfaced that the snapshots panel has NO
+  retry affordance for `failed` links — the `capture/retry` RPC exists, is
+  fully implemented (re-queues failed/detected/permission-required/captured
+  links with dedup resolved) and is unit-tested (`capture-steps.test.ts` calls
+  it directly), yet has ZERO UI callers — the same unreachable-flow class as
+  QA-D06.
+- **Reproduction steps:**
+  1. Produce a failed capture (e.g. close the capture queue's background tab
+     mid-flight — real TabDriveError path, exercised in phase2h).
+  2. The card shows the "Capture failed · 1 link" chip whose tooltip tells the
+     user to retry from the note's snapshots panel.
+  3. Open the note → Snapshots panel: only exports/rename/compare/delete — no
+     retry control anywhere. The failed link is permanently un-retryable from
+     the UI.
+- **Expected:** A retry affordance on failed links in the snapshots panel that
+  re-queues the capture.
+- **Actual:** Dead RPC; dishonest tooltip; failed links stuck forever (the only
+  workaround was saving the same URL again, creating a duplicate note).
+- **Reproducible:** Deterministic.
+- **Root cause (confirmed):** the retry path was designed (RPC + queue
+  retryable-state machine) but never surfaced in any view — the panel's
+  affordance work (QA-D06) covered only `permission-required` links.
+- **Files changed:**
+  - `src/dashboard/editor/snapshots-panel.ts` — a Retry capture affordance for
+    links in `failed` state (`.snapshots-panel__retry` rows); success announces
+    + refreshes (affordance disappears once the link leaves `failed`); an
+    honest inline status when re-queueing fails.
+  - `src/dashboard/state/editor-session.ts` + `src/dashboard/state/snapshot-client.ts`
+    — `retryCapture` wiring to the `capture/retry` RPC.
+  - `src/dashboard/styles.css` — retry row styling (mirrors the grant row).
+- **Regression tests:** `tests/unit/dashboard/snapshots-panel.test.ts` —
+  "shows Retry capture for a failed link and re-queues it on click" +
+  "hides the retry affordance when no link is failed and reports honestly when
+  re-queueing fails".
+- **Final verification (real UI, repaired build):** on the phase2h profile's
+  really-failed link — the Retry capture affordance rendered
+  (`screenshots/final/d07-retry-affordance.png`); clicking it re-queued the
+  capture through the real pipeline; the link transitioned
+  `failed → captured` with a stored snapshot; the affordance disappeared
+  (`screenshots/final/d07-after-retry.png`; session log `verify-d07`).
+
+---
+
 ## Environmental limitations (honest disclosure)
 
 - **L04 — Chrome's native permission prompt cannot be answered by automation.**

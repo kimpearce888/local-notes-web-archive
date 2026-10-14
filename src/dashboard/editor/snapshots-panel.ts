@@ -51,6 +51,10 @@ export interface SnapshotsPanelCallbacks {
   listLinks(noteId: EntityId): Promise<readonly Link[]>;
   /** QA-D06: request the origin permission and resume the capture. */
   requestCapturePermission(linkId: EntityId): Promise<{ granted: boolean }>;
+  /** QA-D07: re-queue a FAILED capture (the card's failed-capture tooltip
+   *  promises "retry from its snapshots panel" — the capture/retry RPC
+   *  existed and was unit-tested while remaining unreachable from the UI). */
+  retryCapture(linkId: EntityId): Promise<boolean>;
   /** Saved PNG bytes for preview (FR-CAP-06); null when not saved. */
   getPng(snapshotId: EntityId): Promise<Blob | null>;
   /** User-initiated export of one artifact (FR-CAP-06). */
@@ -103,12 +107,19 @@ export function createSnapshotsPanel(
   grantSection.className = 'snapshots-panel__grant';
   grantSection.hidden = true;
 
+  // QA-D07: failed captures get an in-panel Retry capture action — the
+  // card's failed-capture chip tooltip promises exactly this affordance,
+  // but no UI ever called capture/retry before this fix.
+  const retrySection = document.createElement('div');
+  retrySection.className = 'snapshots-panel__retry';
+  retrySection.hidden = true;
+
   const status = document.createElement('p');
   status.className = 'snapshots-panel__status';
   status.setAttribute('aria-live', 'polite');
   status.hidden = true;
 
-  element.append(header.row, status, grantSection, listbox, empty);
+  element.append(header.row, status, grantSection, retrySection, listbox, empty);
 
   function setStatus(message: string, isError: boolean): void {
     status.textContent = message;
@@ -626,6 +637,55 @@ export function createSnapshotsPanel(
       // Link listing is supplementary: a failure never breaks the snapshot
       // list, it only hides the grant affordance for this refresh.
       grantSection.hidden = true;
+    }
+
+    // QA-D07: render the Retry capture affordance for links whose capture
+    // failed — the retryable states live on the queue side (failed/
+    // permission-required/detected/captured); this panel surfaces the
+    // failed ones exactly where the card tooltip sends the user.
+    try {
+      const links = await callbacks.listLinks(noteId);
+      const failed = links.filter((link) => link.captureState === 'failed');
+      retrySection.replaceChildren();
+      retrySection.hidden = failed.length === 0;
+      for (const link of failed) {
+        const row = document.createElement('div');
+        row.className = 'snapshots-panel__retry-row';
+        const text = document.createElement('span');
+        text.className = 'snapshots-panel__retry-text';
+        text.textContent = `Capture failed for ${link.origin}.`;
+        const retry = document.createElement('button');
+        retry.type = 'button';
+        retry.className = 'btn btn--primary';
+        retry.textContent = 'Retry capture';
+        retry.addEventListener('click', () => {
+          retry.disabled = true;
+          void (async () => {
+            let retried = false;
+            try {
+              retried = await callbacks.retryCapture(link.id);
+            } catch (error) {
+              setStatus(
+                `Retrying the capture failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+                true,
+              );
+            }
+            if (retried) {
+              setStatus(`Capture of ${link.origin} re-queued — the archived copy appears here when it completes.`, false);
+              callbacks.announce(`Retrying the capture of ${link.origin}.`);
+              await refresh();
+            } else {
+              setStatus('The capture could not be re-queued — try again.', true);
+              retry.disabled = false;
+            }
+          })();
+        });
+        row.append(text, retry);
+        retrySection.append(row);
+      }
+    } catch {
+      // Supplementary, same as the grant section: never break the list.
+      retrySection.hidden = true;
     }
   }
 

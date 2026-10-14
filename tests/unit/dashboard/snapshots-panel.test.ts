@@ -115,6 +115,8 @@ interface PanelHarness {
     links: Link[];
     permissionRequests: EntityId[];
     grantResult: boolean;
+    retryRequests: EntityId[];
+    retryResult: boolean;
     snapshots: Snapshot[];
   };
   panel: ReturnType<typeof createSnapshotsPanel>;
@@ -133,6 +135,8 @@ async function mountPanel(initial: Snapshot[]): Promise<PanelHarness> {
     links: [] as Link[],
     permissionRequests: [] as EntityId[],
     grantResult: true,
+    retryRequests: [] as EntityId[],
+    retryResult: true,
     async listForNote(noteId: EntityId): Promise<readonly Snapshot[]> {
       this.listed.push(noteId);
       return this.snapshots;
@@ -147,6 +151,14 @@ async function mountPanel(initial: Snapshot[]): Promise<PanelHarness> {
         if (link) link.captureState = 'queued';
       }
       return { granted: this.grantResult };
+    },
+    async retryCapture(linkId: EntityId): Promise<boolean> {
+      this.retryRequests.push(linkId);
+      if (this.retryResult) {
+        const link = this.links.find((l) => l.id === linkId);
+        if (link) link.captureState = 'queued';
+      }
+      return this.retryResult;
     },
     async getPng(snapshotId: EntityId): Promise<Blob | null> {
       this.pngRequests.push(snapshotId);
@@ -497,6 +509,7 @@ describe('snapshots panel', () => {
       },
       listLinks: async (): Promise<readonly Link[]> => [],
       requestCapturePermission: async (): Promise<{ granted: boolean }> => ({ granted: false }),
+      retryCapture: async (): Promise<boolean> => false,
       getPng: async (): Promise<null> => null,
       exportArtifact: async (): Promise<{ blob: Blob; filename: string }> => {
         throw new Error('unreachable');
@@ -683,5 +696,45 @@ describe('grant-access affordance (QA-D06)', () => {
     await panel.refresh();
     expect(r.querySelector('.snapshots-panel__grant-row')).toBeNull();
     expect((r.querySelector('.snapshots-panel__grant') as HTMLElement).hidden).toBe(true);
+  });
+});
+
+describe('retry-capture affordance (QA-D07)', () => {
+  it('shows Retry capture for a failed link and re-queues it on click', async () => {
+    const { callbacks, panel } = await mountPanel([]);
+    const r = panel.element;
+    callbacks.links = [{ id: 'link-f1' as EntityId, noteId: NOTE_ID, originalUrl: 'https://fail.test/x', dedupKey: 'kf1', anchorText: '', origin: 'https://fail.test', createdAt: '2026-01-01T00:00:00.000Z' as UtcTimestamp, snapshotId: null, captureState: 'failed' as LinkCaptureState }];
+    await panel.refresh();
+    const retryRow = r.querySelector('.snapshots-panel__retry-row');
+    expect(retryRow).not.toBeNull();
+    expect(retryRow?.textContent).toContain('Capture failed for https://fail.test.');
+    const button = retryRow?.querySelector('button');
+    expect(button?.textContent).toBe('Retry capture');
+    await (button as HTMLButtonElement).click();
+    await waitFor(() => callbacks.retryRequests.length === 1);
+    expect(callbacks.retryRequests[0]).toBe('link-f1' as EntityId);
+    expect(callbacks.announced.some((m) => m.includes('Retrying the capture of https://fail.test'))).toBe(true);
+    // Re-queued link no longer failed: the affordance disappears on refresh.
+    await waitFor(() => r.querySelector('.snapshots-panel__retry-row') === null);
+  });
+
+  it('hides the retry affordance when no link is failed and reports honestly when re-queueing fails', async () => {
+    const { callbacks, panel } = await mountPanel([]);
+    const r = panel.element;
+    callbacks.links = [{ id: 'link-f2' as EntityId, noteId: NOTE_ID, originalUrl: 'https://ok.test/y', dedupKey: 'kf2', anchorText: '', origin: 'https://ok.test', createdAt: '2026-01-01T00:00:00.000Z' as UtcTimestamp, snapshotId: 'snap-0001' as EntityId, captureState: 'captured' as LinkCaptureState }];
+    await panel.refresh();
+    expect(r.querySelector('.snapshots-panel__retry-row')).toBeNull();
+    expect((r.querySelector('.snapshots-panel__retry') as HTMLElement).hidden).toBe(true);
+    // Honest failure path: retryCapture resolving false keeps the row + a status message.
+    callbacks.retryResult = false;
+    callbacks.links[0]!.captureState = 'failed' as LinkCaptureState;
+    await panel.refresh();
+    const button = r.querySelector<HTMLButtonElement>('.snapshots-panel__retry-row button');
+    expect(button).not.toBeNull();
+    await button!.click();
+    await waitFor(() => callbacks.retryRequests.length === 1);
+    const status = r.querySelector('.snapshots-panel__status') as HTMLElement;
+    expect(status.textContent).toContain('could not be re-queued');
+    expect(r.querySelector('.snapshots-panel__retry-row')).not.toBeNull();
   });
 });

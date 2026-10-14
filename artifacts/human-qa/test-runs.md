@@ -182,3 +182,7 @@ Per ai/qa-instructions.md §14. One entry per session/probe. Evidence paths are 
 - Phase 2 Batch H phase C (restart + isolation): browser-restart persistence across full close/relaunch (notes + settings), two-dashboard-tab state isolation (no bleed; independent library/editor sessions). 2/2 PASSED.
 - Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2h-restart-20261014-205319.json
 
+### verify-d07 — 2026-10-14T21:04:42.029Z
+- QA-D07 verification: failed-capture card found: true | Retry capture affordance visible: true | row text: Capture failed for https://qa-fail-host2.invalid.Retry capture | panel status after retry: Capture of https://qa-fail-host2.invalid re-queued — the archived copy appears here when i | affordance gone after successful re-queue: true | link state after retry: [{"state":"captured","snapshotId":"3e24ce88-0461-4f2d-acbc-3101e4c03a34"}]
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-d07-20261014-210439.json
+

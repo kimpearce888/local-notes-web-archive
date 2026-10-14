@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "ab0b5ff",
+  "distDirty": true,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T21:04:23.838Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "verify-d07",
+    "startedAt": "2026-10-14T21:04:23.761Z",
+    "endedAt": "2026-10-14T21:04:39.896Z",
+    "profileDir": "/tmp/lnwa-qa-phase2h-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "QA-D07 verification: failed-capture card found: true | Retry capture affordance visible: true | row text: Capture failed for https://qa-fail-host2.invalid.Retry capture | panel status after retry: Capture of https://qa-fail-host2.invalid re-queued — the archived copy appears here when i | affordance gone after successful re-queue: true | link state after retry: [{\"state\":\"captured\",\"snapshotId\":\"3e24ce88-0461-4f2d-acbc-3101e4c03a34\"}]",
+  "artifacts": []
+}
