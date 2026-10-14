@@ -999,3 +999,25 @@ report; not classifiable as a defect from this evidence (no user-visible
 silent loss was reproduced at human pace).
 **Scope:** artifacts/human-qa/{test-runs.md, logs/ (phase8 sessions +
 probes), screenshots/final/ reg-*, videos/final/}. No product code changed.
+
+---
+
+## T-099 — Final evidence, coverage summary, 12-part final report
+
+**Completed:** 2026-10-15 (Asia/Dhaka)
+**Validation:** coverage-summary.md computed programmatically from the
+inventories (206/206 action rows resolved — 196 PASSED / 8 BLOCKED
+environmental / 2 N/A; 22/22 workflows across 9 families; 15/15
+interactions; 7/7 edge+visual rows; 9 defects all fixed; 130 screenshots,
+213 session videos, 67 logged sessions). final-report.md written to the
+protocol's 12 sections with every claim traceable to the inventories,
+defect ledger, fix log, test-run journal or evidence files — including the
+honest completion assessment and the precise unresolved-limitations list
+(native prompts, MHTML-in-sandbox, command dispatch, LM Studio, plus the
+onboarding mount-race timing observation). Final evidence on the final
+build was captured by REPEATING the real interactions (verify-d07/d08/d09,
+reg-* regression states, d09 compare dialog, restart persistence) —
+baseline kept separate from final throughout.
+**Scope:** artifacts/human-qa/{coverage-summary.md, final-report.md,
+README.md (status)}; the inventories and evidence themselves were committed
+continuously by the phase tasks T-092..T-098. No product code changed.

@@ -1142,6 +1142,13 @@ snapshots permanently unreachable (fb4481a, 2 regression tests). The
 Phase 2 deferred rows QA-147 (Compare needs 2+ same-link snapshots) and
 QA-149 (Delete + confirm) are now covered via the D09 recapture flow.
 
+T-099 DONE: coverage-summary.md computed from the inventories (206/206
+actions resolved — 196 PASSED / 8 BLOCKED env / 2 N/A; 22/22 workflows;
+15/15 interactions; 7/7 edge+visual rows; 9 defects all fixed; 130
+screenshots, 213 videos, 67 session logs) + final-report.md with the 12
+protocol sections, every claim traceable to the inventories/ledger/journal.
+The QA program is COMPLETE.
+
 T-098 DONE: complete regression pass on the final build (dist @ the D09
 fix) over a fresh pre-seeded profile — 12/12 checks PASSED: all nine defect
 areas re-verified through the real UI (D01 exclusion search, D02 inline

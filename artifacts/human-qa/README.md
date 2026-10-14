@@ -52,9 +52,14 @@ interactions.
 
 ## Status
 
-**Phase 0 (T-092) COMPLETE** — environment established and verified: build
-succeeds, unpacked install loads, service worker starts, dashboard + onboarding
-+ editor + settings + diagnostics + command palette all open through the real
-UI with zero console errors and zero uncaught page errors. Baseline evidence
-captured (8 screenshots, 2 videos). Phases 1-7 in progress per
-`ai/progress.md`.
+**PROGRAM COMPLETE (T-092..T-099).** 206/206 action rows resolved (196
+PASSED, 8 BLOCKED with documented environmental causes, 2 N/A by design);
+22/22 workflows PASSED across all nine families; 15/15 interaction rows
+PASSED; 7/7 edge/visual rows PASSED; 9 defects discovered, fixed,
+regression-tested and re-verified through the real UI (QA-D01..QA-D09,
+commits d8a0370 → fb4481a); full regression on the final build 12/12 +
+913/913 unit tests. Deliverables: `action-inventory.csv`,
+`workflow-inventory.csv`, `interaction-coverage.csv`, `edge-cases.md`,
+`defects.md`, `fix-log.md`, `test-runs.md`, `coverage-summary.md`,
+`final-report.md`. Evidence: 130 screenshots (baseline + final), 213
+session videos, 67 JSON session logs.
