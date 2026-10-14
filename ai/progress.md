@@ -6,7 +6,6 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 ## Queue
 
 
-- [ ] T-075 — Data integrity CRUD/persistence matrix (refresh/reload/extension-restart/browser-restart/multi-tab) + network resiliency (offline, LM Studio timeout degradation)
 - [ ] T-076 — Accessibility + control-state sweep + human-like input patterns (rapid/double/keyboard-only/mixed/special chars) + a11y-state-report.md
 
 (Continuation tasks — defect fixes, upgrade/rollback/artifact/extension
