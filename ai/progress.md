@@ -5,8 +5,9 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
+- [ ] T-078 — Fix D-09: card-meta / text-faint WCAG AA contrast (both themes) + token contrast unit test + a11y re-probe
 
-- [ ] T-076 — Accessibility + control-state sweep + human-like input patterns (rapid/double/keyboard-only/mixed/special chars) + a11y-state-report.md
+
 
 (Continuation tasks — defect fixes, upgrade/rollback/artifact/extension
 validation, dependency audit, evidence consolidation, coverage matrix, QA
