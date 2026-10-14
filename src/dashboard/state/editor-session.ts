@@ -8,6 +8,7 @@
  */
 
 import { createEditorPanel, type EditorPanel } from '../editor/editor-panel';
+import { createNoteMetaBar } from '../editor/note-meta-bar';
 import { createAutosave, type AutosaveManager } from '../editor/autosave';
 import {
   clearRecoveryEntry,
@@ -108,6 +109,22 @@ export interface TransferApi {
   exportFile(noteId: EntityId): Promise<{ blob: Blob; filename: string }>;
 }
 
+/**
+ * Tags/categories (T-087, register UX-08): the editor metadata bar's
+ * RPC-backed operations. Optional in callbacks — isolated tests without a
+ * controller can omit it and the session simply skips the bar.
+ */
+export interface OrganizationApi {
+  listTags(): Promise<readonly { id: EntityId; name: string }[]>;
+  createTag(name: string): Promise<{ id: EntityId; name: string } | null>;
+  noteTagIds(noteId: EntityId): Promise<readonly EntityId[]>;
+  setNoteTags(noteId: EntityId, tagIds: readonly EntityId[]): Promise<boolean>;
+  listCategories(): Promise<readonly { id: EntityId; name: string }[]>;
+  createCategory(name: string): Promise<{ id: EntityId; name: string } | null>;
+  noteCategoryIds(noteId: EntityId): Promise<readonly EntityId[]>;
+  setNoteCategories(noteId: EntityId, categoryIds: readonly EntityId[]): Promise<boolean>;
+}
+
 /** AI assistant operations the session needs (T-031, RPC-backed). */
 export interface SessionAiApi extends AiApi {
   chat(input: {
@@ -178,6 +195,10 @@ export interface EditorSessionCallbacks {
   ai: SessionAiApi;
   /** Note file export (T-035, FR-DATA-05). */
   transfer: TransferApi;
+  /** Tags/categories for the editor metadata bar (T-087, UX-08). */
+  organization?: OrganizationApi;
+  /** A tag/category was created from the editor — refresh rosters/filters. */
+  onRosterChanged?(): void;
   /** URL detection policy call (T-020, FR-CAP-01). Returns null on failure. */
   detectLinks(input: {
     noteId: EntityId;
@@ -442,6 +463,46 @@ export async function openEditorSession(options: {
       toolbarGroups: options.toolbarGroups,
     },
   );
+
+  /* ---------------- Tags/categories bar (T-087, UX-08) ------------- */
+
+  // The bar applies tags/categories IMMEDIATELY through the RPC layer
+  // (like attachments/reminders), never deferred to autosave. Absent when
+  // no organization API is wired (isolated tests); its load failure never
+  // breaks the editor.
+  if (callbacks.organization !== undefined) {
+    const organization = callbacks.organization;
+    void (async () => {
+      try {
+        const [tagIds, categoryIds, tags, categories] = await Promise.all([
+          organization.noteTagIds(noteId),
+          organization.noteCategoryIds(noteId),
+          organization.listTags(),
+          organization.listCategories(),
+        ]);
+        const bar = createNoteMetaBar({
+          noteId,
+          initialTagIds: tagIds,
+          initialCategoryIds: categoryIds,
+          tags,
+          categories,
+          api: {
+            createTag: (name) => organization.createTag(name),
+            setNoteTags: (id, tagIds2) => organization.setNoteTags(id, tagIds2),
+            createCategory: (name) => organization.createCategory(name),
+            setNoteCategories: (id, categoryIds2) =>
+              organization.setNoteCategories(id, categoryIds2),
+          },
+          onNotify: (message) => callbacks.announce(message),
+          onRosterChanged: () => callbacks.onRosterChanged?.(),
+        });
+        panel.mountMetaBar(bar.element);
+      } catch {
+        if (panel.editor.isDestroyed) return;
+        callbacks.announce('Tags and categories could not be loaded for this note.');
+      }
+    })();
+  }
 
   /* -------------------------- Autosave ----------------------------- */
 

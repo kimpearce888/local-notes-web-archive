@@ -52,6 +52,8 @@ export interface EditorPanel {
   readonly element: HTMLElement;
   readonly editor: Editor;
   getTitle(): string;
+  /** Mounts the tags/categories metadata bar under the subtitle (T-087). */
+  mountMetaBar(element: HTMLElement): void;
   getSubtitle(): string;
   getDocument(): object | null;
   getPlainText(): string;
@@ -82,6 +84,12 @@ export function createEditorPanel(
   subtitleInput.value = options.initial?.subtitle ?? '';
   subtitleInput.placeholder = 'Optional subtitle';
   subtitleInput.setAttribute('aria-label', 'Note subtitle');
+
+  /* Tags/categories bar host (T-087, UX-08): the session mounts the
+     metadata bar here when organization APIs are available; absent in
+     isolated tests, and renders nothing while empty. */
+  const metaBarHost = document.createElement('div');
+  metaBarHost.className = 'editor-panel__meta-host';
 
   /* --------------------------- The editor -------------------------- */
 
@@ -649,13 +657,16 @@ export function createEditorPanel(
 
   /* --------------------------- Assemble ---------------------------- */
 
-  element.append(titleInput, subtitleInput, toolbar.element, findBar, editorHost, sourceView);
+  element.append(titleInput, subtitleInput, metaBarHost, toolbar.element, findBar, editorHost, sourceView);
   mount.append(element);
 
   return {
     element,
     editor,
     getTitle: () => titleInput.value,
+    mountMetaBar: (barElement: HTMLElement): void => {
+      metaBarHost.append(barElement);
+    },
     getSubtitle: () => subtitleInput.value,
     getDocument: () => (editor.isEmpty ? null : editor.getJSON()),
     getPlainText: () => editor.getText(),

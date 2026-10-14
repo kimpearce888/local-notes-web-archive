@@ -272,3 +272,39 @@ test('T-086 honesty: an unreadable .heic file degrades to a truthful message', a
   await panel.getByRole('button', { name: 'Close attachments' }).click();
   await page.getByRole('button', { name: 'Back to notes' }).click();
 });
+
+/* ---------------- T-087: tags from the editor (UX-08) ---------------- */
+
+test('T-087 UX-08: a tag can be created and applied from the editor itself', async () => {
+  await openFreshNote('Tagged from editor');
+  // The metadata bar is right under the subtitle — no bulk-bar detour.
+  const tagInput = page.getByLabel('Add a tag');
+  await expect(tagInput).toBeVisible({ timeout: 15_000 });
+  await tagInput.fill('e2e-tag');
+  await tagInput.press('Enter');
+  // The chip appears immediately (applied via RPC, not autosave).
+  const chip = page.locator('.note-meta-bar__chip', { hasText: 'e2e-tag' });
+  await expect(chip).toBeVisible({ timeout: 15_000 });
+
+  // A category too — the second row of the same bar.
+  const categoryInput = page.getByLabel('Add a category');
+  await categoryInput.fill('E2E Projects');
+  await categoryInput.press('Enter');
+  await expect(
+    page.locator('.note-meta-bar__chip', { hasText: 'E2E Projects' }),
+  ).toBeVisible({ timeout: 15_000 });
+
+  // Removable in place.
+  await page.getByRole('button', { name: 'Remove tag e2e-tag' }).click();
+  await expect(chip).toHaveCount(0);
+
+  // The category survives on the card when returning to the list (the
+  // roster-refresh wiring hydrates related data for the visible page).
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+  const card = page.locator('.card', { hasText: 'Tagged from editor' });
+  await expect(card).toBeVisible({ timeout: 15_000 });
+  await expect(
+    card.locator('.card__chips--categories', { hasText: 'E2E Projects' }),
+  ).toBeVisible({ timeout: 15_000 });
+});
+

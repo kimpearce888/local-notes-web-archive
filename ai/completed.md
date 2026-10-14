@@ -621,3 +621,38 @@ lookups use a count-tolerant regex. Gates: tsc strict, eslint, vitest
 866/866, perf p95 PASS, Playwright 71/71 (zip-acceptance deferred to
 T-090 as always), verify-release + the release gate's remote-URL and
 dynamic-code regexes verified against every dist file.
+
+### T-087 — tags and categories reachable from the editor
+Fixed T-084 register UX-08: the ONLY way to tag a note was the list-view
+bulk bar (select checkboxes → New tags / New category) — the editor had no
+tag UI at all, so a user writing a note never found the feature. New
+editor metadata bar (src/dashboard/editor/note-meta-bar.ts) mounted under
+the note subtitle through a new editor-panel slot: applied tags and
+categories render as removable chips, and two add inputs (with datalist
+suggestions from the roster, Enter- or comma-commit like the bulk bar)
+create-or-reuse by normalized name — applied IMMEDIATELY through the
+existing RPCs (tags/create, tags/set-note-tags, categories/create,
+categories/set-note-categories), exactly like attachments and reminders,
+never deferred to autosave. Failures roll back the applied set and are
+announced honestly; every outcome is announced. Wiring: new
+OrganizationApi + organization-client factory (mirrors
+reminders/snapshot clients); the session loads noteTagIds/noteCategoryIds
+via notes/related-bulk plus both rosters, guards the async mount with the
+editor-destroyed check, and degrades to an honest announcement on load
+failure; the controller wires the API and refreshes sidebar/filter
+rosters + the current page's related hydration on roster births so cards
+reflect the change immediately. Skipped cleanly when no organization API
+is wired (isolated tests). CSS: .note-meta-bar rows/chips/add-input with
+the product's chip language; singular nouns in aria-labels and
+announcements. Tests: +11 module units (render, add-reuse, add-create,
+comma commit, honest failure rollback, duplicate announcement, category
+RPC separation, remove+persist, remove rollback, refreshRoster) + 5
+real-channel session integration tests (mount with existing data, add
+tag + truthful read-back through the real RPC transport, remove +
+persist, category add, no-API skip) + E2E UX-08 (tag + category created
+from the editor, chip removal in place, category visible on the card
+after returning to the list). Test-harness note recorded for the future:
+the repo's waitFor helper retries only on FALSY probes — expect()
+assertions inside probes throw on the first poll; probes must return
+truthy values with assertions made after. Gates: tsc strict, eslint,
+vitest 882/882, Playwright 72/72 (zip-acceptance deferred to T-090).

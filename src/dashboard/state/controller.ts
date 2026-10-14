@@ -18,6 +18,7 @@ import { RpcClientError } from './client';
 import { createSnapshotsApi } from './snapshot-client';
 import { createRemindersApi } from './reminders-client';
 import { createAiApi } from './ai-client';
+import { createOrganizationApi } from './organization-client';
 import { parseNoteFile, exportFileStem } from '../editor/note-transfer';
 import { noteMarkdownExport, noteHtmlExport } from '../editor/note-transfer';
 import {
@@ -812,6 +813,16 @@ export function createDashboardController(options: {
           snapshots: createSnapshotsApi(client),
           reminders: createRemindersApi(client),
           ai: createAiApi(client),
+          // T-087 (UX-08): tags/categories reachable from the editor — the
+          // bar applies immediately via RPC; roster births (a NEW tag or
+          // category created in the editor) refresh the sidebar/filter
+          // rosters, and the current page's related data so cards show the
+          // change the moment the user returns to the list.
+          organization: createOrganizationApi(client),
+          onRosterChanged: () => {
+            void loadOrganization();
+            void hydrateRelated(store.getState().notes);
+          },
           transfer: {
             exportFile: async (noteId) => client.request('notes/export-file', { noteId }),
           },
