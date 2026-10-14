@@ -49,6 +49,16 @@ export function verifyMimeType(declared: string, bytes: Uint8Array): string {
   if (startsWith(0x50, 0x4b, 0x03, 0x04)) return 'application/zip';
   if (startsWith(0x1f, 0x8b)) return 'application/gzip';
   if (startsWith(0x42, 0x4d)) return 'image/bmp';
+  // T-086 (register UX-07): HEIC/HEIF containers — ISO-BMFF files whose
+  // bytes 4..7 spell "ftyp" with a major brand at 8..11. Recognising them
+  // keeps iPhone photos from degrading to an opaque octet-stream label
+  // when they are attached as files (AVIF's avic/avis brands are excluded —
+  // Chromium renders those natively and they are not HEIC photos).
+  if (bytes.length >= 12 && startsWith(0, 0, 0) && String.fromCharCode(...bytes.slice(4, 8)) === 'ftyp') {
+    const brand = String.fromCharCode(...bytes.slice(8, 12));
+    if (/^(heic|heix|heim|heis|hevc|hevx|hevm|hevs)$/.test(brand)) return 'image/heic';
+    if (/^(mif1|msf1|heif|heifm|heifs)$/.test(brand)) return 'image/heif';
+  }
 
   if (isLikelyText(bytes)) {
     if (/^text\/(plain|markdown|html|css|csv)$/.test(declared)) return declared;

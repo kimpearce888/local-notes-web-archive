@@ -1566,6 +1566,15 @@ dialog textarea {
   margin-top: var(--space-3);
 }
 
+/* T-086 (UX-15): friendly how-to hint inside dialogs (drag-and-drop,
+   paste, HEIC conversion). */
+.dialog__hint {
+  margin: var(--space-3) 0 0 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
 /*
  * Dialog form controls (T-054): `.search-input` was authored for the
  * horizontal dashboard search form, where `flex: 1 1 22rem` sizes the

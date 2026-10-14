@@ -578,3 +578,46 @@ regressions for attachments/snapshots/reminders/AI, filters close +
 close-on-apply + Enter parity, shell closeFilters/Escape/dialog-guard,
 editor-session Close-button sweep + Escape stack + modal guard).
 Gates: tsc strict (app+node), eslint, vitest 851/851, vite build green.
+
+### T-086 — insert-image rework + HEIC photo support
+Fixed T-084 register UX-06, UX-07 and UX-15. The insert-image dialog no
+longer asks users for data:image URL "blobs" (field removed; replaced by a
+plain-language tip teaching drag-and-drop, Ctrl+V paste and the automatic
+HEIC conversion; primary action is now an explicit "Choose picture…"
+button) and the file picker's accept list admits HEIC/HEIF as MIME types
+AND extensions so OS pickers stop greying out iPhone photos. Because
+Chrome cannot render HEIC inline in any version, every local-image path
+(dialog picker, drag-and-drop, clipboard paste) funnels through one
+conversion choke point (src/dashboard/editor/heic-image.ts) that decodes
+locally to displayable JPEG before storage; honest degradation keeps the
+original as a downloadable attachment when a file cannot be decoded.
+DECODER CHOICE (documented so nobody re-treads this): the first
+implementation used heic2any (asm.js libheif in a blob worker) — its
+Emscripten runtime uses new Function, which MV3 CSP forbids (verified
+live: the decode died on the CSP violation), and MV3 cannot grant
+unsafe-eval. The shipped solution is heic-to's CSP build (pinned 1.6.6,
+LGPL-3.0): libheif + libde265 compiled to asm.js with NO dynamic
+evaluation — no eval, no new Function, no WebAssembly — so the manifest
+CSP stays untouched. Its own blob-worker bootstrap is still CSP-blocked
+on extension pages, so vite.config.ts's heicDecoderWorkerPlugin extracts
+the embedded worker verbatim into dist/heic-decoder-worker.js (3.1 MB,
+shipped once, decoded in a dedicated Worker so the main thread never
+stalls) and redirects the bootstrap to chrome.runtime.getURL; the lazy
+wrapper chunk is 1.7 kB. attach pipeline: ftyp-brand sniffing now
+recognises HEIC/HEIF containers (AVIF excluded) so preserved originals
+label correctly; DEPENDENCIES/THIRD_PARTY_NOTICES regenerated with the
+libheif+libde265 LGPL subcomponent note; KNOWN_LIMITATIONS documents the
+size and honesty behavior. Tests: +15 units (detection, orchestration
+with mocked heicTo, honest failure mapping, zero-size rejection, the
+pinned-bundle embedding + CSP-safety contracts, real-HEIC fixture
+provenance) + 3 real-channel session tests (converted storage as
+IMG_4032.jpg, extension-only detection, broken-file fallback) + E2E
+t084-register-fixes.spec.ts proving in real Chromium under the real
+extension CSP: dialog copy, accept list, a REAL iPhone photo decoding to
+a visible 1440x960 image with the .jpg attachment row (1.4 s end to
+end), and the corrupt-file honest degradation. E2E selector note: the
+attachments header button carries a live count badge, so post-insert
+lookups use a count-tolerant regex. Gates: tsc strict, eslint, vitest
+866/866, perf p95 PASS, Playwright 71/71 (zip-acceptance deferred to
+T-090 as always), verify-release + the release gate's remote-URL and
+dynamic-code regexes verified against every dist file.

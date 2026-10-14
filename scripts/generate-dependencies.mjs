@@ -189,6 +189,19 @@ writeFileSync(join(root, 'DEPENDENCIES.json'), `${JSON.stringify(inventory, null
 /* THIRD_PARTY_NOTICES.md                                            */
 /* ---------------------------------------------------------------- */
 
+/**
+ * Subcomponent notices for packages that EMBED third-party code inside
+ * their own bundle (not separate lockfile entries, so the graph walk
+ * cannot see them). Kept here so regeneration stays deterministic and
+ * drift-free. T-086: heic-to embeds libheif + libde265 compiled to asm.js
+ * (both LGPL-3.0) as its decoder core.
+ */
+const EMBEDDED_SUBCOMPONENTS = {
+  'heic-to': [
+    '**Embedded subcomponents:** heic-to bundles [libheif](https://github.com/strukturag/libheif) and [libde265](https://github.com/strukturag/libde265), both LGPL-3.0-or-later, compiled to plain asm.js (no dynamic evaluation, no WebAssembly) as its HEIC/HEIF decoder core. The full LGPL-3.0 text is reproduced above from the package license file and is available at https://www.gnu.org/licenses/lgpl-3.0.html and in the component source repositories.',
+  ],
+};
+
 function notice(entry) {
   const lines = [
     `### ${entry.name} ${entry.version}`,
@@ -203,6 +216,9 @@ function notice(entry) {
     lines.push('Full license text as shipped with the package:', '', '```', text, '```', '');
   } else {
     lines.push('The package does not ship a standalone license file; the SPDX identifier above', 'identifies the license. See the source repository for the full text.', '');
+  }
+  for (const extra of EMBEDDED_SUBCOMPONENTS[entry.name] ?? []) {
+    lines.push(extra, '');
   }
   return lines.join('\n');
 }

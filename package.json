@@ -43,6 +43,7 @@
     "@tiptap/starter-kit": "3.31.4",
     "dompurify": "3.4.16",
     "fflate": "0.8.3",
+    "heic-to": "1.6.6",
     "lowlight": "3.3.0",
     "marked": "18.1.0",
     "minisearch": "7.2.0",

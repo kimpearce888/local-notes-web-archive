@@ -35,6 +35,7 @@ import {
 import type { AiApi } from './ai-client';
 import type { AgentTurnResult } from '../../background/ai/agent';
 import { attachmentIdFromSrc } from '../editor/local-image';
+import { convertHeicToJpeg, looksLikeHeic } from '../editor/heic-image';
 import { editorDocToPlainText } from '../../core/repo/notes';
 import { detectHttpUrlsInText } from '../../core/util/urls';
 import type {
@@ -271,9 +272,33 @@ export async function openEditorSession(options: {
   const onAttachImage = async (
     file: File,
   ): Promise<
-    { ok: true; src: string; deduplicated: boolean } | { ok: false; message: string }
+    { ok: true; src: string; deduplicated: boolean; detail?: string } | { ok: false; message: string }
   > => {
-    const outcome = await attachFile(file);
+    // T-086 (UX-07): every local-image path (dialog picker, drag-and-drop,
+    // clipboard paste) funnels through here — HEIC/HEIF photos are decoded
+    // locally to displayable JPEG BEFORE storage. Chrome cannot render HEIC
+    // inline in any version, so inserting the original would show a broken
+    // image; the converted JPEG keeps the photo visible AND stores cleanly.
+    let stored = file;
+    let detail: string | undefined;
+    if (looksLikeHeic(file)) {
+      const conversion = await convertHeicToJpeg(file);
+      if (conversion.ok) {
+        stored = conversion.file;
+        detail = '(converted from HEIC to JPEG for display)';
+      } else {
+        // Honest degradation: the photo cannot be shown inline, but it is
+        // still preserved as a downloadable file attachment.
+        const fallback = await attachFile(file);
+        void refreshAttachmentCount();
+        if ('message' in fallback) return { ok: false, message: fallback.message };
+        return {
+          ok: false,
+          message: `${conversion.message} The original file was attached to this note instead — open or download it from the attachments panel.`,
+        };
+      }
+    }
+    const outcome = await attachFile(stored);
     if ('message' in outcome) return { ok: false, message: outcome.message };
     void refreshAttachmentCount();
     if (!outcome.attachment.mimeType.startsWith('image/')) {
@@ -281,10 +306,15 @@ export async function openEditorSession(options: {
       // keep them as a file attachment instead of inserting a broken node.
       return {
         ok: false,
-        message: `${file.name} was verified as ${outcome.attachment.mimeType} and was attached as a file instead.`,
+        message: `${stored.name} was verified as ${outcome.attachment.mimeType} and was attached as a file instead.`,
       };
     }
-    return { ok: true, src: `attachment:${outcome.attachment.id}`, deduplicated: outcome.deduplicated };
+    return {
+      ok: true,
+      src: `attachment:${outcome.attachment.id}`,
+      deduplicated: outcome.deduplicated,
+      detail,
+    };
   };
 
   const onAttachFile = async (

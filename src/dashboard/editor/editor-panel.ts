@@ -15,6 +15,7 @@ import { markdownToEditorHtml, editorHtmlToMarkdown } from './markdown';
 import { findMatches, nextMatch, previousMatch, replaceAllInText, type FindState } from './find-replace';
 import { EDITOR_DOCUMENTATION } from './documentation';
 import { detectHttpUrlsInText } from '../../core/util/urls';
+import { IMAGE_ACCEPT_LIST, looksLikeHeic } from './heic-image';
 
 export interface EditorPanelCallbacks {
   /** Content or metadata changed (dirty). */
@@ -23,7 +24,7 @@ export interface EditorPanelCallbacks {
   onOpenLink(url: string): void;
   /** Store an image file and return its durable in-document reference. */
   onAttachImage(file: File): Promise<
-    { ok: true; src: string; deduplicated: boolean } | { ok: false; message: string }
+    { ok: true; src: string; deduplicated: boolean; detail?: string } | { ok: false; message: string }
   >;
   /** Store a non-image file as a note attachment (never inserted inline). */
   onAttachFile(file: File): Promise<
@@ -197,7 +198,10 @@ export function createEditorPanel(
   /** Store and insert/drop-attach a batch of local files (T-019). */
   async function ingestFiles(files: readonly File[], pos?: number): Promise<void> {
     for (const file of files) {
-      if (file.type.startsWith('image/')) {
+      // T-086: pickers and clipboards can hand out HEIC photos with an
+      // empty MIME type — the extension check keeps them on the IMAGE path
+      // (where the local conversion happens) instead of the file path.
+      if (file.type.startsWith('image/') || looksLikeHeic(file)) {
         const outcome = await callbacks.onAttachImage(file);
         if (outcome.ok) {
           const alt = file.name.replace(/\.[^.]+$/, '');
@@ -220,7 +224,7 @@ export function createEditorPanel(
           callbacks.onNotify(
             outcome.deduplicated
               ? `Inserted ${file.name} (already stored — duplicate content reused).`
-              : `Inserted ${file.name}.`,
+              : `Inserted ${file.name}${outcome.detail ? ` ${outcome.detail}` : ''}.`,
             'info',
           );
         } else {
@@ -453,26 +457,22 @@ export function createEditorPanel(
 
   const insertImageDialog = (): void => {
     const { dialog, body, actions } = dialogShell('Insert image');
+    // T-086 (UX-07): the picker accepts HEIC/HEIF (iPhone photos) — the
+    // conversion to displayable JPEG happens in the attachment pipeline.
+    // T-086 (UX-06): the data:image URL field is gone — it asked normal
+    // users for "blobs" and was useless to ~100% of them.
     const srcField = document.createElement('label');
     srcField.className = 'dialog__field';
-    srcField.textContent = 'Choose a local image file';
+    srcField.textContent = 'Choose a picture from this computer';
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
-    fileInput.accept = 'image/png,image/jpeg,image/gif,image/webp,image/bmp,image/svg+xml';
+    fileInput.accept = IMAGE_ACCEPT_LIST;
     fileInput.className = 'dialog__file';
     fileInput.setAttribute('aria-label', 'Image file');
     srcField.append(fileInput);
-    const orField = document.createElement('label');
-    orField.className = 'dialog__field';
-    orField.textContent = '…or paste a data:image URL';
-    const srcInput = document.createElement('input');
-    srcInput.type = 'text';
-    srcInput.className = 'search-input';
-    srcInput.placeholder = 'data:image/png;base64,…';
-    orField.append(srcInput);
     const altField = document.createElement('label');
     altField.className = 'dialog__field';
-    altField.textContent = 'Alt text (describe the image)';
+    altField.textContent = 'Alt text (describe the image — optional)';
     const altInput = document.createElement('input');
     altInput.type = 'text';
     altInput.className = 'search-input';
@@ -484,18 +484,12 @@ export function createEditorPanel(
     captionInput.type = 'text';
     captionInput.className = 'search-input';
     captionField.append(captionInput);
-    body.append(srcField, orField, altField, captionField);
-
-    const insertFromOutcome = (attrs: { src: string; alt: string; caption: string }): void => {
-      editor
-        .chain()
-        .focus()
-        .insertContent({
-          type: 'image',
-          attrs: { src: attrs.src, alt: attrs.alt, caption: attrs.caption },
-        })
-        .run();
-    };
+    // T-086 (UX-15): teach the easier alternatives instead of hiding them.
+    const tip = document.createElement('p');
+    tip.className = 'dialog__hint';
+    tip.textContent =
+      'You can also drag a picture straight into the note, or paste it with Ctrl+V. iPhone photos (HEIC) are converted to JPEG automatically — nothing is uploaded.';
+    body.append(srcField, altField, captionField, tip);
 
     fileInput.addEventListener('change', () => {
       const file = fileInput.files?.[0];
@@ -503,16 +497,23 @@ export function createEditorPanel(
       void (async () => {
         const outcome = await callbacks.onAttachImage(file);
         if (outcome.ok) {
-          insertFromOutcome({
-            src: outcome.src,
-            alt: altInput.value.trim() || file.name.replace(/\.[^.]+$/, ''),
-            caption: captionInput.value,
-          });
+          editor
+            .chain()
+            .focus()
+            .insertContent({
+              type: 'image',
+              attrs: {
+                src: outcome.src,
+                alt: altInput.value.trim() || file.name.replace(/\.[^.]+$/, ''),
+                caption: captionInput.value,
+              },
+            })
+            .run();
           dialog.close();
           callbacks.onNotify(
             outcome.deduplicated
               ? `Inserted ${file.name} (already stored — duplicate content reused).`
-              : `Inserted ${file.name}.`,
+              : `Inserted ${file.name}${outcome.detail ? ` ${outcome.detail}` : ''}.`,
             'info',
           );
         } else {
@@ -527,23 +528,12 @@ export function createEditorPanel(
     cancel.className = 'btn';
     cancel.textContent = 'Cancel';
     cancel.addEventListener('click', () => dialog.close());
-    const apply = document.createElement('button');
-    apply.type = 'button';
-    apply.className = 'btn btn--primary';
-    apply.textContent = 'Insert';
-    apply.addEventListener('click', () => {
-      const src = srcInput.value.trim();
-      if (!src.startsWith('data:image/')) {
-        callbacks.onNotify(
-          'Use the file picker for local images, or a data:image URL.',
-          'error',
-        );
-        return;
-      }
-      insertFromOutcome({ src, alt: altInput.value, caption: captionInput.value });
-      dialog.close();
-    });
-    actions.append(cancel, apply);
+    const choose = document.createElement('button');
+    choose.type = 'button';
+    choose.className = 'btn btn--primary';
+    choose.textContent = 'Choose picture…';
+    choose.addEventListener('click', () => fileInput.click());
+    actions.append(cancel, choose);
     dialog.showModal();
   };
 

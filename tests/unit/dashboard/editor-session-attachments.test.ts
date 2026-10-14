@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createApiClient } from '../../../src/dashboard/state/client';
+import { heicTo } from 'heic-to/csp';
 import {
   containsBlob,
   decodeBinaries,
@@ -34,7 +35,18 @@ import type { Attachment, Note } from '../../../src/core/types';
  * pass-through transport was precisely the blind spot that let audit
  * defect D-04 ("attachments are broken end-to-end in the built artifact")
  * ship green unit tests.
+ *
+ * T-086 (UX-07): HEIC/HEIF photos convert to displayable JPEG before
+ * storage. The real decode runs in a Web Worker (jsdom has none) — the
+ * decoder is mocked here; heic-image.test.ts pins the extraction contract
+ * and the E2E battery proves the real decode against the built extension.
  */
+
+vi.mock('heic-to/csp', () => ({
+  heicTo: vi.fn(),
+  isHeic: vi.fn(),
+}));
+const mockedDecoder = vi.mocked(heicTo);
 
 type Transport = Parameters<typeof createApiClient>[0];
 
@@ -237,6 +249,90 @@ function documentNode(session: {
 }): { type: string; attrs?: Record<string, unknown> } | undefined {
   return session.editor.getJSON().content?.find((node) => node.type === 'image');
 }
+
+describe('HEIC photos insert as displayable JPEG (T-086, UX-07)', () => {
+  const HEIC_BYTES = new Uint8Array([
+    0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63,
+    0x00, 0x00, 0x00, 0x00, 0x68, 0x65, 0x69, 0x63,
+  ]);
+  const JPEG_BYTES = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]);
+
+  beforeEach(() => {
+    mockedDecoder.mockReset();
+  });
+
+  it('converts a pasted HEIC photo to JPEG and stores the conversion', async () => {
+    mockedDecoder.mockResolvedValue(new Blob([JPEG_BYTES], { type: 'image/jpeg' }));
+    const note = await seedNote('HEIC paste note');
+    const announced: string[] = [];
+    const session = await openEditorSession({
+      mount: root,
+      note,
+      callbacks: makeCallbacks((message) => announced.push(message)),
+    });
+
+    pasteFiles(session, [new File([HEIC_BYTES], 'IMG_4032.heic', { type: 'image/heic' })]);
+    await waitFor(() => documentNode(session) !== undefined);
+
+    // The inserted node points at the CONVERTED attachment, not the HEIC.
+    expect(documentNode(session)?.attrs?.src).toMatch(/^attachment:[0-9a-f-]{36}$/);
+    const { attachments } = await client().request('attachments/list-for-note', {
+      noteId: note.id,
+    });
+    expect(attachments).toHaveLength(1);
+    expect(attachments[0]!.mimeType).toBe('image/jpeg');
+    expect(attachments[0]!.filename).toBe('IMG_4032.jpg');
+    expect(attachments[0]!.size).toBe(JPEG_BYTES.byteLength);
+    // The announcement mentions the conversion honestly.
+    expect(
+      announced.some((message) =>
+        message.includes('Inserted IMG_4032.heic') && message.includes('converted from HEIC'),
+      ),
+    ).toBe(true);
+    await session.close();
+  });
+
+  it('detects HEIC by extension when the picker gives no MIME type', async () => {
+    mockedDecoder.mockResolvedValue(new Blob([JPEG_BYTES], { type: 'image/jpeg' }));
+    const note = await seedNote('HEIC no-mime note');
+    const session = await openEditorSession({ mount: root, note, callbacks: makeCallbacks() });
+    pasteFiles(session, [new File([HEIC_BYTES], 'photo.HEIC', { type: '' })]);
+    await waitFor(() => documentNode(session) !== undefined);
+    expect(mockedDecoder).toHaveBeenCalledTimes(1);
+    await session.close();
+  });
+
+  it('keeps the original photo as a file attachment when decoding fails', async () => {
+    mockedDecoder.mockRejectedValue(new Error('libheif could not parse the input'));
+    const note = await seedNote('Broken HEIC note');
+    const announced: string[] = [];
+    const session = await openEditorSession({
+      mount: root,
+      note,
+      callbacks: makeCallbacks((message) => announced.push(message)),
+    });
+
+    pasteFiles(session, [new File([HEIC_BYTES], 'broken.heic', { type: 'image/heic' })]);
+    await waitFor(() =>
+      announced.some(
+        (message) =>
+          message.includes('Reading broken.heic as a HEIC/HEIF photo failed') &&
+          message.includes('attached to this note instead'),
+      ),
+    );
+    // No broken inline image node was inserted.
+    expect(documentNode(session)).toBeUndefined();
+    // The original photo is preserved as a verbatim file attachment with
+    // the newly-taught HEIC sniffing.
+    const { attachments } = await client().request('attachments/list-for-note', {
+      noteId: note.id,
+    });
+    expect(attachments).toHaveLength(1);
+    expect(attachments[0]!.mimeType).toBe('image/heic');
+    expect(attachments[0]!.filename).toBe('broken.heic');
+    await session.close();
+  });
+});
 
 describe('pasting and dropping image files', () => {
   it('stores the binary and inserts a durable attachment reference', async () => {

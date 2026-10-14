@@ -274,6 +274,29 @@ describe('attachments repository', () => {
     expect(verifyMimeType('application/pdf', new Uint8Array([0x25, 0x50, 0x44, 0x46]))).toBe('application/pdf');
   });
 
+  it('recognises HEIC/HEIF containers by ftyp brand (T-086, UX-07)', () => {
+    // ISO-BMFF box: size (4 bytes) + 'ftyp' + major brand + minor version.
+    const heicBrand = (brand: string): Uint8Array => {
+      const bytes = new Uint8Array(16);
+      bytes.set([0x00, 0x00, 0x00, 0x18], 0);
+      bytes.set([...'ftyp'].map((c) => c.charCodeAt(0)), 4);
+      bytes.set([...brand].map((c) => c.charCodeAt(0)), 8);
+      return bytes;
+    };
+    // iPhone photo brands.
+    expect(verifyMimeType('image/heic', heicBrand('heic'))).toBe('image/heic');
+    expect(verifyMimeType('application/octet-stream', heicBrand('heic'))).toBe('image/heic');
+    expect(verifyMimeType('image/heic', heicBrand('heix'))).toBe('image/heic');
+    expect(verifyMimeType('image/heic', heicBrand('hevc'))).toBe('image/heic');
+    // Plain HEIF still-image brands.
+    expect(verifyMimeType('image/heif', heicBrand('mif1'))).toBe('image/heif');
+    expect(verifyMimeType('image/heif', heicBrand('msf1'))).toBe('image/heif');
+    // AVIF is NOT HEIC (Chromium renders it natively; never relabel it).
+    expect(verifyMimeType('image/avif', heicBrand('avic'))).toBe('application/octet-stream');
+    // A random ftyp brand that is neither family stays opaque.
+    expect(verifyMimeType('image/heic', heicBrand('isom'))).toBe('application/octet-stream');
+  });
+
   it('creates attachments with hash and blob storage', async () => {
     const note = await createNote(ctx, {});
     const attachment = await createAttachment(ctx, {

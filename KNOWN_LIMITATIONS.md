@@ -91,3 +91,18 @@ mistaken for external connectivity (per the MCP disclosure requirements).
   envelope is built, so attaching or backing up near the limit on a
   memory-constrained machine can fail honestly with a storage/channel error
   rather than silently truncating.
+
+## HEIC/HEIF photos (v1.0.7, T-086)
+
+- Chrome does not render HEIC/HEIF inside notes in ANY version (only Safari
+  does). Inserting an iPhone photo therefore converts it locally to JPEG
+  (pinned heic-to decoder — libheif + libde265 compiled to plain asm.js
+  with no dynamic evaluation, so the extension's strict CSP needs no
+  change; nothing is uploaded, no WebAssembly) before storing it. The note
+  shows the JPEG; the original HEIC file can still be attached verbatim
+  through the attachments panel and opened in any OS viewer.
+- The decoder adds ~3.2 MB to the extension (one dedicated worker file,
+  loaded only when the first HEIC photo is inserted — the dashboard's main
+  thread never runs the decode). If decoding a specific file fails (corrupt
+  or exotic HEVC variant), the file is kept as a regular attachment and
+  the note tells you so instead of inserting a broken image.
