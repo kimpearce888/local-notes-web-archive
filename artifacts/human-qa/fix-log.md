@@ -125,3 +125,18 @@ e2e-capture-snapshots-panel.png + d06-grant-affordance.png, final video).
 - Real-UI verification (verify-d08): rich note → Replace all → structure
   counts identical, no leftovers, autosave+reopen preserves everything.
   Baseline damage: d08-flattened-document-after-replace-all.png.
+
+## Fix QA-D09 — recapture affordance for captured links (Phase 3 discovery)
+
+**Committed:** pending (this entry) · **Verification:** real UI + 2 regression tests
+
+- `src/dashboard/editor/snapshots-panel.ts`: 'Capture fresh copy…' rows for
+  captured links (reuses the D07 retryCapture wiring + retry CSS); chains a
+  fresh revision (previousSnapshotId) on the SAME link; makes Compare…
+  reachable for the first time (QA-147 un-blocked).
+- `tests/unit/dashboard/snapshots-panel.test.ts`: +2 regression tests; the
+  D07 hidden-case premise updated (captured links now legitimately show the
+  affordance).
+- Gates: 913/913 tests, tsc both configs, eslint clean, dist rebuilt.
+- Real-UI verification (verify-d09-v2): rows 1→2 on the same link; Compare
+  dialog rendered between the two snapshots.

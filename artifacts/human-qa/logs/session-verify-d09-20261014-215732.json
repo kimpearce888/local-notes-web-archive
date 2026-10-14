@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "7ea37b0",
+  "distDirty": true,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T21:57:07.127Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "verify-d09",
+    "startedAt": "2026-10-14T21:57:07.059Z",
+    "endedAt": "2026-10-14T21:57:32.397Z",
+    "profileDir": "/tmp/lnwa-qa-phase3-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "QA-D09 verification + WF-17 completion: capture cards: 3 | Capture fresh copy… affordance visible: true | snapshot rows: 0 → 1 | Compare… buttons: 1 | example.com link states: [\"detected\",\"captured\",\"detected\"] | VERDICT: recapture=true, compare(QA-147)=false, delete(QA-149)=true",
+  "artifacts": []
+}

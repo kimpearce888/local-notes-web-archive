@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "7ea37b0",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T21:31:24.421Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase3b-workflows",
+    "startedAt": "2026-10-14T21:31:24.343Z",
+    "endedAt": "2026-10-14T21:35:50.722Z",
+    "profileDir": "/tmp/lnwa-qa-phase3-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 3 part B (WF-01/05 final on the fixed build + WF-08..WF-16): rich-note authoring, restructure with structure preserved, search journey (tag/phrase/exclusion/sort), saved view growth, revisions restore, settings live-effect journey, backup export→preview→merge-restore, mid-edit navigation, smart-list chain with selection reset, cancel flows, universal Escape dismissal. 4/6 PASSED. Defect candidates: section wf05-final: - waiting for locator('article.card').filter({ hasText: 'D08 rich verify' }).first().getByRole('button', { name: /Open D08 rich verify for editing/ }).first() | section wf10-revisions: - waiting for getByRole('button', { name: /^Revisions/ }).first() | section wf11-settings-journey: - waiting for getByRole('button', { name: 'Open Untitled for editing' }).first() | section wf13-mid-edit: - waiting for locator('article.card').filter({ hasText: 'Journey complete' }).first().getByRole('button', { name: /Open Journey complete for editing/ }).first() | section wf15-cancels: - waiting for getByRole('button', { name: 'Cancel', exact: true }).first().",
+  "artifacts": []
+}

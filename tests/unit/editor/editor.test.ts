@@ -292,6 +292,15 @@ function textOf(node: unknown): string | undefined {
   return (node as { text?: string } | undefined)?.text;
 }
 
+/** Descend .content[i] repeatedly over the loosely-typed editor JSON. */
+function at(node: unknown, ...path: number[]): unknown {
+  let cur: unknown = node;
+  for (const i of path) {
+    cur = (cur as { content?: unknown[] } | undefined | null)?.content?.[i];
+  }
+  return cur;
+}
+
 describe('replace preserves document structure (QA-D08)', () => {
   function richEditor(): Editor {
     return newEditor({
@@ -321,8 +330,8 @@ describe('replace preserves document structure (QA-D08)', () => {
     expect(doc.content?.[0]?.type).toBe('heading');
     expect(textOf(doc.content?.[0]?.content?.[0])).toBe('NEEDLE heading');
     expect(doc.content?.[1]?.type).toBe('bulletList');
-    expect(textOf(doc.content?.[1]?.content?.[1]?.content?.[0]?.content?.[0])).toBe('plain item');
-    expect(doc.content?.[2]?.content?.[1]?.marks?.[0]?.type).toBe('bold');
+    expect(textOf(at(doc.content?.[1], 1, 0, 0))).toBe('plain item');
+    expect((at(doc.content?.[2], 1) as { marks?: { type?: string }[] } | undefined)?.marks?.[0]?.type).toBe('bold');
     expect(textOf(doc.content?.[2]?.content?.[1])).toBe('bold NEEDLE');
     expect(doc.content?.[3]?.type).toBe('codeBlock');
     expect(textOf(doc.content?.[3]?.content?.[0])).toBe('const NEEDLE = 1;');

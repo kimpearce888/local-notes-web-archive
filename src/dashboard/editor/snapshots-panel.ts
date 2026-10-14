@@ -643,11 +643,17 @@ export function createSnapshotsPanel(
     // failed — the retryable states live on the queue side (failed/
     // permission-required/detected/captured); this panel surfaces the
     // failed ones exactly where the card tooltip sends the user.
+    // QA-D09: captured links get a 'Capture fresh copy…' affordance — the
+    // recapture entry point (FR-CAP-08, fresh revision chained via
+    // previousSnapshotId) previously had NO UI path at all, which also made
+    // the Compare… dialog permanently unreachable (it needs 2+ snapshots of
+    // the SAME link, and only a same-link recapture can produce that).
     try {
       const links = await callbacks.listLinks(noteId);
       const failed = links.filter((link) => link.captureState === 'failed');
+      const captured = links.filter((link) => link.captureState === 'captured' && link.snapshotId !== null);
       retrySection.replaceChildren();
-      retrySection.hidden = failed.length === 0;
+      retrySection.hidden = failed.length === 0 && captured.length === 0;
       for (const link of failed) {
         const row = document.createElement('div');
         row.className = 'snapshots-panel__retry-row';
@@ -681,6 +687,41 @@ export function createSnapshotsPanel(
           })();
         });
         row.append(text, retry);
+        retrySection.append(row);
+      }
+      for (const link of captured) {
+        const row = document.createElement('div');
+        row.className = 'snapshots-panel__retry-row';
+        const text = document.createElement('span');
+        text.className = 'snapshots-panel__retry-text';
+        text.textContent = `A fresh capture of ${link.origin} adds a new revision you can compare.`;
+        const recapture = document.createElement('button');
+        recapture.type = 'button';
+        recapture.className = 'btn';
+        recapture.textContent = 'Capture fresh copy…';
+        recapture.addEventListener('click', () => {
+          recapture.disabled = true;
+          void (async () => {
+            let requeued = false;
+            try {
+              requeued = await callbacks.retryCapture(link.id);
+            } catch (error) {
+              setStatus(
+                `Recapturing failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+                true,
+              );
+            }
+            if (requeued) {
+              setStatus(`Fresh capture of ${link.origin} re-queued — the new revision appears here when it completes.`, false);
+              callbacks.announce(`Capturing a fresh copy of ${link.origin}.`);
+              await refresh();
+            } else {
+              setStatus('The fresh capture could not be started — try again.', true);
+              recapture.disabled = false;
+            }
+          })();
+        });
+        row.append(text, recapture);
         retrySection.append(row);
       }
     } catch {

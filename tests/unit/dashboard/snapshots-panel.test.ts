@@ -721,7 +721,7 @@ describe('retry-capture affordance (QA-D07)', () => {
   it('hides the retry affordance when no link is failed and reports honestly when re-queueing fails', async () => {
     const { callbacks, panel } = await mountPanel([]);
     const r = panel.element;
-    callbacks.links = [{ id: 'link-f2' as EntityId, noteId: NOTE_ID, originalUrl: 'https://ok.test/y', dedupKey: 'kf2', anchorText: '', origin: 'https://ok.test', createdAt: '2026-01-01T00:00:00.000Z' as UtcTimestamp, snapshotId: 'snap-0001' as EntityId, captureState: 'captured' as LinkCaptureState }];
+    callbacks.links = [{ id: 'link-f2' as EntityId, noteId: NOTE_ID, originalUrl: 'https://ok.test/y', dedupKey: 'kf2', anchorText: '', origin: 'https://ok.test', createdAt: '2026-01-01T00:00:00.000Z' as UtcTimestamp, snapshotId: null, captureState: 'queued' as LinkCaptureState }];
     await panel.refresh();
     expect(r.querySelector('.snapshots-panel__retry-row')).toBeNull();
     expect((r.querySelector('.snapshots-panel__retry') as HTMLElement).hidden).toBe(true);
@@ -736,5 +736,32 @@ describe('retry-capture affordance (QA-D07)', () => {
     const status = r.querySelector('.snapshots-panel__status') as HTMLElement;
     expect(status.textContent).toContain('could not be re-queued');
     expect(r.querySelector('.snapshots-panel__retry-row')).not.toBeNull();
+  });
+});
+
+describe('recapture affordance (QA-D09)', () => {
+  it('shows Capture fresh copy… for a captured link and re-queues it on click', async () => {
+    const { callbacks, panel } = await mountPanel([]);
+    const r = panel.element;
+    callbacks.links = [{ id: 'link-c1' as EntityId, noteId: NOTE_ID, originalUrl: 'https://recap.test/x', dedupKey: 'kc1', anchorText: '', origin: 'https://recap.test', createdAt: '2026-01-01T00:00:00.000Z' as UtcTimestamp, snapshotId: 'snap-0001' as EntityId, captureState: 'captured' as LinkCaptureState }];
+    await panel.refresh();
+    const rows = r.querySelectorAll('.snapshots-panel__retry-row');
+    expect(rows.length).toBe(1);
+    expect(rows[0]?.textContent).toContain('A fresh capture of https://recap.test adds a new revision you can compare.');
+    const button = rows[0]?.querySelector('button');
+    expect(button?.textContent).toBe('Capture fresh copy…');
+    await (button as HTMLButtonElement).click();
+    await waitFor(() => callbacks.retryRequests.length === 1);
+    expect(callbacks.retryRequests[0]).toBe('link-c1' as EntityId);
+    expect(callbacks.announced.some((m) => m.includes('Capturing a fresh copy of https://recap.test'))).toBe(true);
+  });
+
+  it('hides the recapture affordance for captured links without a snapshot', async () => {
+    const { callbacks, panel } = await mountPanel([]);
+    const r = panel.element;
+    callbacks.links = [{ id: 'link-c2' as EntityId, noteId: NOTE_ID, originalUrl: 'https://bare.test/y', dedupKey: 'kc2', anchorText: '', origin: 'https://bare.test', createdAt: '2026-01-01T00:00:00.000Z' as UtcTimestamp, snapshotId: null, captureState: 'captured' as LinkCaptureState }];
+    await panel.refresh();
+    expect(r.querySelector('.snapshots-panel__retry-row')).toBeNull();
+    expect((r.querySelector('.snapshots-panel__retry') as HTMLElement).hidden).toBe(true);
   });
 });

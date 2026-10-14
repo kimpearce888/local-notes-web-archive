@@ -385,6 +385,59 @@ Every entry links evidence and the regression tests that pin the fix.
 
 ---
 
+## QA-D09 — Recapture of a captured link (fresh revision, FR-CAP-08) is unreachable — and with it, Compare snapshots
+
+- **Status:** FIXED (regression-verified + real-UI verified end-to-end).
+- **Affected feature/action:** FR-CAP-08 fresh-revision recapture; the
+  snapshots panel Compare… dialog (needs 2+ snapshots of the SAME link —
+  only a same-link recapture can produce that state); Phase 2 deferred row
+  QA-147; workflow WF-17.
+- **Discovered:** Phase 3 WF-17 (second capture of the same URL): the audit
+  trail showed the duplicate 'Capture fresh copy' decision captures a NEW
+  link on a NEW note — never a second snapshot on the SAME link. Source
+  sweep: `capture/retry` explicitly accepts `'captured'` ("retrying a
+  captured link is the recapture entry point (fresh revision, FR-CAP-08)")
+  and snapshots chain via `previousSnapshotId = job.existingSnapshotId`, but
+  NO UI ever invoked retry for captured links (the QA-D07 affordance covers
+  failed links only). The Compare dialog existed with per-row Compare…
+  buttons while being permanently unreachable by any real user.
+- **Reproduction steps:**
+  1. Capture any page (link state `captured`, one snapshot).
+  2. Look for ANY way to re-capture that same link from the UI: saving the
+     same URL again creates a new note + new link; the snapshots panel has
+     no recapture control. The link can never gain a second revision.
+  3. Consequently Compare… can never select two snapshots of one link.
+- **Expected:** A recapture affordance for captured links that chains a
+  fresh revision, making Compare reachable.
+- **Actual:** Dead capability: queue support + unit tests existed; zero UI
+  callers for the captured state; Compare permanently unreachable.
+- **Reproducible:** Deterministic (by construction).
+- **Root cause (confirmed):** same unreachable-flow class as QA-D06/D07 —
+  capability implemented queue-side but never surfaced in any view.
+- **Files changed:**
+  - `src/dashboard/editor/snapshots-panel.ts` — the link-affordance section
+    now also renders, for links with `captureState === 'captured'` and a
+    snapshot, a row "A fresh capture of {origin} adds a new revision you can
+    compare." with a `Capture fresh copy…` button calling the existing
+    `retryCapture` callback (which routes to capture/retry with
+    dedupResolved — no duplicate dialog); honest inline status on failure;
+    announce + auto-refresh on success.
+  - Reuses the QA-D07 `retryCapture` wiring + `.snapshots-panel__retry` CSS.
+- **Regression tests:** `tests/unit/dashboard/snapshots-panel.test.ts` —
+  "shows Capture fresh copy… for a captured link and re-queues it on click"
+  + "hides the recapture affordance for captured links without a snapshot";
+  the D07 hidden-case test updated (its premise used a captured link, which
+  now legitimately shows the affordance).
+- **Final verification (real UI, repaired build):** verify-d09-v2 session on
+  the original capture note — rows 1 → 2 after 'Capture fresh copy…' (a
+  second snapshot chained on the SAME link via previousSnapshotId), and
+  Compare… between the two rows rendered the compare dialog for the first
+  time (`screenshots/final/d09-two-snapshots-same-link.png`,
+  `d09-compare-snapshots-dialog.png`). This also un-blocks the Phase 2
+  deferred row QA-147.
+
+---
+
 ## Environmental limitations (honest disclosure)
 
 - **L04 — Chrome's native permission prompt cannot be answered by automation.**

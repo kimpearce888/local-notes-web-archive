@@ -202,3 +202,35 @@ Per ai/qa-instructions.md §14. One entry per session/probe. Evidence paths are 
 - QA-D08 verification: before replace: {"h2":1,"li":2,"tr":2,"pre":1,"img":1} | after replace: {"h2":1,"li":2,"tr":2,"pre":1,"img":1,"redacted":true,"leftover":false} | after reopen: {"h2":1,"li":2,"tr":2,"pre":1,"img":1,"redacted":true,"leftoverText":false} | VERDICT: STRUCTURE PRESERVED (fixed)
 - Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-d08-20261014-212811.json
 
+### phase3b-workflows — 2026-10-14T21:36:13.847Z
+- Phase 3 part B (WF-01/05 final on the fixed build + WF-08..WF-16): rich-note authoring, restructure with structure preserved, search journey (tag/phrase/exclusion/sort), saved view growth, revisions restore, settings live-effect journey, backup export→preview→merge-restore, mid-edit navigation, smart-list chain with selection reset, cancel flows, universal Escape dismissal. 4/6 PASSED. Defect candidates: section wf05-final: - waiting for locator('article.card').filter({ hasText: 'D08 rich verify' }).first().getByRole('button', { name: /Open D08 rich verify for editing/ }).first() | section wf10-revisions: - waiting for getByRole('button', { name: /^Revisions/ }).first() | section wf11-settings-journey: - waiting for getByRole('button', { name: 'Open Untitled for editing' }).first() | section wf13-mid-edit: - waiting for locator('article.card').filter({ hasText: 'Journey complete' }).first().getByRole('button', { name: /Open Journey complete for editing/ }).first() | section wf15-cancels: - waiting for getByRole('button', { name: 'Cancel', exact: true }).first().
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase3b-workflows-20261014-213550.json
+
+### phase3b-fixup — 2026-10-14T21:41:02.130Z
+- Phase 3 part B fixup (WF-05/10/11/13/15 with view-state + label corrections): 3/4 PASSED. Defect candidates: section wf11-settings-journey: - waiting for getByRole('button', { name: /^Save changes\*?$/ }).first().
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase3b-fixup-20261014-214047.json
+
+### phase3b-fixup2 — 2026-10-14T21:42:38.019Z
+- Phase 3 part B fixup2 (WF-11 with the live-theme/draft-gated-save semantics): 1/1 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase3b-fixup2-20261014-214237.json
+
+### phase3c-workflows — 2026-10-14T21:46:55.263Z
+- Phase 3 part C (WF-17..WF-21 + WF-22 part 1): second capture + duplicate decision + Compare + Delete snapshot (QA-147/149 re-covered), capture failure → retry through the QA-D07 affordance, two-tab conflict resolution via Save-as-duplicate, malformed imports rejected honestly, research-session journey, journal note with pasted image. 4/5 PASSED. Defect candidates: section wf19-conflict-resolution: - waiting for locator('.ProseMirror').first().locator('p').first().
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase3c-workflows-20261014-214640.json
+
+### phase3c-restart — 2026-10-14T21:47:01.467Z
+- Phase 3 part C phase C (WF-22 journal continuity across browser restart): 1/1 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase3c-restart-20261014-214700.json
+
+### phase3c-fixup — 2026-10-14T21:47:55.327Z
+- Phase 3 part C fixup (WF-19 with the note opened in tab 2 first): 1/1 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase3c-fixup-20261014-214753.json
+
+### verify-d09 — 2026-10-14T21:57:35.040Z
+- QA-D09 verification + WF-17 completion: capture cards: 3 | Capture fresh copy… affordance visible: true | snapshot rows: 0 → 1 | Compare… buttons: 1 | example.com link states: ["detected","captured","detected"] | VERDICT: recapture=true, compare(QA-147)=false, delete(QA-149)=true
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-d09-20261014-215732.json
+
+### verify-d09-v2 — 2026-10-14T21:59:33.248Z
+- QA-D09 v2 verification (original note, same-link recapture → two snapshots → compare): cards: 3 (targeting the last/oldest) | snapshot rows before recapture: 1 | Capture fresh copy… visible: true | snapshot rows after recapture: 2 | Compare… buttons: 2 | VERDICT: recapture=true, compare(QA-147)=true
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-d09-v2-20261014-215931.json
+
