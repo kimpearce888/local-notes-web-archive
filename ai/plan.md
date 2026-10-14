@@ -1086,3 +1086,14 @@ register finding to its fix; README numbers; full gates (tsc strict,
 eslint, vitest, perf, full Playwright battery incl. zip-acceptance);
 npm run release + publish + API verification; RELEASE_VERIFICATION.md and
 REPOSITORY_AUDIT.md regenerated; records commits.
+
+### T-091 persist the human-QA mission brief as an ai/ protocol file
+Distill the exhaustive human-behavior QA mission (source Google Doc
+1sqG0KQUNyAhE8zt8v4CItZ0io2gxotx5oX18VWF5HDU, read in full 2026-10-14) into
+`ai/qa-instructions.md`: 18 sections compressed into an agent-optimized protocol
+covering environment setup, action/workflow/interaction inventories, persistence
+and error testing, visual testing, evidence rules, defect + repair + regression
+protocols, deliverables tree under artifacts/human-qa/, truth rules, completion
+definition, and the 12-part final report. The file is self-contained so the
+remote doc never needs re-reading; QA repairs remain governed by ai/rule.md
+(§2 gates, §7 git workflow). Protocol files updated in the same commit.

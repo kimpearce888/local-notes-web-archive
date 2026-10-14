@@ -747,3 +747,23 @@ regenerated at the release: 12/12 PASS including the live GitHub Release
 cross-check (0 secrets across 433 tracked files + 1135 history blobs, 0
 vulnerabilities). v107-verified.txt archived to
 task-deliverables/release-verification/ (README updated: 168 files).
+
+### T-091 — persist the human-QA mission brief as an ai/ protocol file
+Read the full 18-section source Google Doc
+(1sqG0KQUNyAhE8zt8v4CItZ0io2gxotx5oX18VWF5HDU) and distilled it into
+`ai/qa-instructions.md`, an agent-optimized, self-contained copy: role/mission
+and the five coverage questions; five non-negotiable principles (running app is
+the subject, discovered-not-assumed scope, full per-action coverage, systematic
++ exploratory, evidence matches claim); Phase 0 environment checklist; action
+inventory schema with the five statuses and required columns; per-action
+procedure and variation matrix; workflow + realistic-journey testing; the seven
+mandatory combination-coverage rules; persistence/integrity/recovery scenarios;
+error and edge-case guidance; visual-state testing checklist; baseline/per-
+action/final evidence rules; defect ledger schema with the 12-step repair loop
+and forbidden repair practices; post-repair regression protocol; the full
+artifacts/human-qa/ deliverables table; truth rules with the five-way result
+distinction; the 19-item evidence-gated completion definition; and the 12-part
+final-report outline. Header notes keep ai/rule.md governing (repairs pass the
+§2 gate; commits follow §7). plan.md/progress.md/completed.md updated in the
+same commit per protocol. No code, build, or release surfaces touched
+(docs-only change); no secrets introduced.
