@@ -5,7 +5,8 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
-- [ ] T-074 — Performance measurements (load/transition/search/large dataset) + memory-leak loops (heap/listener/detached-DOM monitoring)
+- [ ] T-077 — Fix D-08: requery request-sequencing guard (stale in-flight requery results overwriting newer search results) + repro unit test + E2E regression
+
 - [ ] T-075 — Data integrity CRUD/persistence matrix (refresh/reload/extension-restart/browser-restart/multi-tab) + network resiliency (offline, LM Studio timeout degradation)
 - [ ] T-076 — Accessibility + control-state sweep + human-like input patterns (rapid/double/keyboard-only/mixed/special chars) + a11y-state-report.md
 
