@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "6df9af9",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T22:08:14.938Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase4-interactions",
+    "startedAt": "2026-10-14T22:08:14.827Z",
+    "endedAt": "2026-10-14T22:13:28.241Z",
+    "profileDir": "/tmp/lnwa-qa-phase3-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 4+5 interactions (IC-01..IC-15): undo/redo vs autosave, entry-point equivalence, rapid panel switching, capture-while-editing, duplicate-policy reuse branch, shared roster propagation, sequential distinct opens, card/editor/storage consistency, reminder surface consistency, note + attachment renames, empty-note honesty, rapid creation, order-sensitive search/sort/view, undo after replace-all. 8/11 PASSED. Defect candidates: section ic02-entry-points: - waiting for getByPlaceholder(/Filter commands/i) | section ic04-capture-while-editing: - waiting for locator('article.card').filter({ hasText: 'Journey complete' }).first().getByRole('button', { name: /Open Journey complete for editing/ }).first() | section ic05-reuse-policy: locator.check: Error: strict mode violation: getByRole('radio', { name: /^Ask/ }) resolved to 2 elements: | section ic15-undo-replace-all: - waiting for locator('input[aria-label=\"Find in note\"]').",
+  "artifacts": []
+}

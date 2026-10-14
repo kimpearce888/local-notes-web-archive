@@ -242,3 +242,19 @@ Per ai/qa-instructions.md §14. One entry per session/probe. Evidence paths are 
 - WF-12 final: backup export → honest review dialog → merge restore. 1/1 PASSED.
 - Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-wf12-final-20261014-220341.json
 
+### phase4-interactions — 2026-10-14T22:14:03.157Z
+- Phase 4+5 interactions (IC-01..IC-15): undo/redo vs autosave, entry-point equivalence, rapid panel switching, capture-while-editing, duplicate-policy reuse branch, shared roster propagation, sequential distinct opens, card/editor/storage consistency, reminder surface consistency, note + attachment renames, empty-note honesty, rapid creation, order-sensitive search/sort/view, undo after replace-all. 8/11 PASSED. Defect candidates: section ic02-entry-points: - waiting for getByPlaceholder(/Filter commands/i) | section ic04-capture-while-editing: - waiting for locator('article.card').filter({ hasText: 'Journey complete' }).first().getByRole('button', { name: /Open Journey complete for editing/ }).first() | section ic05-reuse-policy: locator.check: Error: strict mode violation: getByRole('radio', { name: /^Ask/ }) resolved to 2 elements: | section ic15-undo-replace-all: - waiting for locator('input[aria-label="Find in note"]').
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase4-interactions-20261014-221328.json
+
+### phase4-fixup — 2026-10-14T22:17:14.543Z
+- Phase 4+5 fixup (IC-02/04/05/15 with corrected locators): 2/3 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase4-fixup-20261014-221658.json
+
+### ic05-final — 2026-10-14T22:25:05.435Z
+- IC-05 final: duplicate-policy reuse branch + Ask restore with real radio change. 1/1 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-ic05-final-20261014-222504.json
+
+### ic-final-rechecks — 2026-10-14T22:27:18.763Z
+- IC-08/09/11/15 corrected verifications: 3/4 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-ic-final-rechecks-20261014-222716.json
+

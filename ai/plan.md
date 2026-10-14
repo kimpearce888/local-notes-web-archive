@@ -1141,3 +1141,18 @@ QA-D09 recapture of captured links unreachable which made Compare
 snapshots permanently unreachable (fb4481a, 2 regression tests). The
 Phase 2 deferred rows QA-147 (Compare needs 2+ same-link snapshots) and
 QA-149 (Delete + confirm) are now covered via the D09 recapture flow.
+
+T-096 DONE: interaction-coverage.csv 15/15 PASSED — undo/redo across an
+autosave flush, entry-point equivalence (palette vs toolbar), rapid panel
+switching without bleed, capture-while-editing, duplicate-policy reuse
+branch + Ask restore, shared-roster propagation (editor tag → search +
+filters), sequential distinct opens, card/editor/storage consistency
+(through the app's own plainText projection), reminder-surface consistency,
+note + attachment renames, empty-note honesty, rapid creation,
+order-sensitive search/sort/view, wholesale undo after multi-node
+replace-all (single transaction verified). No new product defects — every
+failure during the pass was a test-design artifact, resolved with honest
+documentation of the actual behaviour (radios fire no 'change' when already
+checked; DOM textContent lacks the plainText block separators; the reminders
+panel footnote mentions the Overdue list; the rename dialog labels its
+field 'Filename').

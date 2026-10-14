@@ -902,3 +902,47 @@ d07-*/d08-*/d09-*, videos/}. Product fixes: snapshots-panel.ts +
 editor-session.ts + snapshot-client.ts + editor-panel.ts + find-replace.ts
 + styles.css + 8 new regression tests (905→913 total, all green, tsc both
 configs, eslint clean at every fix commit).
+
+---
+
+## T-096 — Phase 4+5 feature interactions + persistence/integrity
+
+**Completed:** 2026-10-15 (Asia/Dhaka)
+**Validation:** interaction-coverage.csv — **15/15 PASSED**, every row driven
+through the real UI on the sustained phase3 profile (phase4 + fixup +
+targeted rechecks; all sessions logged + videoed).
+**Interaction map coverage:** undo/redo across an autosave flush (the
+classic silent-corruption spot) · entry-point equivalence (command palette
+vs toolbar New Note — exactly one note each, no divergence) · rapid panel
+switching (no leaked panels or stale state) · one-op-while-pending (capture
+running + editing an unrelated note — editor responsive, autosave lands,
+capture completes) · duplicate-policy setting → capture behaviour (reuse
+branch: no decision dialog, silent archive reuse; Ask restored via a real
+radio change) · shared roster (editor tag → search tag: operator + filters
+facet immediately, no reload) · sequential distinct opens (A→B→A) ·
+cross-surface consistency (card preview = head of stored plainText;
+reminder panel row = card chip for the SAME note; note + attachment renames
+propagate to card/search/download filename) · empty-note honesty · rapid
+repeated creation (3 clicks → exactly 3 distinct notes) · order-sensitive
+search→sort→view (stable result set, query preserved) · wholesale undo
+after multi-node Replace all (the QA-D08 fix batches all text-node edits
+into ONE transaction — a single Ctrl+Z restores the entire document,
+verified 3/3 occurrences).
+**No new product defects.** Every failure during the pass was a test-design
+artifact, each resolved with the real behaviour documented in the inventory:
+radios legitimately fire no 'change' event when already checked (spec) —
+the earlier confusions were no-op clicks on a policy that had already been
+saved; DOM textContent lacks the plainText block separators (the correct
+invariant is the app's own projection: editor → plainText → preview); the
+reminders panel's explanatory footnote mentions the "Overdue list" (state
+extraction must scope to the reminder row); the attachment-rename dialog
+labels its field 'Filename'.
+**Persistence/integrity carried by earlier phases (referenced from the
+inventory notes):** restart persistence, two-tab isolation + conflict
+resolution, backup export → preview → merge restore, malformed-import
+rejection, cancel-leaves-no-persistence, revisions restore, snapshot
+chaining (previousSnapshotId), attachment dedupe.
+**Scope:** artifacts/human-qa/{interaction-coverage.csv, test-runs.md,
+logs/ (phase4 + phase4-fixup + ic05-final + ic-final-rechecks + probes),
+videos/}. No product code changed — no gates applicable beyond the
+recorded sessions.
