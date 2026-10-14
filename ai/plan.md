@@ -1097,3 +1097,28 @@ protocols, deliverables tree under artifacts/human-qa/, truth rules, completion
 definition, and the 12-part final report. The file is self-contained so the
 remote doc never needs re-reading; QA repairs remain governed by ai/rule.md
 (§2 gates, §7 git workflow). Protocol files updated in the same commit.
+
+## §Q-exec — Human-QA program execution (added during T-092..T-094 work after the
+## session reset realigned the tree with the remote T-091 state)
+
+### T-092 Phase 0 environment + baseline evidence
+Build v1.0.7, isolated disposable profile, install unpacked dist/, verify
+operational (SW, dashboard, console clean), environment record, baseline
+screenshots + video, artifacts/human-qa/ scaffolding. DONE (f173136).
+
+### T-093 Phase 1 discovery + action inventory
+Explore the entire product; artifacts/human-qa/action-inventory.csv — 206
+independently testable actions across 30 feature areas. DONE (903de12).
+
+### T-094 Phase 2 individual action testing
+Exercise every inventory row through the real UI with variations; defects →
+ledger → fix → regression → real-UI re-verification. IN PROGRESS:
+batches A-G complete, 176/206 PASSED, 6 BLOCKED (environmental L04-L06),
+2 NOT_APPLICABLE, 22 remaining; six defects QA-D01..QA-D06 fixed and verified
+(commits d8a0370, 33a5949, b0e9320).
+
+### T-095 Phase 3 workflow inventory (workflow-inventory.csv)
+### T-096 Phase 4+5 interactions + persistence (interaction-coverage.csv)
+### T-097 Phase 6+7 error/edge cases + visual testing
+### T-098 defect repair completion + full regression pass
+### T-099 final evidence + deliverables + 12-part final report

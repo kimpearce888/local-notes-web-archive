@@ -5,10 +5,11 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
-- [x] T-085 — universal dismissal for every disclosure surface (UX-01..05, UX-09): in-surface Close buttons + Escape everywhere + filters close-on-apply.
-- [x] T-086 — insert-image rework + HEIC photo support (UX-06, UX-07, UX-15): no more data:image ask; accept HEIC/HEIF; local decode to JPEG.
-- [x] T-087 — tags and categories reachable from the editor (UX-08): metadata chips bar + immediate RPC application.
-- [x] T-088 — plain-language copy pass (UX-10, UX-11, UX-12): AI disclosure, MIME humanization, MHTML humanization.
-- [x] T-089 — capture entry points + product-first onboarding + empty-state create button (UX-13, UX-14, UX-16).
-- [x] T-090 — release v1.0.7 packaging the T-084 fixes.
-- [x] T-091 — persist the human-QA mission brief as ai/qa-instructions.md (source Google Doc distilled to a self-contained protocol; remote doc no longer needed).
+- [x] T-092 — Phase 0 environment: build, isolated profile, install, verify operational, baseline evidence (commit f173136; record in completed.md).
+- [x] T-093 — Phase 1 discovery: 206-row action-inventory.csv (commit 903de12; record in completed.md).
+- [~] T-094 — Phase 2 individual actions: batches A-G done; 176/206 PASSED, 6 BLOCKED (env-limited L04-L06), 2 N/A, 22 remaining; defects QA-D01..QA-D06 fixed + regression-verified (d8a0370, 33a5949, b0e9320). Remaining: 22 rows + phase-2 close-out.
+- [ ] T-095 — Phase 3: workflow-inventory.csv (complete end-to-end workflows + realistic journeys).
+- [ ] T-096 — Phase 4+5: interaction-coverage.csv + persistence/integrity/recovery.
+- [ ] T-097 — Phase 6+7: error/edge cases + visual testing of every interface state.
+- [ ] T-098 — defect repair completion + complete regression pass on the rebuilt extension.
+- [ ] T-099 — final evidence (fresh screenshots/videos of every verified state), coverage-summary.md computed from inventories, 12-part final-report.md.
