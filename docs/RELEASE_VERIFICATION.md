@@ -1,8 +1,11 @@
 # Release Verification Report
 
 **Task:** T-043 Release verification gate (plan.md; PRD §11, §13) — re-verified for
-v1.0.5 by T-069 (re-release carrying the T-063..T-068 QA-audit defect fixes)
-**Version verified:** 1.0.5
+v1.0.6 by T-082 (release closing the full external QA & release validation
+program, plan.md §M / T-070..T-081: zero-trust baseline, fake-implementation
+scan, discovery inventories, security, performance + memory, data integrity,
+accessibility, upgrade/rollback, two consecutive clean verification passes)
+**Version verified:** 1.0.6
 **Date:** 2026-10-14
 **Verdict:** **PASS** — every gate green; the artifact is releasable.
 
@@ -30,8 +33,8 @@ assertions are the production ones.
 | 1 | Build (`vite build`) | PASS — 14 files, 0 warnings blocking, `theme-hint.js` external (CSP-safe) |
 | 2 | Static release scan (`release.mjs`) | PASS — 4 shipped JS files scanned: no remote runtime URLs, no `eval`/`new Function`; inert literal allowlist (W3C namespace URIs, dependency doc links) only |
 | 3 | Manifest scan (`verify-release.mjs`) | PASS — MV3, Chrome ≥ 120, stable `key`; CSP `script-src 'self'` / `object-src 'self'` / `connect-src 'self' + loopback`; 6 manifest/html-referenced assets present; icons are real PNGs; permissions match PERMISSIONS.md exactly (8 API, 2 required host, 2 optional host) |
-| 4 | Unit tests | PASS — 835/835 (`vitest run`; +38 since v1.0.4: binary-transport codec + real-channel regression, favorites wiring, filters panel/controller/engine, sort direction, onboarding re-show, page-slice invariant) |
-| 5 | E2E smoke + verification | PASS — 66/66 in real Chromium over the unpacked `dist/` (functional smoke incl. the command-palette spec, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance against this artifact, the 14-test screenshot suite, the 7-test user-report regression suite, and the new 8-test audit-defect regression suite covering all seven T-062 findings in the real browser) |
+| 4 | Unit tests | PASS — 840/840 (`vitest run`; +5 since v1.0.5: the stale-requery sequencing repro (D-08), the per-surface text-faint contrast suite (D-09), and refreshed docs pins) |
+| 5 | E2E smoke + verification | PASS — 67/67 in real Chromium over the unpacked `dist/` (functional smoke incl. the command-palette spec, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance against this artifact, the 14-test screenshot suite, the 7-test user-report regression suite, the audit-defect regression suite covering all seven T-062 findings, and the new D-08 creation-storm search-regression spec) |
 | 6 | Performance (PRD §11) | PASS — see measurements below |
 | 7 | Accessibility keyboard pass | PASS — see below |
 | 8 | Release artifacts | PASS — see below |
@@ -117,10 +120,10 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
 
 | Artifact | Value |
 |---|---|
-| Zip | `release/local-notes-web-archive-1.0.5.zip` (1,555,953 bytes) |
+| Zip | `release/local-notes-web-archive-1.0.6.zip` (1,556,349 bytes) |
 | SHA-256 | `ead1a27de5ee06bc332efadeea92efd87fc77bd618b9c5fc9fe79a88527c54f8` |
 | Inventory | `release/RELEASE_MANIFEST.txt` (file list + sizes) |
-| Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). The v1.0.5 artifact supersedes v1.0.4: it fixes all seven confirmed defects from the external human-behavior QA audit (2026-10-14, 34 workflows verified, evidence on file) — attachments and backup export/restore work again through a base64 binary codec for the RPC channel (D-04/D-06, both critical), favorites are reachable from the bulk bar and the editor (D-01), the Filters disclosure holds the full FR-SEARCH-03 control set with removable chips and durable saved named views (D-02), the sort direction control exists and the persisted default sort seeds new sessions (D-03), the re-shown onboarding's Get-started always works (D-05), and rapid creation keeps the page-slice invariant (D-07). It carries everything from v1.0.4/v1.0.3 (post-redesign fixes and the complete UI/UX redesign) and every earlier fix (T-054 dialog fields + editor pin/trash, T-052 hidden guard). |
+| Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). The v1.0.5 artifact supersedes v1.0.4: it fixes all seven confirmed defects from the external human-behavior QA audit (2026-10-14, 34 workflows verified, evidence on file) — attachments and backup export/restore work again through a base64 binary codec for the RPC channel (D-04/D-06, both critical), favorites are reachable from the bulk bar and the editor (D-01), the Filters disclosure holds the full FR-SEARCH-03 control set with removable chips and durable saved named views (D-02), the sort direction control exists and the persisted default sort seeds new sessions (D-03), the re-shown onboarding's Get-started always works (D-05), and rapid creation keeps the page-slice invariant (D-07). The v1.0.6 artifact supersedes v1.0.5: it closes the second external QA protocol (zero-trust validation program T-070..T-081, 2026-10-14) — search views can no longer be overwritten by stale in-flight requeries (D-08, request sequencing verified by a creation-storm regression), and card-timestamp contrast now meets WCAG AA in both themes (D-09, light 5.7:1 / dark ≥5.0:1, locked by per-surface tests). It carries everything from v1.0.5/v1.0.4/v1.0.3 (all seven T-062 audit fixes, post-redesign fixes and the complete UI/UX redesign) and every earlier fix (T-054 dialog fields + editor pin/trash, T-052 hidden guard). |
 
 The zip and checksums are regenerable via `npm run release`; the manifest
 scan is enforced inside that pipeline (`scripts/verify-release.mjs`) and

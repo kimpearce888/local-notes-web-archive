@@ -103,9 +103,37 @@ Chrome 120+ required. Everything stays on your device.
 - Full gate matrix and measured numbers: [\`docs/RELEASE_VERIFICATION.md\`](https://github.com/${slug}/blob/main/docs/RELEASE_VERIFICATION.md)
 - File inventory: **RELEASE_MANIFEST.txt** below (byte-for-byte with the zip contents)
 - Integrity: **${zipName}.sha256** below
-- Automated acceptance: unit 835/835, Playwright E2E 66/66 over the real
+- Automated acceptance: unit 840/840, Playwright E2E 67/67 over the real
   unpacked build, including a dedicated extract-zip-and-load acceptance suite
   (the artifact in this release is the exact folder layout that was tested)
+
+## What's new in v1.0.6 — full QA & release validation program
+
+A second external QA protocol (zero-trust validation: DISCOVER -> TEST ->
+BREAK -> FIX -> RETEST -> REGRESSION -> VALIDATE) re-verified the entire
+application from scratch: all 60 PRD requirements, 27 UI surfaces, 138
+controls, 34+ end-to-end workflows, security (XSS/sanitization/permissions/
+secrets), performance and memory, data integrity across reloads/restarts/
+upgrades/rollbacks, accessibility, and dependencies. Two defects were found
+and fixed with dedicated regression coverage; two consecutive independent
+verification passes then ran completely clean.
+
+- **Search results can no longer be overwritten by stale background
+  refreshes**: rapid note creation left earlier search queries resolving
+  out of order, so an older unfiltered result could replace the newer
+  view while the search box still held your query. Requests are now
+  strictly sequenced — only the latest query can update the list
+  (verified with a creation-storm regression test).
+- **Card timestamps now meet WCAG AA contrast in both themes**: the
+  "Created / Modified" meta text on note cards was 3.3:1 (light) and
+  ~3.5-4:1 (dark) against its background — now 5.7:1 / 5.0+, locked by
+  per-surface contrast tests.
+- **QA evidence on file**: 22 screenshots, a full video walkthrough,
+  coverage matrix (every discovered screen has direct test evidence),
+  performance measurements (load 207 ms, search 47 ms at 121 notes,
+  p95 120-126 ms at 10k), memory-leak loops (bounded heap, net listener
+  cleanup), upgrade v1.0.4->v1.0.6 and rollback validation with real
+  data, npm audit 0 vulnerabilities.
 
 ## What's new in v1.0.5 — QA-audit defect fixes
 
