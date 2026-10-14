@@ -656,3 +656,33 @@ the repo's waitFor helper retries only on FALSY probes — expect()
 assertions inside probes throw on the first poll; probes must return
 truthy values with assertions made after. Gates: tsc strict, eslint,
 vitest 882/882, Playwright 72/72 (zip-acceptance deferred to T-090).
+
+### T-088 — plain-language copy pass
+Fixed T-084 register UX-10, UX-11 and UX-12. UX-10: the AI panel's visible
+disclosure now says only what a notes user needs ("Runs entirely on your
+machine through LM Studio — nothing is sent to any cloud service. AI
+proposals apply only after you approve them."); the verbatim MCP
+anti-overclaim guarantee (FR-AI hygiene) moved into a collapsed
+"Technical details" <details> one click away — the guarantee text itself
+is unchanged and still asserted by tests, so no requirement regressed.
+UX-11: new shared mapper src/dashboard/editor/humanize.ts
+(describeMimeType — "image/png" → "PNG image", "image/heic" → "HEIC
+photo", family-derived labels for unknown subtypes, honest raw-value
+fallback); attachment rows and the delete confirmation speak user
+language while the raw MIME type stays in the meta element's title
+attribute (diagnostics keeps its technical vocabulary per UX-17's
+accepted-as-is judgment). UX-12: snapshots copy humanizes MHTML
+everywhere it faces a user — artifact summary "Page copy saved ·
+Screenshot saved · Text saved", "Export saved page…" buttons with
+"Export the complete saved copy of …" aria-labels, the preview note now
+explains "The complete saved copy of the page (an .mhtml file) is never
+opened inside the app — export it below and open the file in Chrome",
+and the missing-artifact tooltip says the complete saved copy was not
+stored. Tests: +5 humanize units covering every product-produced type,
+family derivation and the honest fallback; +1 ai-panel structure test
+(plain disclosure free of stdio/MCP vocabulary, collapsed details
+carrying the verbatim guarantee); pinned-string updates in
+snapshots-panel (summary, buttons, tooltips), attachments meta assertion
+now checks BOTH the humanized text and the raw type in title, and the
+E2E HEIC flow asserts "JPEG photo" + title "image/jpeg". Gates: tsc
+strict, eslint, vitest 888/888, Playwright 72/72.

@@ -9,6 +9,7 @@
 
 import type { Attachment, EntityId } from '../../core/types';
 import { createPanelHeader } from './panel-header';
+import { describeMimeType } from './humanize';
 
 /** Human-readable byte sizes (storage reporting uses the same scale). */
 export function formatByteSize(bytes: number): string {
@@ -172,7 +173,7 @@ export function createAttachmentsPanel(
     const heading = document.createElement('h2');
     heading.textContent = 'Delete attachment?';
     const body = document.createElement('p');
-    body.textContent = `This removes ${attachment.filename} (${attachment.mimeType}, ${formatByteSize(attachment.size)}) from this note. The file content stays in local storage only while another note references identical content.`;
+    body.textContent = `This removes ${attachment.filename} (${describeMimeType(attachment.mimeType)}, ${formatByteSize(attachment.size)}) from this note. The file content stays in local storage only while another note references identical content.`;
     const actions = document.createElement('div');
     actions.className = 'dialog__actions';
     const confirmButton = document.createElement('button');
@@ -268,7 +269,10 @@ export function createAttachmentsPanel(
 
     const meta = document.createElement('span');
     meta.className = 'attachments-panel__meta';
-    meta.textContent = `${attachment.mimeType} · ${formatByteSize(attachment.size)}`;
+    // T-088 (UX-11): MIME types are developer vocabulary — users see
+    // "PNG image · 70 B". The raw type stays one hover away.
+    meta.textContent = `${describeMimeType(attachment.mimeType)} · ${formatByteSize(attachment.size)}`;
+    meta.title = `${attachment.mimeType} · ${formatByteSize(attachment.size)}`;
 
     const actions = document.createElement('div');
     actions.className = 'attachments-panel__actions';

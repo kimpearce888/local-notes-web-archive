@@ -223,14 +223,14 @@ describe('snapshots panel', () => {
     expect(first.querySelector('.snapshot-status--complete')?.textContent).toBe('complete');
     expect(first.querySelector('.snapshots-panel__title')?.textContent).toBe('First capture');
     expect(first.querySelector('.snapshots-panel__meta')?.textContent).toContain(
-      'MHTML saved · PNG saved · text saved',
+      'Page copy saved · Screenshot saved · Text saved',
     );
     expect(first.querySelector('.snapshots-panel__meta')?.textContent).toContain('1 warning');
 
     const second = rows[1] as HTMLElement;
     expect(second.querySelector('.snapshot-status--partial')?.textContent).toBe('partial');
     expect(second.querySelector('.snapshots-panel__title')?.textContent).toBe('Untitled snapshot');
-    expect(second.querySelector('.snapshots-panel__meta')?.textContent).toContain('PNG failed');
+    expect(second.querySelector('.snapshots-panel__meta')?.textContent).toContain('Screenshot failed');
 
     expect(panel.element.querySelector('.snapshots-panel__empty')?.hasAttribute('hidden')).toBe(
       true,
@@ -269,7 +269,7 @@ describe('snapshots panel', () => {
 
     // The honest MHTML note is present; no iframe/embed/object anywhere.
     expect(dialog.querySelector('.snapshot-preview__mhtml-note')?.textContent).toContain(
-      'never rendered inside the app',
+      'never opened inside the app',
     );
     expect(dialog.querySelector('iframe')).toBeNull();
     expect(dialog.querySelector('embed')).toBeNull();
@@ -295,7 +295,7 @@ describe('snapshots panel', () => {
       (b) => b as HTMLButtonElement,
     );
     const byLabel = new Map(buttons.map((b) => [b.textContent ?? '', b]));
-    expect(byLabel.get('Export MHTML…')?.disabled).toBe(false);
+    expect(byLabel.get('Export saved page…')?.disabled).toBe(false);
     expect(byLabel.get('Export PNG…')?.disabled).toBe(true);
     expect(byLabel.get('Export text…')?.disabled).toBe(true);
     expect(byLabel.get('Export PNG…')?.title).toContain('PNG artifact was not saved');
@@ -327,12 +327,12 @@ describe('snapshots panel', () => {
     clickSpy.mockRestore();
   });
 
-  it('disables the row Export MHTML action when the archive was not saved', async () => {
+  it('disables the row saved-page export action when the archive was not saved', async () => {
     const { panel } = await mountPanel([makeSnapshot({ mhtml: 'failed' })]);
     const row = panel.element.querySelector('.snapshots-panel__row') as HTMLElement;
-    const exportButton = rowButtons(row).find((b) => b.textContent === 'Export MHTML…') as HTMLButtonElement;
+    const exportButton = rowButtons(row).find((b) => b.textContent === 'Export saved page…') as HTMLButtonElement;
     expect(exportButton.disabled).toBe(true);
-    expect(exportButton.title).toContain('MHTML artifact was not saved');
+    expect(exportButton.title).toContain('complete saved copy of the page was not stored');
   });
 
   it('surfaces a truthful error when the export refuses to produce a file', async () => {
@@ -341,7 +341,7 @@ describe('snapshots panel', () => {
       throw new Error('the mhtml artifact of this snapshot was not saved');
     };
     const row = panel.element.querySelector('.snapshots-panel__row') as HTMLElement;
-    const exportButton = rowButtons(row).find((b) => b.textContent === 'Export MHTML…') as HTMLButtonElement;
+    const exportButton = rowButtons(row).find((b) => b.textContent === 'Export saved page…') as HTMLButtonElement;
     exportButton.click();
     await waitFor(
       () =>

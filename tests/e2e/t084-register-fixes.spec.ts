@@ -237,7 +237,14 @@ test('T-086 UX-07: a REAL iPhone-format photo (HEIC) inserts as a visible image'
   await page.getByRole('button', { name: /^Attachments( \(\d+\))?$/ }).click();
   const panel = page.locator('[aria-label="Note attachments"]');
   await expect(panel.getByText('IMG_4032.jpg')).toBeVisible({ timeout: 15_000 });
-  await expect(panel).toContainText('image/jpeg');
+  // T-088 (UX-11): the row speaks user language; the raw type stays in
+  // the title attribute.
+  await expect(panel).toContainText('JPEG photo');
+  const metaTitle = await panel
+    .locator('.attachments-panel__row', { hasText: 'IMG_4032.jpg' })
+    .locator('.attachments-panel__meta')
+    .getAttribute('title');
+  expect(metaTitle).toContain('image/jpeg');
   await panel.getByRole('button', { name: 'Close attachments' }).click();
 
   // No CSP violations or worker failures surfaced as console errors.

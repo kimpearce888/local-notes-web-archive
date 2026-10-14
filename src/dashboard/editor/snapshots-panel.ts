@@ -35,12 +35,12 @@ export function statusLabel(status: CaptureStatus): string {
   return status === 'permission-required' ? 'permission required' : status;
 }
 
-/** One-line artifact summary, e.g. "MHTML saved · PNG failed · text saved". */
+/** One-line artifact summary, e.g. "Page copy saved · Screenshot saved · Text saved" (T-088, UX-12: no raw MHTML jargon). */
 export function artifactSummary(snapshot: Snapshot): string {
   return [
-    `MHTML ${ARTIFACT_STATE_LABELS[snapshot.mhtml]}`,
-    `PNG ${ARTIFACT_STATE_LABELS[snapshot.png]}`,
-    `text ${ARTIFACT_STATE_LABELS[snapshot.text]}`,
+    `Page copy ${ARTIFACT_STATE_LABELS[snapshot.mhtml]}`,
+    `Screenshot ${ARTIFACT_STATE_LABELS[snapshot.png]}`,
+    `Text ${ARTIFACT_STATE_LABELS[snapshot.text]}`,
   ].join(' · ');
 }
 
@@ -196,7 +196,7 @@ export function createSnapshotsPanel(
     const mhtmlNote = document.createElement('p');
     mhtmlNote.className = 'snapshot-preview__mhtml-note';
     mhtmlNote.textContent =
-      'The offline preview shows the saved screenshot and extracted text. The full MHTML archive is never rendered inside the app — export it below and open the file in Chrome.';
+      'The offline preview shows the saved screenshot and extracted text. The complete saved copy of the page (an .mhtml file) is never opened inside the app — export it below and open the file in Chrome to browse the page exactly as it was saved.';
 
     const pngContainer = document.createElement('div');
     pngContainer.className = 'snapshot-preview__png';
@@ -247,7 +247,7 @@ export function createSnapshotsPanel(
     const exportMhtml = document.createElement('button');
     exportMhtml.type = 'button';
     exportMhtml.className = 'btn';
-    exportMhtml.textContent = 'Export MHTML…';
+    exportMhtml.textContent = 'Export saved page…';
     exportMhtml.addEventListener('click', () => void exportSnapshot(snapshot, 'mhtml'));
     const exportPng = document.createElement('button');
     exportPng.type = 'button';
@@ -485,12 +485,12 @@ export function createSnapshotsPanel(
     const exportButton = document.createElement('button');
     exportButton.type = 'button';
     exportButton.className = 'btn btn--ghost';
-    exportButton.textContent = 'Export MHTML…';
-    exportButton.setAttribute('aria-label', `Export the MHTML archive of ${snapshot.title || 'snapshot'}`);
+    exportButton.textContent = 'Export saved page…';
+    exportButton.setAttribute('aria-label', `Export the complete saved copy of ${snapshot.title || 'snapshot'}`);
     exportButton.addEventListener('click', () => void exportSnapshot(snapshot, 'mhtml'));
     if (snapshot.mhtml !== 'saved') {
       exportButton.disabled = true;
-      exportButton.title = 'The MHTML artifact was not saved in this snapshot.';
+      exportButton.title = 'The complete saved copy of the page was not stored in this snapshot.';
     }
 
     const renameButton = document.createElement('button');

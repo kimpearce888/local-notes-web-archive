@@ -302,4 +302,18 @@ describe('AI panel', () => {
     // FR-MCP-03: never a fake server-connection status.
     expect(text).not.toContain('MCP server connected');
   });
+
+  it('keeps the technical MCP detail in a collapsed disclosure (T-088, UX-10)', () => {
+    // The plain-language paragraph no longer floods the panel with
+    // stdio/native-host vocabulary; the MCP guarantee stays one click away.
+    const harness = mountPanel(true);
+    const disclosure = harness.panel.element.querySelector('.ai-panel__disclosure');
+    expect(disclosure?.textContent).not.toContain('stdio');
+    expect(disclosure?.textContent).not.toContain('Model Context Protocol');
+    const technical = harness.panel.element.querySelector<HTMLDetailsElement>('details.ai-panel__technical');
+    expect(technical).not.toBeNull();
+    expect(technical?.open).toBe(false);
+    expect(technical?.querySelector('summary')?.textContent).toBe('Technical details');
+    expect(technical?.textContent).toContain('not the Model Context Protocol');
+  });
 });

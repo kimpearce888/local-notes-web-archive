@@ -80,11 +80,23 @@ export function createAiPanel(callbacks: AiPanelCallbacks, noteId: EntityId | nu
     onClose: () => callbacks.onClose(),
   });
 
+  // T-088 (UX-10): the disclosure speaks to notes users first; the MCP
+  // precision (an anti-overclaim guarantee the AI hygiene rules require)
+  // moves verbatim into a collapsed "Technical details" disclosure so it
+  // stays one click away without flooding the panel with stdio/native-host
+  // vocabulary nobody using a notes app has context for.
   const disclosure = document.createElement('p');
   disclosure.className = 'ai-panel__disclosure';
   disclosure.textContent =
-    'Runs entirely on your machine through LM Studio — nothing is sent to any cloud service. AI proposals apply only after you approve them. ' +
-    MCP_DISCLOSURE;
+    'Runs entirely on your machine through LM Studio — nothing is sent to any cloud service. AI proposals apply only after you approve them.';
+
+  const technical = document.createElement('details');
+  technical.className = 'ai-panel__technical';
+  const technicalSummary = document.createElement('summary');
+  technicalSummary.textContent = 'Technical details';
+  const technicalBody = document.createElement('p');
+  technicalBody.textContent = MCP_DISCLOSURE;
+  technical.append(technicalSummary, technicalBody);
 
   const status = document.createElement('p');
   status.className = 'ai-panel__status';
@@ -276,7 +288,7 @@ export function createAiPanel(callbacks: AiPanelCallbacks, noteId: EntityId | nu
   footer.textContent =
     'Status per proposal: proposed → needs approval → running → done/failed. Denied proposals are canceled and never execute.';
 
-  element.append(header.row, disclosure, status, conversation, presets, input, sendButton, footer);
+  element.append(header.row, disclosure, technical, status, conversation, presets, input, sendButton, footer);
 
   // Honest off state (FR-AI-10): the panel renders but states the gate.
   void callbacks

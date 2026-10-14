@@ -510,7 +510,9 @@ describe('attachments panel', () => {
 
     const row = root.querySelector('.attachments-panel__row') as HTMLElement;
     expect(row.querySelector('.attachments-panel__name')?.textContent).toBe('panel-image.png');
-    expect(row.querySelector('.attachments-panel__meta')?.textContent).toContain('image/png');
+    // T-088 (UX-11): user language in the row; raw type in the title.
+    expect(row.querySelector('.attachments-panel__meta')?.textContent).toContain('PNG image');
+    expect(row.querySelector('.attachments-panel__meta')?.getAttribute('title')).toContain('image/png');
     const actionLabels = Array.from(row.querySelectorAll('button')).map((b) => b.textContent);
     expect(actionLabels).toContain('Download');
     expect(actionLabels).toContain('Open');
