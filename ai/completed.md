@@ -720,3 +720,30 @@ note card titled example.com → editor body carries the link) with the
 session-hygiene guards still green; all 8 spec files' onboarding
 selectors updated to the new buttons. Gates: tsc strict, eslint, vitest
 896/896, Playwright 73/73.
+
+### T-090 — release v1.0.7 packaging the T-084 fixes
+Five-place version bump (core, manifest, package.json, lockfile x2) with
+the pinning tests updated (APP_VERSION, diagnostics overview, docs pins,
+README numbers 896/896 + 77/77); release notes in scripts/github-release.mjs
+map every register finding to its shipped fix; README badges/links to
+v1.0.7. Gate hardening found during release prep: the T-087 test files had
+never passed tsconfig.node.json (tests/** is THAT config's scope) — fixed
+with EntityId-branded ids; the new save-page dialog's copy contained
+remote-URL-shaped literals (https://example.com placeholder, "https://."
+sentence ending) that tripped the release gate — rephrased scheme-less so
+the strict gate needed NO allowlist additions. Full gates: tsc (both
+configs), eslint, vitest 896/896, perf p95 122 ms (fresh 10k-corpus run:
+p50 75, p99 322, max 362), full Playwright 77/77 INCLUDING zip-acceptance
+against the new artifact. npm run release →
+local-notes-web-archive-1.0.7.zip (3,222,503 bytes, sha256
+bfb88efebe1e1d622ad2654302f1783723802a722b6dcf70810945e962db28fd) — the
+~1.7 MB growth over v1.0.6 is the bundled HEIC decoder, documented in
+RELEASE_VERIFICATION.md and KNOWN_LIMITATIONS.md. GitHub Release v1.0.7
+published (id 412494481) and API-verified (verify-v107-release.mjs):
+digest MATCH, tag == HEAD == 3f7dce8, download-back byte-identical.
+RELEASE_VERIFICATION.md regenerated with fresh measurements (cold 482/199
+ms, warm median 126 ms via a dedicated load probe); REPOSITORY_AUDIT.md
+regenerated at the release: 12/12 PASS including the live GitHub Release
+cross-check (0 secrets across 433 tracked files + 1135 history blobs, 0
+vulnerabilities). v107-verified.txt archived to
+task-deliverables/release-verification/ (README updated: 168 files).

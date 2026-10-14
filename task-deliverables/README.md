@@ -3,7 +3,7 @@
 This folder is the single, separate archive the maintainer asked for on
 2026-10-14: *“all files in task should be kept in a separate folder in
 github.”* Everything the autonomous task program (`ai/plan.md` tasks
-T-062…T-082) produced as output — instruction briefs, QA evidence,
+T-062…T-090) produced as output — instruction briefs, QA evidence,
 reports and release-verification records — lives here, and nothing from
 this folder is mixed into the product source tree (`src/`, `tests/`,
 `public/`) or the toolchain.
@@ -13,11 +13,12 @@ this folder is mixed into the product source tree (`src/`, `tests/`,
 | Sub-folder | Files | What it is |
 | --- | --- | --- |
 | `task-briefs/` | 2 | The two maintainer instruction documents that drove the task programs: `drive-instructions.txt` (2026-10-13, superseded) and `gdocs-instructions.txt` (2026-10-14 — the full QA & release validation protocol executed as T-070…T-082). |
-| `release-verification/` | 3 | Independent REST-API verification records for the GitHub Releases: `v104-verified.txt`, `v105-verified.txt`, `v106-verified.txt` (tag == HEAD, sha256 digest match, byte-identical download-back). |
+| `release-verification/` | 4 | Independent REST-API verification records for the GitHub Releases: `v104-verified.txt`, `v105-verified.txt`, `v106-verified.txt`, `v107-verified.txt` (tag == HEAD, sha256 digest match, byte-identical download-back). |
 | `local-notes-human-qa-20261014/` | 102 | The T-062 universal human-behavior QA audit: executive summary, application map, control inventory (CSV), scenario catalog, state/cross-feature matrices, defects ledger (7 confirmed defects D-01…D-07) and the full `evidence/` tree — screenshots for every pass A–F plus targeted probes. |
 | `qa-validation-v106/` | 54 | The T-070…T-082 zero-trust QA & release validation program that shipped v1.0.6: the 8 program reports (control inventory, coverage matrix, feature-gap report, final QA report — remaining issues: NONE — security/performance/integrity/a11y reports) and `qa-evidence/` (46 files: 13 reports, 10 logs, 22 screenshots, 1 full video walkthrough) covering the two defects found and fixed (D-08 requery sequencing, D-09 WCAG AA contrast) and the two consecutive clean verification passes. |
+| `t084-ux-audit/` | 6 | The T-084 lost-user register (maintainer-reported UX audit of v1.0.6): 17 findings (8 severe), the complete closability matrix for every disclosure surface, file-flow probes and 4 screenshots. Every finding maps to a shipped v1.0.7 fix (T-085…T-089); UX-17 accepted as-is per the register's own judgment. |
 
-**Total: 161 archived files** (plus this README). The two zip bundles that
+**Total: 168 archived files** (plus this README). The two zip bundles that
 were delivered alongside these files (`local-notes-human-qa-20261014.zip`,
 `qa-evidence-full.zip`) are intentionally **not** committed: their contents
 are committed here instead, byte-identical (digest-verified during staging),
@@ -26,7 +27,7 @@ so nothing is duplicated and every file is browsable. The repo’s
 
 ## Provenance and integrity
 
-- 160 of the 161 archived files are byte-identical copies of the delivered
+- 167 of the 168 archived files are byte-identical copies of the delivered
   artifacts; the staging step verified `sha256` of each copy against its
   source. **One file was sanitized:** `qa-validation-v106/qa-evidence/logs/
   t073-secret-scan.txt` contained the literal bare PEM format header
