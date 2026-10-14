@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createNoteMetaBar, type MetaBarApi } from '../../../src/dashboard/editor/note-meta-bar';
+import type { EntityId } from '../../../src/core/types';
 
 /**
  * T-087 (register UX-08): tags and categories reachable from the editor.
@@ -11,7 +12,10 @@ import { createNoteMetaBar, type MetaBarApi } from '../../../src/dashboard/edito
  * covered by the session/controller integration and E2E layers.
  */
 
-const NOTE_ID = '00000000-0000-4000-8000-000000000001' as const;
+const NOTE_ID = '00000000-0000-4000-8000-000000000001' as EntityId;
+const T1 = 't1' as EntityId;
+const T2 = 't2' as EntityId;
+const C1 = 'c1' as EntityId;
 
 function keypress(key: string): KeyboardEvent {
   return new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
@@ -20,12 +24,12 @@ function keypress(key: string): KeyboardEvent {
 function makeApi(overrides: Partial<MetaBarApi> = {}): MetaBarApi {
   return {
     createTag: vi.fn(async (name: string) => ({
-      id: `tag-${name}`,
+      id: `tag-${name}` as EntityId as EntityId,
       name,
     })),
     setNoteTags: vi.fn(async () => true),
     createCategory: vi.fn(async (name: string) => ({
-      id: `cat-${name}`,
+      id: `cat-${name}` as EntityId as EntityId,
       name,
     })),
     setNoteCategories: vi.fn(async () => true),
@@ -37,13 +41,13 @@ describe('note-meta-bar rendering', () => {
   it('renders applied tags and categories as removable chips', () => {
     const bar = createNoteMetaBar({
       noteId: NOTE_ID,
-      initialTagIds: ['t1', 't2'],
-      initialCategoryIds: ['c1'],
+      initialTagIds: [T1, T2],
+      initialCategoryIds: [C1],
       tags: [
-        { id: 't1', name: 'work' },
-        { id: 't2', name: 'travel' },
+        { id: T1, name: 'work' },
+        { id: T2, name: 'travel' },
       ],
-      categories: [{ id: 'c1', name: 'Projects' }],
+      categories: [{ id: C1, name: 'Projects' }],
       api: makeApi(),
       onNotify: () => undefined,
     });
@@ -99,7 +103,7 @@ describe('note-meta-bar add flow (immediate application, UX-08)', () => {
     const bar = createNoteMetaBar({
       noteId: NOTE_ID,
       initialTagIds: [],
-      tags: [{ id: 't1', name: 'Work' }],
+      tags: [{ id: T1, name: 'Work' }],
       categories: [],
       initialCategoryIds: [],
       api,
@@ -110,7 +114,7 @@ describe('note-meta-bar add flow (immediate application, UX-08)', () => {
     input!.dispatchEvent(keypress('Enter'));
 
     await vi.waitFor(() => {
-      expect(api.setNoteTags).toHaveBeenCalledWith(NOTE_ID, ['t1']);
+      expect(api.setNoteTags).toHaveBeenCalledWith(NOTE_ID, [T1]);
     });
     expect(api.createTag).not.toHaveBeenCalled();
     expect(
@@ -124,8 +128,8 @@ describe('note-meta-bar add flow (immediate application, UX-08)', () => {
     const onRosterChanged = vi.fn();
     const bar = createNoteMetaBar({
       noteId: NOTE_ID,
-      initialTagIds: ['t1'],
-      tags: [{ id: 't1', name: 'work' }],
+      initialTagIds: [T1],
+      tags: [{ id: T1, name: 'work' }],
       categories: [],
       initialCategoryIds: [],
       api,
@@ -140,7 +144,7 @@ describe('note-meta-bar add flow (immediate application, UX-08)', () => {
       expect(api.createTag).toHaveBeenCalledWith('urgent');
     });
     await vi.waitFor(() => {
-      expect(api.setNoteTags).toHaveBeenCalledWith(NOTE_ID, ['t1', 'tag-urgent']);
+      expect(api.setNoteTags).toHaveBeenCalledWith(NOTE_ID, [T1, 'tag-urgent']);
     });
     expect(onRosterChanged).toHaveBeenCalled();
     expect(
@@ -195,8 +199,8 @@ describe('note-meta-bar add flow (immediate application, UX-08)', () => {
     const announced: string[] = [];
     const bar = createNoteMetaBar({
       noteId: NOTE_ID,
-      initialTagIds: ['t1'],
-      tags: [{ id: 't1', name: 'work' }],
+      initialTagIds: [T1],
+      tags: [{ id: T1, name: 'work' }],
       categories: [],
       initialCategoryIds: [],
       api,
@@ -245,11 +249,11 @@ describe('note-meta-bar remove flow', () => {
     const announced: string[] = [];
     const bar = createNoteMetaBar({
       noteId: NOTE_ID,
-      initialTagIds: ['t1', 't2'],
+      initialTagIds: [T1, T2],
       initialCategoryIds: [],
       tags: [
-        { id: 't1', name: 'work' },
-        { id: 't2', name: 'travel' },
+        { id: T1, name: 'work' },
+        { id: T2, name: 'travel' },
       ],
       categories: [],
       api,
@@ -261,7 +265,7 @@ describe('note-meta-bar remove flow', () => {
     removeTravel!.click();
 
     await vi.waitFor(() => {
-      expect(api.setNoteTags).toHaveBeenCalledWith(NOTE_ID, ['t1']);
+      expect(api.setNoteTags).toHaveBeenCalledWith(NOTE_ID, [T1]);
     });
     await vi.waitFor(() => {
       expect(announced.at(-1)).toBe('Tag "travel" removed from this note.');
@@ -276,9 +280,9 @@ describe('note-meta-bar remove flow', () => {
     const announced: string[] = [];
     const bar = createNoteMetaBar({
       noteId: NOTE_ID,
-      initialTagIds: ['t1'],
+      initialTagIds: [T1],
       initialCategoryIds: [],
-      tags: [{ id: 't1', name: 'work' }],
+      tags: [{ id: T1, name: 'work' }],
       categories: [],
       api,
       onNotify: (message) => announced.push(message),
@@ -299,19 +303,19 @@ describe('note-meta-bar refreshRoster', () => {
   it('swaps suggestion rosters and re-renders names', () => {
     const bar = createNoteMetaBar({
       noteId: NOTE_ID,
-      initialTagIds: ['t1'],
+      initialTagIds: [T1],
       initialCategoryIds: [],
-      tags: [{ id: 't1', name: 'work' }],
+      tags: [{ id: T1, name: 'work' }],
       categories: [],
       api: makeApi(),
       onNotify: () => undefined,
     });
-    bar.refreshRoster([{ id: 't1', name: 'renamed' }], [{ id: 'c1', name: 'New' }]);
+    bar.refreshRoster([{ id: T1, name: 'renamed' }], [{ id: C1, name: 'New' }]);
     expect(
       [...bar.element.querySelectorAll('.note-meta-bar__chip-name')].map((n) => n.textContent),
     ).toEqual(['renamed']);
     const suggestions = [
-      ...bar.element.querySelectorAll<HTMLDataListElement>('#note-meta-bar-category-suggestions option'),
+      ...bar.element.querySelectorAll<HTMLOptionElement>('#note-meta-bar-category-suggestions option'),
     ];
     expect(suggestions.map((option) => option.value)).toEqual(['New']);
   });

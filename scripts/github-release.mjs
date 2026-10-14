@@ -103,9 +103,50 @@ Chrome 120+ required. Everything stays on your device.
 - Full gate matrix and measured numbers: [\`docs/RELEASE_VERIFICATION.md\`](https://github.com/${slug}/blob/main/docs/RELEASE_VERIFICATION.md)
 - File inventory: **RELEASE_MANIFEST.txt** below (byte-for-byte with the zip contents)
 - Integrity: **${zipName}.sha256** below
-- Automated acceptance: unit 840/840, Playwright E2E 67/67 over the real
+- Automated acceptance: unit 896/896, Playwright E2E 77/77 over the real
   unpacked build, including a dedicated extract-zip-and-load acceptance suite
   (the artifact in this release is the exact folder layout that was tested)
+
+## What's new in v1.0.7 — the lost-user register (17 UX findings fixed)
+
+A maintainer-reported UX audit ("a lot of areas where a person does not any
+clue what they are supposed to do or use that feature") produced a complete
+lost-user register: every disclosure surface, every file-picker flow, every
+piece of developer jargon in user-facing copy, every discoverability gap —
+17 findings (8 severe), each verified live against the shipped build. This
+release fixes all 16 actionable findings (the 17th, diagnostics vocabulary,
+was accepted as-is: that page's audience opts in).
+
+- **Every popped-out bar now carries its own Close control**: the
+  attachments, snapshots, reminders and AI bars previously opened with no
+  close button, no Escape, no click-outside — the only dismissal was knowing
+  to re-click the small toolbar toggle. Every bar has an in-surface Close,
+  Escape unwinds them (while no modal dialog is open), the Filters bar
+  additionally closes on Apply, and Revisions now honors Escape too
+- **iPhone photos (HEIC) insert from your PC**: the image picker admitted
+  no HEIC/HEIF, so the most common photo format was greyed out in the OS
+  picker. Inserting now decodes HEIC locally to displayable JPEG through a
+  pinned libheif decoder compiled without dynamic evaluation (the strict
+  extension CSP is untouched; nothing uploads; decode runs in a dedicated
+  worker). Undecodable files stay as attachments with a truthful message.
+  The dialog also stopped asking for \`data:image\` "blobs" — it now teaches
+  drag-and-drop and Ctrl+V paste instead
+- **Tags and categories are editable in the note itself**: previously the
+  ONLY path was list → checkboxes → bulk bar. The editor now has a metadata
+  bar under the subtitle: removable chips, an add field with suggestions,
+  applied immediately like attachments
+- **Saving a web page has a visible entry point**: capture was reachable
+  only by pasting a URL into a note (feedback: a transient toast). A
+  "Save a web page…" action now sits in the sidebar next to New Note (and
+  in the command palette) — paste a link, a note is created and the
+  capture queued through the same pipeline the context menu uses
+- **Onboarding teaches the product**: the five privacy points are now led
+  by three concrete first actions, and the primary button IS the first step
+  ("Create my first note"); the empty library offers an inline create button
+- **Plain language everywhere**: attachment rows say "PNG image", not
+  \`image/png\`; snapshot copy says "complete saved copy of the page", not
+  raw MHTML vocabulary; the AI panel's MCP disclosure moved into a collapsed
+  "Technical details"
 
 ## What's new in v1.0.6 — full QA & release validation program
 

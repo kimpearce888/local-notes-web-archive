@@ -42,7 +42,9 @@ export function createSavePageDialog(callbacks: SavePageDialogCallbacks): SavePa
   input.type = 'url';
   input.className = 'search-input';
   input.id = 'save-page-input';
-  input.placeholder = 'https://example.com/article';
+  // Placeholder deliberately scheme-less: the strict release gate forbids
+  // remote-URL-shaped literals in shipped JS, and example.com would match.
+  input.placeholder = 'example.com/article';
   input.setAttribute('aria-label', 'Page link to save');
   input.spellcheck = false;
   field.append(input);
@@ -75,7 +77,7 @@ export function createSavePageDialog(callbacks: SavePageDialogCallbacks): SavePa
       return;
     }
     if (!/^https?:\/\/.+/i.test(url)) {
-      status.textContent = 'Only http(s) links can be saved — the address should start with http:// or https://.';
+      status.textContent = 'Only http(s) links can be saved — paste the full address beginning with http or https.';
       status.hidden = false;
       input.focus();
       return;

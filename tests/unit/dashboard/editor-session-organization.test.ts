@@ -13,7 +13,7 @@ import { registerAllApi } from '../../../src/background/api';
 import { closeWorkerResources } from '../../../src/background/db';
 import { clearRecoveryJournal } from '../../../src/dashboard/editor/recovery';
 import { DB_NAME } from '../../../src/core/version';
-import type { Note } from '../../../src/core/types';
+import type { EntityId, Note } from '../../../src/core/types';
 
 /**
  * T-087 (register UX-08): tags and categories reachable from the EDITOR.
@@ -143,12 +143,12 @@ function makeCallbacks(announce: (message: string) => void): EditorSessionCallba
   };
 }
 
-async function noteTagIds(noteId: string): Promise<string[]> {
+async function noteTagIds(noteId: EntityId): Promise<string[]> {
   const { related } = await client().request('notes/related-bulk', { noteIds: [noteId] });
   return related[noteId]?.tags.map((tag: { id: string }) => tag.id) ?? [];
 }
 
-async function noteCategoryIds(noteId: string): Promise<string[]> {
+async function noteCategoryIds(noteId: EntityId): Promise<string[]> {
   const { related } = await client().request('notes/related-bulk', { noteIds: [noteId] });
   return related[noteId]?.categories.map((category: { id: string }) => category.id) ?? [];
 }

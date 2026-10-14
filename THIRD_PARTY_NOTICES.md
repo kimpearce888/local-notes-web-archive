@@ -1,7 +1,7 @@
 # Third-Party Notices
 
 Runtime dependencies bundled into `dist/` of **Local Notes & Web Archive for Chrome**.
-Generated from the pinned `package-lock.json` by `scripts/generate-dependencies.mjs` at 2026-10-14T07:07:59.484Z — never edited by hand.
+Generated from the pinned `package-lock.json` by `scripts/generate-dependencies.mjs` at 2026-10-14T08:27:56.303Z — never edited by hand.
 
 First-party code is MIT (see [LICENSE](./LICENSE)). The 68 packages below form the runtime dependency closure of `dist/` (bundled code plus its declared dependency tree) and are free/open-source software; their licenses permit bundling and are reproduced here from the installed packages.
 
