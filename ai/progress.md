@@ -5,7 +5,6 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
-- [ ] T-070 — Program queue + zero-trust baseline re-validation (fresh full gate battery at HEAD with recorded commands/exit codes; evidence to qa-evidence/logs/)
 - [ ] T-071 — Fake-implementation detection scan + feature completeness validation vs PRD (feature-gap-report.md)
 - [ ] T-072 — Feature/screen/interaction/workflow inventories re-verified live against v1.0.5 (coverage ledgers)
 - [ ] T-073 — Security testing (XSS/stored-XSS/sanitization/URL gate/storage leaks) + permission audit + secret scan (repo + artifact)
