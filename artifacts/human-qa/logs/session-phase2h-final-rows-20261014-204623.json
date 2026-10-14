@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "6f5643e",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T20:43:50.835Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase2h-final-rows",
+    "startedAt": "2026-10-14T20:43:50.738Z",
+    "endedAt": "2026-10-14T20:46:23.625Z",
+    "profileDir": "/tmp/lnwa-qa-phase2h-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 2 Batch H part 1 (final rows minus pagination): find-bar suite (open/nav/match-case/replace-all/close), sanitised source view, toolbar link + image persistence, paste+drop attach through real DOM events, attachment download/open, yearly reminder + Feb-29 + Apr-31 validation, overdue chip + complete, REAL captured link + REAL failed link (capture tab closed mid-flight), card indicators incl. failed-capture tooltip, filters apply-commits, AI send honest degradation + permission-mode evidence, granted-sites Revoke, correct-fixture JSON import. 10/17 PASSED. Defect candidates: section qa154-yearly: - waiting for locator('dialog[open]').getByLabel('Kind', { exact: true }) | section qa158-overdue: - waiting for locator('dialog[open]').getByLabel('Kind', { exact: true }).",
+  "artifacts": []
+}

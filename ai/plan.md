@@ -1112,10 +1112,17 @@ independently testable actions across 30 feature areas. DONE (903de12).
 
 ### T-094 Phase 2 individual action testing
 Exercise every inventory row through the real UI with variations; defects →
-ledger → fix → regression → real-UI re-verification. IN PROGRESS:
-batches A-G complete, 176/206 PASSED, 6 BLOCKED (environmental L04-L06),
-2 NOT_APPLICABLE, 22 remaining; six defects QA-D01..QA-D06 fixed and verified
-(commits d8a0370, 33a5949, b0e9320).
+ledger → fix → regression → real-UI re-verification. DONE: 206/206 rows
+resolved — 196 PASSED, 8 BLOCKED (all environmental: L04/L06 command dispatch
++ native prompts + OS notifications, L05 MHTML, LM Studio absent; QA-147/149
+single-snapshot deferrals re-covered by Phase 3 workflows), 2 NOT_APPLICABLE
+(card-level pin/favorite toggles are non-interactive badges by design, L03);
+six defects QA-D01..QA-D06 fixed and regression-verified (commits d8a0370,
+33a5949, b0e9320); final 22 rows closed by phase2h (real captured link via
+pre-seeded host permission, real failed link via capture-tab close, find-bar
+suite, sanitised source view, paste/drop attach, yearly/Feb-29/Apr-31
+reminders, pagination >50 with selection-clears, restart + two-tab isolation,
+JSON import round-trip).
 
 ### T-095 Phase 3 workflow inventory (workflow-inventory.csv)
 ### T-096 Phase 4+5 interactions + persistence (interaction-coverage.csv)

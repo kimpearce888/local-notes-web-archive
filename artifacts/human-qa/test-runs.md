@@ -158,3 +158,27 @@ Per ai/qa-instructions.md §14. One entry per session/probe. Evidence paths are 
 - E2E capture with seeded permission: link state=[{"state":"captured","hasSnapshot":true}]; snapshots in DB=[{"mhtml":"failed","png":"saved","text":"saved","warnings":1; panel text=Snapshots1 snapshotClosepartialExample Domain2026-10-14 · Pa; E2E CAPTURE=VERIFIED_FIXED
 - Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-e2e-capture-20261014-195009.json
 
+### phase2h-final-rows — 2026-10-14T20:20:31.213Z
+- Phase 2 Batch H (final 22 rows): filters apply-commits, card link/reminder/failed-capture indicators (real captured + really-failed links via pre-seeded permissions), pagination >50 notes with selection-clears, toolbar link/image/find/source-view under their inventory keys, find-bar nav/replace-all/match-case/close, paste+drop attach through real DOM events, attachment download/open, yearly reminder + Feb-29 + Apr-31 validation, overdue chip + complete, AI send honest degradation + permission-mode evidence, granted-sites Revoke, correct-fixture JSON import. 3/10 PASSED. Defect candidates: section qa113-link: - waiting for getByRole('button', { name: /^Save changes\*?$/ }).first() | section qa114-image: - waiting for getByRole('button', { name: /^Save changes\*?$/ }).first() | section find-suite: locator.fill: Error: strict mode violation: getByLabel('Find in note') resolved to 2 elements: | section qa138-paste-drop: - waiting for getByRole('button', { name: /^Save changes\*?$/ }).first() | section qa154-yearly: locator.fill: Error: strict mode violation: locator('dialog[open]').getByLabel('Time (local)') resolved to 2 elements: | section qa158-overdue: - waiting for getByRole('button', { name: 'Add reminder…' }) | section qa179-revoke: locator.click: Error: strict mode violation: locator('dialog[open] li, dialog[open] div').filter({ hasText: /qa-fail-host\.invalid/ }).first().getByRole('button', { name: 'Revoke', exact: true }) reso.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2h-final-rows-20261014-202010.json
+
+### phase2h-restart — 2026-10-14T20:21:12.366Z
+- Phase 2 Batch H phase C (restart + isolation): browser-restart persistence across full close/relaunch (notes + settings), two-dashboard-tab state isolation (no bleed; independent library/editor sessions). 0/1 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2h-restart-20261014-202105.json
+
+### phase2h-final-rows — 2026-10-14T20:46:34.225Z
+- Phase 2 Batch H part 1 (final rows minus pagination): find-bar suite (open/nav/match-case/replace-all/close), sanitised source view, toolbar link + image persistence, paste+drop attach through real DOM events, attachment download/open, yearly reminder + Feb-29 + Apr-31 validation, overdue chip + complete, REAL captured link + REAL failed link (capture tab closed mid-flight), card indicators incl. failed-capture tooltip, filters apply-commits, AI send honest degradation + permission-mode evidence, granted-sites Revoke, correct-fixture JSON import. 10/17 PASSED. Defect candidates: section qa154-yearly: - waiting for locator('dialog[open]').getByLabel('Kind', { exact: true }) | section qa158-overdue: - waiting for locator('dialog[open]').getByLabel('Kind', { exact: true }).
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2h-final-rows-20261014-204623.json
+
+### phase2h-final-rows — 2026-10-14T20:52:14.873Z
+- Phase 2 Batch H part 1 (final rows minus pagination): find-bar suite (open/nav/match-case/replace-all/close), sanitised source view, toolbar link + image persistence, paste+drop attach through real DOM events, attachment download/open, yearly reminder + Feb-29 + Apr-31 validation, overdue chip + complete, REAL captured link + REAL failed link (capture tab closed mid-flight), card indicators incl. failed-capture tooltip, filters apply-commits, AI send honest degradation + permission-mode evidence, granted-sites Revoke, correct-fixture JSON import. 18/21 PASSED. Defect candidates: none.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2h-final-rows-20261014-205205.json
+
+### phase2h-pagination — 2026-10-14T20:53:05.837Z
+- Phase 2 Batch H part 2: pagination with >50 notes (Next/Previous, selection cleared across pages). 2/2 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2h-pagination-20261014-205303.json
+
+### phase2h-restart — 2026-10-14T20:53:21.198Z
+- Phase 2 Batch H phase C (restart + isolation): browser-restart persistence across full close/relaunch (notes + settings), two-dashboard-tab state isolation (no bleed; independent library/editor sessions). 2/2 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2h-restart-20261014-205319.json
+

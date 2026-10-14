@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "6f5643e",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T20:52:48.329Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase2h-pagination",
+    "startedAt": "2026-10-14T20:52:48.220Z",
+    "endedAt": "2026-10-14T20:53:03.930Z",
+    "profileDir": "/tmp/lnwa-qa-phase2h-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 2 Batch H part 2: pagination with >50 notes (Next/Previous, selection cleared across pages). 2/2 PASSED.",
+  "artifacts": []
+}

@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "6f5643e",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T20:16:35.646Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase2h-final-rows",
+    "startedAt": "2026-10-14T20:16:35.560Z",
+    "endedAt": "2026-10-14T20:20:10.074Z",
+    "profileDir": "/tmp/lnwa-qa-phase2h-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 2 Batch H (final 22 rows): filters apply-commits, card link/reminder/failed-capture indicators (real captured + really-failed links via pre-seeded permissions), pagination >50 notes with selection-clears, toolbar link/image/find/source-view under their inventory keys, find-bar nav/replace-all/match-case/close, paste+drop attach through real DOM events, attachment download/open, yearly reminder + Feb-29 + Apr-31 validation, overdue chip + complete, AI send honest degradation + permission-mode evidence, granted-sites Revoke, correct-fixture JSON import. 3/10 PASSED. Defect candidates: section qa113-link: - waiting for getByRole('button', { name: /^Save changes\\*?$/ }).first() | section qa114-image: - waiting for getByRole('button', { name: /^Save changes\\*?$/ }).first() | section find-suite: locator.fill: Error: strict mode violation: getByLabel('Find in note') resolved to 2 elements: | section qa138-paste-drop: - waiting for getByRole('button', { name: /^Save changes\\*?$/ }).first() | section qa154-yearly: locator.fill: Error: strict mode violation: locator('dialog[open]').getByLabel('Time (local)') resolved to 2 elements: | section qa158-overdue: - waiting for getByRole('button', { name: 'Add reminder…' }) | section qa179-revoke: locator.click: Error: strict mode violation: locator('dialog[open] li, dialog[open] div').filter({ hasText: /qa-fail-host\\.invalid/ }).first().getByRole('button', { name: 'Revoke', exact: true }) reso.",
+  "artifacts": []
+}

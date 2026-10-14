@@ -809,3 +809,45 @@ revisions, attachments, snapshots, reminders, AI, metadata bar, palette,
 settings, backup, import, save-page, diagnostics, persistence). Every row
 carries location, preconditions, expected behavior, status NOT_TESTED and
 baseline evidence where a Phase 0/1 screenshot shows the surface.
+
+---
+
+## T-094 — Phase 2 individual action testing (full inventory sweep)
+
+**Completed:** 2026-10-15 (Asia/Dhaka)
+**Validation:** every one of the 206 action-inventory rows exercised through
+the real v1.0.7 UI (persistent Chromium, unpacked dist/, real pointer/keyboard
+events, per-session video + JSON logs). Final status: **196 PASSED, 8 BLOCKED
+(all environmental), 2 NOT_APPLICABLE, 0 FAILED, 0 NOT_TESTED.**
+**Defects found + fixed + regression-verified through the real UI:**
+QA-D01 exclusion-only search (d8a0370), QA-D02 inline query errors (d8a0370),
+QA-D03 settings never reach the live session (33a5949), QA-D04 image dialog
+drops alt/caption (33a5949), QA-D05 save-page never queues the capture (b0e9320),
+QA-D06 capture permission flow unreachable (b0e9320). Full gates 905/905 at
+each fix commit, tsc both configs, eslint clean.
+**Batches:** 2a onboarding/nav, 2b search/filters/sort, 2b2 filters, 2c
+cards/bulk/editor core, 2d panels, 2e settings/dialogs, 2f toolbar/media
+(verified locators), 2g capture/persistence/conflict, 2h final 22 rows.
+**Phase 2h (final 22 rows) method notes:** profile pre-seeding (Preferences
+granted_permissions/active_permissions explicit_host) makes a REAL successful
+capture (example.com) AND a REAL failed capture possible (closing the capture
+queue's background tab mid-flight exercises the truthful TabDriveError
+tab-closed → failJob → link 'failed' → card 'Capture failed' chip path);
+paste/drop attach verified through real DOM events (ClipboardEvent/DragEvent
+with DataTransfer) flowing through the app's real handlePaste/handleDrop; the
+JSON-import row passed once the fixture matched the exporter's actual
+lnwa-note envelope (format/version/note nesting) — the phase2g failure was a
+fixture-shape error, not a product defect; reminder-dialog selects are
+label-wrapped (accessible names include option text) so they are driven
+positionally; pagination verified at 54 notes with page-2 label, selection
+cleared across pages, and Previous round-trip.
+**BLOCKED disclosure:** QA-008/009 browser-command dispatch (L06), QA-012 OS
+notification click (sandbox), QA-144 MHTML export (L05), QA-147/149 need a
+second capture of the same link (deferred to Phase 3 workflows), QA-161/162
+LM Studio absent (honest-degradation + permission-mode settings evidence
+captured instead).
+**Scope:** artifacts/human-qa/{action-inventory.csv, test-runs.md,
+fix-log.md, defects.md, logs/ (phase2h-final-rows/pagination/restart + seed),
+screenshots/baseline/ p2h-01..17 + p2h-09b, videos/baseline/}. No product code
+changed in the close-out commit (all six defect fixes landed earlier); no
+gates applicable beyond the recorded sessions.
