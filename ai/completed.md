@@ -786,3 +786,26 @@ and the editor mounts on card-open (intended flow, matches E2E reference).
 baseline/ (8), videos/baseline/ (2)}; QA drivers live outside the repo at
 /home/z/my-project/scripts/qa/ (harness + phase0 + probe). No product code
 touched — no compile/lint/test gates applicable beyond the session itself.
+
+---
+
+## T-093 — Phase 1 product discovery + action inventory
+
+**Completed:** 2026-10-15 (Asia/Dhaka)
+**Validation:** discovery grounded in the RUNNING v1.0.7 UI (phase1-discovery
+session: fresh profile, 19 baseline screenshots, session video, 0 console
+errors) cross-referenced with a full source sweep of src/dashboard (views,
+editor modules, state/controller/shell/index), src/background entry points and
+src/core/search/query.ts. 73 spot-checked controls verified reachable — zero
+genuinely missing (two initial misses were script locator artifacts: Import
+button's accessible name is its aria-label; view toggle uses role=radio).
+Positive discovery: onboarding Escape dismissal works (dialog hidden, stays in
+DOM). 3-note corpus authored through the real UI for populated-state discovery.
+**Scope:** artifacts/human-qa/action-inventory.csv — 206 independently
+testable actions across 30 feature areas (entry points, onboarding, navigation,
+search + 9 operator rows, filters, sort/view, cards, bulk, trash, editor core,
+file menu, 35 editor-toolbar rows, media dialogs, find bar, source view,
+revisions, attachments, snapshots, reminders, AI, metadata bar, palette,
+settings, backup, import, save-page, diagnostics, persistence). Every row
+carries location, preconditions, expected behavior, status NOT_TESTED and
+baseline evidence where a Phase 0/1 screenshot shows the surface.

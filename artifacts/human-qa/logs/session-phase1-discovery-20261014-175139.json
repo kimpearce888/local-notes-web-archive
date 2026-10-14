@@ -1,0 +1,27 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "f173136",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T17:51:07.931Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase1-discovery",
+    "startedAt": "2026-10-14T17:51:07.914Z",
+    "endedAt": "2026-10-14T17:51:39.895Z",
+    "profileDir": "/tmp/lnwa-qa-phase1-discovery-Z2bFJZ"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 1 discovery verification: swept shell, onboarding, editor session, 5 panels, file menu, save-page/settings/filters/palette dialogs, search, cards+bulk against the running v1.0.7 UI. Reachable controls: 3; missing: none. Corpus of 3 notes created through the real UI.",
+  "artifacts": [
+    "screenshots/baseline/phase1-01-onboarding.png"
+  ]
+}
