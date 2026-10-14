@@ -851,3 +851,54 @@ fix-log.md, defects.md, logs/ (phase2h-final-rows/pagination/restart + seed),
 screenshots/baseline/ p2h-01..17 + p2h-09b, videos/baseline/}. No product code
 changed in the close-out commit (all six defect fixes landed earlier); no
 gates applicable beyond the recorded sessions.
+
+---
+
+## T-095 — Phase 3 complete workflows end-to-end
+
+**Completed:** 2026-10-15 (Asia/Dhaka)
+**Validation:** 22 workflows across all protocol §6 families (create ×4,
+modify ×3, access ×3, settings ×2, navigate ×2, cancel ×2, complete ×2,
+recover ×2, journey ×2), every one driven through the real v1.0.7 UI on a
+sustained pre-seeded profile (two-phase launch granting example.com + a
+failure host) with per-session logs + videos; sustained sessions per
+protocol (no reset between workflows). **workflow-inventory.csv: 22/22
+PASSED.**
+**Defects found + fixed + regression-verified + real-UI-verified:**
+- **QA-D07** (c239fe2): failed captures could not be retried from the UI —
+  the card tooltip promised "retry from its snapshots panel" while
+  capture/retry had zero UI callers (unreachable-flow class). New Retry
+  capture affordance; 2 regression tests; verified failed→captured live.
+- **QA-D08** (7ea37b0): find/replace rebuilt the ENTIRE document as one
+  escaped plain-text paragraph — headings/lists/tables/code flattened and
+  images deleted, silently autosaved (data loss). Found by WF-05 on a rich
+  note — exactly the "controls pass individually ≠ workflow passes" gap.
+  New find-replace.replaceInDocument() (per-text-node, marks preserved,
+  reverse-order transaction); 4 regression tests; verified with full
+  structure surviving replace-all + autosave + reopen.
+- **QA-D09** (fb4481a): recapture of a captured link (FR-CAP-08 fresh
+  revision) had no UI path — making the Compare snapshots dialog
+  permanently unreachable (it needs 2+ snapshots of the SAME link, only a
+  same-link recapture can produce that). Found by WF-17 + audit-trail
+  forensics. New 'Capture fresh copy…' affordance for captured links; 2
+  regression tests; verified rows 1→2 chained on the same link + the
+  Compare dialog rendering for the first time.
+**Phase 2 deferred rows re-covered:** QA-147 (Compare snapshots — needed
+the D09 fix to be reachable at all) and QA-149 (Delete snapshot + confirm)
+both exercised through the real UI.
+**Honest-behaviour discoveries recorded in the inventory:** bulk actions
+clear the selection after each completed action (by design); theme radios
+apply live and are never draft-cancellable (Reset only reverts draft-gated
+fields); an identical-content backup merge keeps existing notes (same-ID
+records are not duplicated); the duplicate 'Capture fresh copy' decision
+captures a fresh archive on a NEW note/link (same-link recapture is the
+D09 affordance); .invalid hosts render Chromium error pages that archive
+honestly with warnings (a real 'failed' state needs the capture tab closed
+mid-flight — the TabDriveError path).
+**Scope:** artifacts/human-qa/{workflow-inventory.csv, defects.md,
+fix-log.md, test-runs.md, logs/ (phase3a/b/c + fixups + verify-d07/d08/d09
++ wf12-final), screenshots/baseline/ p3-*/p3b-*/p3c-*, screenshots/final/
+d07-*/d08-*/d09-*, videos/}. Product fixes: snapshots-panel.ts +
+editor-session.ts + snapshot-client.ts + editor-panel.ts + find-replace.ts
++ styles.css + 8 new regression tests (905→913 total, all green, tsc both
+configs, eslint clean at every fix commit).

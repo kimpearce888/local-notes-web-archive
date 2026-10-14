@@ -1129,3 +1129,15 @@ JSON import round-trip).
 ### T-097 Phase 6+7 error/edge cases + visual testing
 ### T-098 defect repair completion + full regression pass
 ### T-099 final evidence + deliverables + 12-part final report
+
+T-095 DONE: 22 workflows across 9 families (create/modify/access/settings/
+navigate/cancel/complete/recover/journey), 22/22 PASSED — driven through
+the real UI on a sustained pre-seeded profile (phase3a/b/c + targeted
+rechecks; every session logged + videoed). THREE new defects found + fixed
++ regression-verified + real-UI-verified: QA-D07 failed-capture retry
+unreachable (c239fe2), QA-D08 find/replace flattened rich documents —
+silent structure + image data loss (7ea37b0, 4 regression tests),
+QA-D09 recapture of captured links unreachable which made Compare
+snapshots permanently unreachable (fb4481a, 2 regression tests). The
+Phase 2 deferred rows QA-147 (Compare needs 2+ same-link snapshots) and
+QA-149 (Delete + confirm) are now covered via the D09 recapture flow.

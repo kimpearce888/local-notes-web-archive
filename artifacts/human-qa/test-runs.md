@@ -234,3 +234,11 @@ Per ai/qa-instructions.md §14. One entry per session/probe. Evidence paths are 
 - QA-D09 v2 verification (original note, same-link recapture → two snapshots → compare): cards: 3 (targeting the last/oldest) | snapshot rows before recapture: 1 | Capture fresh copy… visible: true | snapshot rows after recapture: 2 | Compare… buttons: 2 | VERDICT: recapture=true, compare(QA-147)=true
 - Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-d09-v2-20261014-215931.json
 
+### phase3-final-rechecks — 2026-10-14T22:01:47.441Z
+- Phase 3 final rechecks (WF-08 exclusion with valid data, WF-12 preview with correct dialog scoping, WF-15 draft-gated settings cancel, WF-17 complete story): 3/4 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase3-final-rechecks-20261014-220145.json
+
+### wf12-final — 2026-10-14T22:03:42.726Z
+- WF-12 final: backup export → honest review dialog → merge restore. 1/1 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-wf12-final-20261014-220341.json
+

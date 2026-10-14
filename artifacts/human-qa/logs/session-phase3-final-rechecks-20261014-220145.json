@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "fb4481a",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T22:01:22.929Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase3-final-rechecks",
+    "startedAt": "2026-10-14T22:01:22.832Z",
+    "endedAt": "2026-10-14T22:01:45.103Z",
+    "profileDir": "/tmp/lnwa-qa-phase3-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 3 final rechecks (WF-08 exclusion with valid data, WF-12 preview with correct dialog scoping, WF-15 draft-gated settings cancel, WF-17 complete story): 3/4 PASSED.",
+  "artifacts": []
+}
