@@ -371,3 +371,44 @@ test('D-05: re-shown onboarding Get started is enabled and completes', async () 
   await getStarted.click();
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
 });
+
+test('D-08: a search issued during the creation storm keeps its results', async () => {
+  // The T-074 performance audit's exact finding: requery() had no request
+  // sequencing, so a stale in-flight requery (the creation storm's queued
+  // refreshes) resolved AFTER a newer search and overwrote the view with
+  // the full unfiltered list while the input still held the query.
+  const newNote = page.getByRole('button', { name: 'New Note' });
+  for (let batch = 0; batch < 3; batch++) {
+    await Promise.all([
+      newNote.click(), newNote.click(), newNote.click(), newNote.click(), newNote.click(),
+      newNote.click(), newNote.click(), newNote.click(), newNote.click(), newNote.click(),
+    ]);
+    await page.waitForTimeout(250);
+  }
+
+  // Search immediately — while the storm's requeries are still draining.
+  const search = page.locator('#search-input');
+  await search.fill('binary transport');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.card', { hasText: 'T-063 Transport Note' })).toHaveCount(1, { timeout: 10_000 });
+
+  // Late-arriving stale requeries must NOT stomp the search view.
+  await page.waitForTimeout(2500);
+  await expect(page.locator('.card', { hasText: 'T-063 Transport Note' })).toHaveCount(1);
+  await expect(page.locator('.card')).toHaveCount(1);
+
+  // A no-match search stays empty — the storm's full list cannot return.
+  // (q-only term verified to match nothing: MiniSearch prefix search would
+  // otherwise match short hyphen-split tokens like 'no' against 'Note'.)
+  await search.fill('qqqzzz');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.state--empty')).toBeVisible({ timeout: 10_000 });
+  await page.waitForTimeout(2500);
+  await expect(page.locator('.state--empty')).toBeVisible();
+  await expect(page.locator('.card')).toHaveCount(0);
+
+  // Restore the unfiltered view for any test that follows.
+  await search.fill('');
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(800);
+});

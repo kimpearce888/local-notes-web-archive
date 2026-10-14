@@ -101,6 +101,15 @@ export function createDashboardController(options: {
   const disposers: Array<() => void> = [];
   let disposed = false;
 
+  /**
+   * Requery request sequencing (audit D-08): only the LATEST issued
+   * requery may write list state. Overlapping requeries (rapid searches,
+   * pagination while a search is in flight, the creation storm's queued
+   * refreshes) resolve in RPC-arrival order; without this guard a stale
+   * earlier-issued response overwrites the newer result view.
+   */
+  let requeryEpoch = 0;
+
   /* --------------------------- bulk bar ----------------------------- */
 
   const bulkBar: BulkBar = createBulkBar({
@@ -331,7 +340,7 @@ export function createDashboardController(options: {
     return notes;
   }
 
-  async function hydrateRelated(notes: readonly Note[]): Promise<void> {
+  async function hydrateRelated(notes: readonly Note[], epoch?: number): Promise<void> {
     if (notes.length === 0) {
       store.setState({ related: {} });
       return;
@@ -340,7 +349,8 @@ export function createDashboardController(options: {
       const { related } = await client.request('notes/related-bulk', {
         noteIds: notes.map((note) => note.id),
       });
-      if (disposed) return;
+      // A superseded requery's related write is dropped with it (D-08).
+      if (disposed || (epoch !== undefined && epoch !== requeryEpoch)) return;
       store.setState({ related });
     } catch {
       // Cards degrade to note-only fields; indicators simply hide.
@@ -348,6 +358,7 @@ export function createDashboardController(options: {
   }
 
   async function requery(): Promise<void> {
+    const epoch = ++requeryEpoch;
     const state = store.getState();
     const list = smartListById(state.smartList);
     try {
@@ -358,9 +369,9 @@ export function createDashboardController(options: {
         limit: state.pageSize,
         offset: (state.page - 1) * state.pageSize,
       });
-      if (disposed) return;
+      if (disposed || epoch !== requeryEpoch) return;
       const notes = await resolveNotes(result.hits.map((hit) => hit.noteId));
-      if (disposed) return;
+      if (disposed || epoch !== requeryEpoch) return;
       // Drop selections that no longer appear anywhere in the results.
       const visible = new Set(notes.map((note) => note.id));
       const selection = new Set<EntityId>([...state.selection].filter((id) => visible.has(id)));
@@ -372,9 +383,9 @@ export function createDashboardController(options: {
         loadError: null,
         ...(selectionChanged ? { selection } : {}),
       });
-      await hydrateRelated(notes);
+      await hydrateRelated(notes, epoch);
     } catch (error) {
-      if (disposed) return;
+      if (disposed || epoch !== requeryEpoch) return;
       store.setState({
         status: 'error',
         loadError: {

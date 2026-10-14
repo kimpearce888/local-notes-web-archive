@@ -369,6 +369,55 @@ describe('sort wiring', () => {
 });
 
 /** Seeds a note directly through the real client (bypasses the shell). */
+
+describe('stale requery sequencing (audit D-08)', () => {
+  it('a stale in-flight requery cannot overwrite a newer search result', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    await clientSeedNote('Alpha', 'the needle is here');
+    await controller!.requery();
+    await waitFor(() => controller!.store.getState().notes.length === 1);
+
+    // Hold the FIRST search/query ('needle') in flight at the transport.
+    let releaseNeedle: () => void = () => undefined;
+    let needleHeld = false;
+    interceptor = (message) => {
+      const payload = message.payload as { query?: string };
+      if (
+        message.kind === RPC_KIND &&
+        'query' in payload &&
+        payload.query === 'needle' &&
+        !needleHeld
+      ) {
+        needleHeld = true;
+        return new Promise((resolve) => {
+          releaseNeedle = () => resolve(router.dispatch(message));
+        }) as unknown;
+      }
+      return undefined;
+    };
+
+    // requery A: query 'needle' — search/query is now held in flight.
+    shell.elements.searchInput.value = 'needle';
+    shell.elements.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await flush(170); // debounce fires; A is in flight
+    expect(controller!.store.getState().total).toBe(1); // A has not landed yet
+
+    // requery B: query with no matches — resolves immediately.
+    shell.elements.searchInput.value = 'zebra-does-not-exist';
+    shell.elements.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await waitFor(() => controller!.store.getState().total === 0);
+    expect(root.querySelector('.state--empty')?.textContent).toContain('No matching notes');
+
+    // Release A: the STALE requery resolves LAST. It must be dropped —
+    // before the fix it overwrote B's empty state with the 'needle' hit.
+    releaseNeedle();
+    await flush(200);
+    expect(controller!.store.getState().total).toBe(0);
+    expect(controller!.store.getState().notes.length).toBe(0);
+    expect(controller!.store.getState().query).toBe('zebra-does-not-exist');
+  });
+});
+
 async function clientSeedNote(title: string, plainText: string): Promise<Note> {
   const client = createApiClient(transport);
   const { note } = await client.request('notes/create', { title, plainText });

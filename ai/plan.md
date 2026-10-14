@@ -910,3 +910,28 @@ targeting 100% of discovered items), QA report, completion-challenge loop
 defects — re-running the full gate battery + QA specs twice), and only
 then the release: version increment, changelog, release notes, package,
 validate, publish with API verification.
+
+### T-077 Fix D-08: requery request-sequencing guard (stale-response race)
+The T-074 performance audit found requery() writing list state with no
+check that it is still the latest issued requery — the only guard was
+`disposed` (teardown). Overlapping requeries (rapid searches, a search
+issued while the creation storm's refreshes or a pagination requery are
+still draining) resolve in RPC-arrival order, so a stale earlier-issued
+response could overwrite the newer result view (observed: the unfiltered
+full list replacing search results while the input still held the
+query). resolveNotes()'s up to PAGE_SIZE sequential notes/get RPCs widen
+the window; hydrateRelated()'s related-bulk write had the same exposure.
+Fix: a requeryEpoch counter — requery() captures its epoch at entry and
+re-checks `epoch === requeryEpoch` after EVERY await (search/query,
+resolveNotes, and in the catch branch); hydrateRelated receives the
+epoch and drops superseded related writes. Tests: deterministic unit
+repro in controller.test.ts (transport interceptor holds the first
+search/query for 'needle' in flight while a newer no-match query
+resolves; releasing the stale one must NOT overwrite the empty state —
+failed pre-fix, passes post-fix) + E2E regression in
+audit-defect-regressions.spec.ts (30-note creation storm, immediate
+search keeps its results, true no-match stays empty; q-only miss term
+'qqqzzz' API-verified 0 hits because MiniSearch splits hyphens and
+prefix-matches short tokens like 'no' against 'Note'). Gates at
+completion: eslint green, tsc strict green, vitest 836/836, full
+Playwright battery 67/67 including zip-acceptance.
