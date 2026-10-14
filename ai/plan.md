@@ -1002,3 +1002,22 @@ the folder with a resolving link. Pre-push secret scan over all 162
 files with the audit's exact patterns (0 findings). Verify on GitHub via
 the API (file count + digests), regenerate REPOSITORY_AUDIT.md, records
 commit.
+
+## §O — Comprehensive UX cluelessness audit (maintainer report, 2026-10-14)
+
+### T-084 find EVERY area where a normal user is lost
+Maintainer report: image insert does not take pictures from the PC; the
+attachment/reminder/etc. toggle buttons pop out bars that have no close
+button; "a lot of areas where a person does not have any clue what they
+are supposed to do or use that feature". Directive: find ALL such areas
+first — not a few issues, everything. Discovery-only task producing the
+complete problem register across five dimensions: (1) closability of
+every disclosure surface (in-surface close, Escape, re-click toggle,
+click-outside); (2) every file-picker flow end-to-end (does the OS
+picker open, right accept filters, success feedback); (3) developer
+jargon in user-facing copy (data:image/base64 placeholders, blob, MHTML
+etc.); (4) guidance/discoverability (icon-only controls, empty states
+without calls-to-action, hidden-only interactions); (5) dead ends
+(no-visible-effect buttons, unrecoverable errors). Method: static source
+sweep of every user-facing string and surface + live Playwright walk of
+every screen/control. Fixes are queued AFTER the register is presented.
