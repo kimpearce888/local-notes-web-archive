@@ -351,6 +351,15 @@ export class SearchEngine {
       }
     }
 
+    // Exclusion-only queries narrow the full corpus instead of blanking the
+    // results: "-term" is documented syntax (FR-SEARCH-04) and a lone
+    // exclusion means "everything except…". Without this the include loop
+    // never runs, ids stays null and the query silently returns nothing
+    // (found by human QA as defect QA-D01).
+    if (ids === null && parsed.terms.some((term) => term.exclude)) {
+      ids = new Set(this.docs.keys());
+    }
+
     // Exclusions subtract from the result.
     for (const term of parsed.terms.filter((t) => t.exclude)) {
       const fields = scopeToFields(term.scope);
@@ -381,7 +390,9 @@ export class SearchEngine {
     }
 
     if (ids === null) {
-      errors.push('query has terms but the index is empty');
+      // Only reachable when every term was skipped as unsearchable (e.g. an
+      // empty quoted phrase): say so instead of blaming the index.
+      errors.push('the query has no searchable terms');
       return new Map();
     }
     const filteredScores = new Map<string, { score: number; fields: Set<SearchField> }>();

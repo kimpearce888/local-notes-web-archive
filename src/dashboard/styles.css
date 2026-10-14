@@ -690,6 +690,15 @@ img {
   font-size: var(--text-sm);
 }
 
+/* FR-SEARCH-04 (QA-D02): inline explanation of ignored/invalid query
+   syntax, shown above the results or the no-results state. */
+.results__query-note {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+  max-width: 48rem;
+}
+
 .results-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));

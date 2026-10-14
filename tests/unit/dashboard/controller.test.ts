@@ -187,6 +187,45 @@ describe('search refresh', () => {
     await waitFor(() => controller!.store.getState().total === 0);
     expect(root.querySelector('.state--empty')?.textContent).toContain('No matching notes');
   });
+
+  it('renders query syntax errors inline instead of silently ignoring them (QA-D02, FR-SEARCH-04)', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    await clientSeedNote('Alpha', 'the needle is here');
+    await controller!.requery();
+    await waitFor(() => controller!.store.getState().notes.length === 1);
+
+    // Valid results AND a syntax error: the engine keeps the valid tokens,
+    // the notice explains what was ignored. (Unknown colon-keys like
+    // `bogus:xyz` intentionally fall through as literal terms so URLs and
+    // times stay searchable; `is:` with a bad value is a real syntax error.)
+    shell.elements.searchInput.value = 'needle is:zebra';
+    shell.elements.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await waitFor(() => controller!.store.getState().queryErrors.length > 0);
+    expect(controller!.store.getState().notes.length).toBe(1);
+    const notice = root.querySelector('.results__query-note');
+    expect(notice?.getAttribute('role')).toBe('status');
+    expect(notice?.textContent).toContain('is:zebra');
+
+    // Clearing the query clears the notice.
+    shell.elements.searchInput.value = '';
+    shell.elements.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await waitFor(() => controller!.store.getState().queryErrors.length === 0);
+    expect(root.querySelector('.results__query-note')).toBeNull();
+  });
+
+  it('exclusion-only queries return the non-matching notes (QA-D01, FR-SEARCH-04)', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    await clientSeedNote('Alpha', 'sourdough starter method');
+    await clientSeedNote('Beta', 'vegetable soup recipe');
+    await controller!.requery();
+    await waitFor(() => controller!.store.getState().notes.length === 2);
+
+    shell.elements.searchInput.value = '-sourdough';
+    shell.elements.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await waitFor(() => controller!.store.getState().notes.length === 1);
+    expect(controller!.store.getState().notes[0]?.title).toBe('Beta');
+    expect(controller!.store.getState().queryErrors).toEqual([]);
+  });
 });
 
 describe('save flow (visible state + rollback)', () => {

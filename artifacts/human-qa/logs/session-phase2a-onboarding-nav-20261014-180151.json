@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "903de12",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T18:01:23.607Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase2a-onboarding-nav",
+    "startedAt": "2026-10-14T18:01:23.519Z",
+    "endedAt": "2026-10-14T18:01:51.666Z",
+    "profileDir": "/tmp/lnwa-qa-phase2a-onboarding-nav-Wefepk"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 2 Batch A: onboarding (present/create/skip/settings-first/escape/reshow) + navigation (New Note, 7 smart lists, save-page dialog, import, settings, diagnostics) exercised through the real UI with evidence. Results: 19/19 PASSED. Defect candidates: none.",
+  "artifacts": []
+}

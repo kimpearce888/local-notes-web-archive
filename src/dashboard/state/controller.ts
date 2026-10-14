@@ -202,6 +202,20 @@ export function createDashboardController(options: {
       return;
     }
 
+    // FR-SEARCH-04 (QA-D02 fix): invalid query syntax gets an inline
+    // explanation instead of silently changing the query. The engine keeps
+    // searching with the valid tokens; the notice says what was ignored.
+    // Appended AFTER the region state is mounted because every show* helper
+    // clears the region first.
+    const renderQueryNote = (): void => {
+      if (state.queryErrors.length === 0) return;
+      const notice = document.createElement('p');
+      notice.className = 'results__query-note';
+      notice.setAttribute('role', 'status');
+      notice.textContent = `Search syntax: ${state.queryErrors.join('; ')}.`;
+      region.prepend(notice);
+    };
+
     if (state.notes.length === 0) {
       const searching = state.query.trim().length > 0;
       const empty = showEmpty(
@@ -211,6 +225,7 @@ export function createDashboardController(options: {
           ? 'Try different search terms or clear the search.'
           : 'Notes you create and pages you save will appear here.',
       );
+      renderQueryNote();
       // T-089 (register UX-16): the empty library offers the obvious action
       // inline — the create button no longer lives only in the sidebar.
       if (!searching) {
@@ -226,6 +241,7 @@ export function createDashboardController(options: {
     }
 
     showContent(region);
+    renderQueryNote();
     const grid = document.createElement('div');
     grid.className = state.viewMode === 'grid' ? 'results-grid' : 'results-list';
     grid.setAttribute('role', 'list');
@@ -396,6 +412,7 @@ export function createDashboardController(options: {
         notes,
         status: 'ready',
         loadError: null,
+        queryErrors: result.queryErrors ?? [],
         ...(selectionChanged ? { selection } : {}),
       });
       await hydrateRelated(notes, epoch);
@@ -403,6 +420,7 @@ export function createDashboardController(options: {
       if (disposed || epoch !== requeryEpoch) return;
       store.setState({
         status: 'error',
+        queryErrors: [],
         loadError: {
           code: error instanceof RpcClientError ? error.code : 'internal-error',
           message: error instanceof Error ? error.message : 'Search failed.',

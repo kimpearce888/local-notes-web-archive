@@ -42,3 +42,27 @@ Per ai/qa-instructions.md §14. One entry per session/probe. Evidence paths are 
 - screenshots/baseline/phase1-15-search-results.png
 - screenshots/baseline/phase1-16-bulk-bar.png
 
+### phase2a-onboarding-nav — 2026-10-14T18:00:11.558Z
+- Phase 2 Batch A: onboarding (present/create/skip/settings-first/escape/reshow) + navigation (New Note, 7 smart lists, save-page dialog, import, settings, diagnostics) exercised through the real UI with evidence. Results: 8/19 PASSED. Defect candidates: Create my first note: cards=0 | Skip for now: obGone=true cards=0.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2a-onboarding-nav-20261014-175953.json
+
+### phase2a-onboarding-nav — 2026-10-14T18:01:53.619Z
+- Phase 2 Batch A: onboarding (present/create/skip/settings-first/escape/reshow) + navigation (New Note, 7 smart lists, save-page dialog, import, settings, diagnostics) exercised through the real UI with evidence. Results: 19/19 PASSED. Defect candidates: none.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2a-onboarding-nav-20261014-180151.json
+
+### phase2b-search-filters — 2026-10-14T18:04:45.536Z
+- Phase 2 Batch B: metadata bar add/remove tags+categories, bulk favorite, card pin, search free-text + 15 operator queries + malformed, filters (tag facet, chip removal, clear all, save-as-view + switch, domain input), sort 6 fields + direction, view grid/list. 7/7 PASSED. Defect candidates: none.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2b-search-filters-20261014-180435.json
+
+### phase2b-search-filters — 2026-10-14T18:08:33.413Z
+- Phase 2 Batch B: metadata bar add/remove tags+categories, bulk favorite, card pin, search free-text + 15 operator queries + malformed, filters (tag facet, chip removal, clear all, save-as-view + switch, domain input), sort 6 fields + direction, view grid/list. 39/44 PASSED. Defect candidates: section filters: locator.click: Error: strict mode violation: getByRole('button', { name: 'Filters' }) resolved to 3 elements:.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2b-search-filters-20261014-180829.json
+
+### verify-d01-d02 — 2026-10-14T18:17:49.570Z
+- Defect verification against repaired build: QA-D01 VERIFIED_FIXED; QA-D02 VERIFIED_FIXED; QA-D02 VERIFIED_FIXED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-d01-d02-20261014-181746.json
+
+### phase2b2-filters — 2026-10-14T18:20:19.553Z
+- Phase 2 Batch B2 (filters re-run after locator fix): 7/7 PASSED. Defect candidates: none.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2b2-filters-20261014-182017.json
+

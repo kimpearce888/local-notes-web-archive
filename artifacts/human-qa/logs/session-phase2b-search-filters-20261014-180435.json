@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "903de12",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T18:03:38.917Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase2b-search-filters",
+    "startedAt": "2026-10-14T18:03:38.833Z",
+    "endedAt": "2026-10-14T18:04:35.861Z",
+    "profileDir": "/tmp/lnwa-qa-phase2b-search-filters-mRDxhi"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 2 Batch B: metadata bar add/remove tags+categories, bulk favorite, card pin, search free-text + 15 operator queries + malformed, filters (tag facet, chip removal, clear all, save-as-view + switch, domain input), sort 6 fields + direction, view grid/list. 7/7 PASSED. Defect candidates: none.",
+  "artifacts": []
+}

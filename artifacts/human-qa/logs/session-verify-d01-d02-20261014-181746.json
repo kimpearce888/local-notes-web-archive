@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "903de12",
+  "distDirty": true,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T18:17:25.646Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "verify-d01-d02",
+    "startedAt": "2026-10-14T18:17:25.556Z",
+    "endedAt": "2026-10-14T18:17:46.553Z",
+    "profileDir": "/tmp/lnwa-qa-verify-d01-d02-iV2vZh"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Defect verification against repaired build: QA-D01 VERIFIED_FIXED; QA-D02 VERIFIED_FIXED; QA-D02 VERIFIED_FIXED.",
+  "artifacts": []
+}

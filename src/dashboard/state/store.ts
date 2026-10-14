@@ -37,6 +37,8 @@ export interface DashboardState {
   readonly counts: { active: number; archived: number; trashed: number };
   /** Raw search text (FR-SEARCH-04 syntax is parsed by the engine). */
   readonly query: string;
+  /** Inline query-syntax explanations from the engine (FR-SEARCH-04). */
+  readonly queryErrors: readonly string[];
   readonly filters: Filters;
   readonly sort: { field: SortField; direction: SortDirection };
   readonly viewMode: 'grid' | 'list';
@@ -68,6 +70,7 @@ export const INITIAL_DASHBOARD_STATE: DashboardState = {
   total: 0,
   counts: { active: 0, archived: 0, trashed: 0 },
   query: '',
+  queryErrors: [],
   filters: {},
   sort: { field: 'modified', direction: 'desc' },
   viewMode: 'grid',

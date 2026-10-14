@@ -396,3 +396,32 @@ describe('snapshot absence and failure filters (T-065, FR-SEARCH-03)', () => {
     expect(failed.hits[0]?.noteId).toBe(failedNote.id);
   });
 });
+
+describe('exclusion-only queries (QA-D01 regression, FR-SEARCH-04)', () => {
+  it('a lone exclusion returns every note that does not match', async () => {
+    await seedNote('Alpha', 'sourdough starter method');
+    await seedNote('Beta', 'vegetable soup recipe');
+    await seedNote('Gamma', 'ferry timetable');
+    const result = await engine.execute({ query: '-sourdough' });
+    expect(result.total).toBe(2);
+    expect(result.queryErrors).toEqual([]);
+  });
+
+  it('a lone phrase exclusion narrows the full corpus', async () => {
+    await seedNote('One', 'the complete saved copy of the page');
+    await seedNote('Two', 'a different article entirely');
+    // Single-word quoted phrase after the minus sign is the reachable
+    // phrase-exclusion syntax (the tokenizer splits multi-word quotes).
+    const result = await engine.execute({ query: '-"saved"' });
+    expect(result.total).toBe(1);
+    expect(result.queryErrors).toEqual([]);
+  });
+
+  it('mixed queries still subtract exclusions from matches', async () => {
+    await seedNote('One', 'search engine ranking notes');
+    await seedNote('Two', 'ranking of chess players');
+    await seedNote('Three', 'unrelated gardening tips');
+    const result = await engine.execute({ query: 'ranking -chess' });
+    expect(result.total).toBe(1);
+  });
+});
