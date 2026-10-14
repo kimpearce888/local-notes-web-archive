@@ -558,3 +558,23 @@ Push Status (ai/rule.md §8).
 - Validation Result: Discovery-only task per the maintainer directive ("find those areas first. not a few issues everything."). Five-dimension audit executed against the live v1.0.6 dist/: (A) closability matrix of every disclosure surface in the product (10 surfaces: 5 editor panels, filters bar, find bar, settings, palette, source view) via live open/Escape/re-click/click-outside probes; (B) file-picker flows end-to-end with real files (image insert PNG verified WORKING; attach .txt verified WORKING; root causes of the maintainer's reports identified); (C) jargon sweep of every user-facing string (static regex sweep of all string literals + live innerText); (D) guidance/discoverability inventory (icon-only controls: 0 unnamed; empty states; entry-point tracing for tags/categories/capture); (E) dead-end detection over all 40+ toolbar controls (none real; formatting no-ops are standard semantics). COMPLETE REGISTER: 17 findings — 8 severe (UX-01..05 five closeless surfaces incl. filters staying open after Apply; UX-06 the data:image/base64 "blobs" ask; UX-07 HEIC/HEIF photos greyed out by the accept list — the real "not taking pictures from pc"; UX-08 tags/categories reachable ONLY via the bulk bar, no editor tag UI), 7 moderate (revisions ignores Escape; AI disclosure is developer documentation — stdio/native-host/MCP; raw MIME types in attachment rows; unexplained MHTML; capture has no visible entry point beyond paste-a-link + transient toast; onboarding teaches privacy not the product; insert-dialog hides drag-drop/paste alternatives), 2 low (empty list lacks inline create button; diagnostics vocabulary). Root pattern identified: one systemic toggle-only-disclosure design accounts for 5 severe findings — a single fix family (in-surface close + Escape + close-on-apply), not five patches. Deliverables: task-deliverables/t084-ux-audit/ (register md + json + 4 screenshots) per the maintainer's separate-folder standing instruction. Fix tasks queued AFTER maintainer reviews the register.
 - Commit Hash: (this commit)
 - Push Status: pushed with this commit
+
+### T-085 — universal dismissal for every disclosure surface
+Fixed T-084 register UX-01, UX-02, UX-03, UX-04, UX-05 and UX-09 with ONE
+mechanism instead of six patches. New shared panel-header module
+(src/dashboard/editor/panel-header.ts): every popped-out bar (attachments,
+snapshots, reminders, AI) renders a titled header row carrying its own
+Close control. editor-session gained open/close pairs for every panel plus
+a LIFO closer stack: Escape dismisses the most recently opened (visually
+topmost) panel, stays inert while any native modal <dialog> is open, and
+repeated presses unwind the stack; the revisions view now closes on Escape
+(UX-09) through the same stack. The filters region gained a titled header
+with its own Close control, close-on-apply (Apply filters / Enter both
+apply AND dismiss), a programmatic shell.closeFilters() API, and Escape
+handling in the shell's global keydown with the same modal-dialog guard.
+aria-expanded stays truthful on every path. CSS: .panel-header and
+.filters-region__header rows. Tests: +11 (per-panel Close control
+regressions for attachments/snapshots/reminders/AI, filters close +
+close-on-apply + Enter parity, shell closeFilters/Escape/dialog-guard,
+editor-session Close-button sweep + Escape stack + modal guard).
+Gates: tsc strict (app+node), eslint, vitest 851/851, vite build green.

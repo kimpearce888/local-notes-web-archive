@@ -18,6 +18,7 @@ import type {
   UtcTimestamp,
 } from '../../core/types';
 import { daysInMonth, isValidTimeZone } from '../../core/util/time';
+import { createPanelHeader } from './panel-header';
 import {
   computeNextDueAt,
   describeRecurrenceRule,
@@ -50,6 +51,8 @@ export interface RemindersPanelCallbacks {
   snooze(reminderId: EntityId, until: UtcTimestamp): Promise<boolean>;
   remove(reminderId: EntityId): Promise<boolean>;
   announce(message: string): void;
+  /** T-085 (UX-03): the panel's own Close control. */
+  onClose(): void;
 }
 
 export interface RemindersPanel {
@@ -121,13 +124,14 @@ export function createRemindersPanel(
   element.className = 'reminders-panel';
   element.setAttribute('aria-label', 'Note reminders');
 
-  const heading = document.createElement('h2');
-  heading.className = 'reminders-panel__heading';
-  heading.textContent = 'Reminders';
-
-  const count = document.createElement('span');
-  count.className = 'reminders-panel__count';
-  count.setAttribute('aria-live', 'polite');
+  // T-085 (UX-03): in-surface Close control (see panel-header.ts).
+  const header = createPanelHeader({
+    title: 'Reminders',
+    titleClassName: 'reminders-panel__heading',
+    countClassName: 'reminders-panel__count',
+    closeAriaLabel: 'Close reminders',
+    onClose: () => callbacks.onClose(),
+  });
 
   const listbox = document.createElement('ul');
   listbox.className = 'reminders-panel__list';
@@ -714,7 +718,7 @@ export function createRemindersPanel(
     const now = new Date().toISOString() as UtcTimestamp;
     listbox.replaceChildren(...reminders.map((reminder) => rowFor(reminder, now)));
     empty.hidden = reminders.length > 0;
-    count.textContent =
+    header.count.textContent =
       reminders.length === 0
         ? ''
         : `${reminders.length} reminder${reminders.length === 1 ? '' : 's'}`;
@@ -724,7 +728,7 @@ export function createRemindersPanel(
   limitsNote.className = 'reminders-panel__limits';
   limitsNote.textContent = REMINDER_LIMITS_NOTE;
 
-  element.append(heading, count, addButton, status, listbox, empty, limitsNote);
+  element.append(header.row, addButton, status, listbox, empty, limitsNote);
   void refresh();
 
   return {

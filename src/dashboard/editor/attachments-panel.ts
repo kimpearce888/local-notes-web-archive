@@ -8,6 +8,7 @@
  */
 
 import type { Attachment, EntityId } from '../../core/types';
+import { createPanelHeader } from './panel-header';
 
 /** Human-readable byte sizes (storage reporting uses the same scale). */
 export function formatByteSize(bytes: number): string {
@@ -23,6 +24,8 @@ export interface AttachmentsPanelCallbacks {
   remove(attachmentId: EntityId): Promise<boolean>;
   attachFiles(files: readonly File[]): Promise<readonly { ok: boolean; message: string }[]>;
   announce(message: string): void;
+  /** T-085 (UX-01): the panel's own Close control. */
+  onClose(): void;
 }
 
 export interface AttachmentsPanel {
@@ -53,13 +56,15 @@ export function createAttachmentsPanel(
   element.className = 'attachments-panel';
   element.setAttribute('aria-label', 'Note attachments');
 
-  const heading = document.createElement('h2');
-  heading.className = 'attachments-panel__heading';
-  heading.textContent = 'Attachments';
-
-  const count = document.createElement('span');
-  count.className = 'attachments-panel__count';
-  count.setAttribute('aria-live', 'polite');
+  // T-085 (UX-01): the bar itself carries its Close control — the toggle
+  // button above the editor is no longer the only way to dismiss it.
+  const header = createPanelHeader({
+    title: 'Attachments',
+    titleClassName: 'attachments-panel__heading',
+    countClassName: 'attachments-panel__count',
+    closeAriaLabel: 'Close attachments',
+    onClose: () => callbacks.onClose(),
+  });
 
   const listbox = document.createElement('ul');
   listbox.className = 'attachments-panel__list';
@@ -107,7 +112,7 @@ export function createAttachmentsPanel(
   toolbarRow.className = 'attachments-panel__toolbar';
   toolbarRow.append(attachButton, fileInput);
 
-  element.append(heading, count, status, listbox, empty, toolbarRow);
+  element.append(header.row, status, listbox, empty, toolbarRow);
 
   function setStatus(message: string, isError: boolean): void {
     status.textContent = message;
@@ -329,7 +334,7 @@ export function createAttachmentsPanel(
     }
     listbox.replaceChildren(...attachments.map(rowFor));
     empty.hidden = attachments.length > 0;
-    count.textContent =
+    header.count.textContent =
       attachments.length === 0 ? '' : `${attachments.length} file${attachments.length === 1 ? '' : 's'}`;
   }
 

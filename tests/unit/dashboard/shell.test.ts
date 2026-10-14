@@ -161,6 +161,47 @@ describe('event wiring', () => {
     expect(onToggle).toHaveBeenCalledWith(true);
   });
 
+  it('closeFilters dismisses the disclosure and keeps aria truthful (T-085, UX-05)', () => {
+    const shell = mount();
+    const onToggle = vi.fn();
+    shell.on('filtersToggle', onToggle);
+    shell.elements.filtersButton.click();
+    expect(shell.elements.filtersRegion.hidden).toBe(false);
+    shell.closeFilters();
+    expect(shell.elements.filtersRegion.hidden).toBe(true);
+    expect(shell.elements.filtersButton.getAttribute('aria-expanded')).toBe('false');
+    expect(onToggle).toHaveBeenCalledWith(false);
+    // Idempotent: closing an already-hidden region is a no-op.
+    shell.closeFilters();
+    expect(onToggle).toHaveBeenCalledTimes(2);
+  });
+
+  it('Escape dismisses the open filters region (T-085, UX-05)', () => {
+    const shell = mount();
+    shell.elements.filtersButton.click();
+    expect(shell.elements.filtersRegion.hidden).toBe(false);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(shell.elements.filtersRegion.hidden).toBe(true);
+    expect(shell.elements.filtersButton.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('Escape leaves a closed filters region and open dialogs untouched', () => {
+    const shell = mount();
+    // Region hidden: Escape must not emit or flip anything.
+    const onToggle = vi.fn();
+    shell.on('filtersToggle', onToggle);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(onToggle).not.toHaveBeenCalled();
+    // A native modal dialog owns Escape: the region stays open underneath.
+    shell.elements.filtersButton.click();
+    const dialog = document.createElement('dialog');
+    dialog.open = true;
+    document.body.append(dialog);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(shell.elements.filtersRegion.hidden).toBe(false);
+    dialog.remove();
+  });
+
   it('supports unsubscribe', () => {
     const shell = mount();
     const onNewNote = vi.fn();

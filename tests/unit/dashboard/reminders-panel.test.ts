@@ -89,6 +89,7 @@ interface PanelHarness {
     removed: EntityId[];
     announced: string[];
     listed: number;
+    closed: number;
     failCreate: boolean;
   };
   panel: ReturnType<typeof createRemindersPanel>;
@@ -106,6 +107,7 @@ async function mountPanel(initial: Reminder[]): Promise<PanelHarness> {
     removed: [] as EntityId[],
     announced: [] as string[],
     listed: 0,
+    closed: 0,
     failCreate: false,
     async listForNote(): Promise<readonly Reminder[]> {
       this.listed += 1;
@@ -156,6 +158,9 @@ async function mountPanel(initial: Reminder[]): Promise<PanelHarness> {
     },
     announce(message: string): void {
       this.announced.push(message);
+    },
+    onClose(): void {
+      this.closed += 1;
     },
   };
   const panel = createRemindersPanel(NOTE_ID, callbacks);
@@ -212,6 +217,15 @@ function setInput(dialog: HTMLDialogElement, label: string, value: string): void
 }
 
 describe('reminders panel rows', () => {
+  it('carries an in-surface Close control that invokes onClose (UX-03)', async () => {
+    const { panel, callbacks } = await mountPanel([makeReminder()]);
+    const close = panel.element.querySelector('.panel-header__close') as HTMLButtonElement;
+    expect(close).toBeTruthy();
+    expect(close.getAttribute('aria-label')).toBe('Close reminders');
+    close.click();
+    expect(callbacks.closed).toBe(1);
+  });
+
   it('lists reminders with states, rule details and next-occurrence meta', async () => {
     const { panel } = await mountPanel([
       makeReminder({ id: 'rem-1' }),
@@ -602,6 +616,7 @@ describe('reminders lifecycle dialogs', () => {
       snooze: async (): Promise<boolean> => false,
       remove: async (): Promise<boolean> => false,
       announce: (): void => undefined,
+      onClose: (): void => undefined,
     };
     const panel = createRemindersPanel(NOTE_ID, callbacks);
     root.append(panel.element);

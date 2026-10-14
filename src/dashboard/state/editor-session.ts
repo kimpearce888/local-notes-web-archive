@@ -367,6 +367,35 @@ export async function openEditorSession(options: {
   const container = document.createElement('div');
   container.className = 'editor-session';
 
+  /* ------------------- Panel dismissal (T-085) ---------------------- */
+
+  // Every popped-out bar registers its teardown here; Escape closes the
+  // most recently opened one (which is also the visually topmost bar —
+  // panels insert directly under the header). Native modal <dialog>s own
+  // Escape while any of them is open, so the stack stays inert then.
+  const panelClosers: Array<() => void> = [];
+  const registerPanelCloser = (close: () => void): (() => void) => {
+    const wrapped = (): void => {
+      const index = panelClosers.indexOf(wrapped);
+      if (index !== -1) panelClosers.splice(index, 1);
+      close();
+    };
+    panelClosers.push(wrapped);
+    return () => {
+      const index = panelClosers.indexOf(wrapped);
+      if (index !== -1) panelClosers.splice(index, 1);
+    };
+  };
+  const onSessionKeyDown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape') return;
+    if (document.querySelector('dialog[open]') !== null) return;
+    const top = panelClosers[panelClosers.length - 1];
+    if (top === undefined) return;
+    event.preventDefault();
+    top();
+  };
+  container.addEventListener('keydown', onSessionKeyDown);
+
   const panel: EditorPanel = createEditorPanel(
     container,
     {
@@ -442,10 +471,20 @@ export async function openEditorSession(options: {
   /* ------------------------ Revisions view -------------------------- */
 
   let revisionElement: HTMLElement | null = null;
+  let unregisterRevisionCloser: (() => void) | null = null;
+
+  /** T-085 (UX-09): Close parity — the panel's button AND Escape both land here. */
+  function closeRevisions(): void {
+    if (!revisionElement) return;
+    revisionElement.remove();
+    revisionElement = null;
+    unregisterRevisionCloser?.();
+    unregisterRevisionCloser = null;
+  }
+
   const toggleRevisions = async (): Promise<void> => {
     if (revisionElement) {
-      revisionElement.remove();
-      revisionElement = null;
+      closeRevisions();
       return;
     }
     const revisions = await callbacks.getRevisions(noteId);
@@ -476,14 +515,10 @@ export async function openEditorSession(options: {
           }
         })();
       },
-      onClose: () => {
-        if (revisionElement) {
-          revisionElement.remove();
-          revisionElement = null;
-        }
-      },
+      onClose: closeRevisions,
     });
     revisionElement = panelElement.element;
+    unregisterRevisionCloser = registerPanelCloser(closeRevisions);
     container.prepend(revisionElement);
   };
 
@@ -551,6 +586,7 @@ export async function openEditorSession(options: {
 
   let attachmentsElement: HTMLElement | null = null;
   let attachmentsPanelInstance: AttachmentsPanel | null = null;
+  let unregisterAttachmentsCloser: (() => void) | null = null;
   let attachmentsCount = 0;
   let attachmentsCountLoaded = false;
 
@@ -561,13 +597,21 @@ export async function openEditorSession(options: {
   attachmentsButton.textContent = 'Attachments';
   attachmentsButton.addEventListener('click', () => void toggleAttachments());
 
+  /** T-085 (UX-01): one teardown for the in-surface Close button, Escape and the toggle. */
+  function closeAttachments(): void {
+    if (!attachmentsElement) return;
+    attachmentsPanelInstance?.dispose();
+    attachmentsElement.remove();
+    attachmentsElement = null;
+    attachmentsPanelInstance = null;
+    attachmentsButton.setAttribute('aria-expanded', 'false');
+    unregisterAttachmentsCloser?.();
+    unregisterAttachmentsCloser = null;
+  }
+
   async function toggleAttachments(): Promise<void> {
     if (attachmentsElement) {
-      attachmentsPanelInstance?.dispose();
-      attachmentsElement.remove();
-      attachmentsElement = null;
-      attachmentsPanelInstance = null;
-      attachmentsButton.setAttribute('aria-expanded', 'false');
+      closeAttachments();
       return;
     }
     attachmentsPanelInstance = createAttachmentsPanel(noteId, {
@@ -577,11 +621,13 @@ export async function openEditorSession(options: {
       remove: (id) => attachmentApi.remove(id),
       attachFiles,
       announce: (message) => callbacks.announce(message),
+      onClose: closeAttachments,
     });
     attachmentsElement = attachmentsPanelInstance.element;
     // Listed under the header, above the editor, mirroring the revision panel.
     container.insertBefore(attachmentsElement, header.nextSibling);
     attachmentsButton.setAttribute('aria-expanded', 'true');
+    unregisterAttachmentsCloser = registerPanelCloser(closeAttachments);
     await attachmentsPanelInstance.refresh();
     await updateAttachmentCount();
   }
@@ -613,6 +659,7 @@ export async function openEditorSession(options: {
 
   let snapshotsElement: HTMLElement | null = null;
   let snapshotsPanelInstance: SnapshotsPanel | null = null;
+  let unregisterSnapshotsCloser: (() => void) | null = null;
 
   const snapshotsButton = document.createElement('button');
   snapshotsButton.type = 'button';
@@ -621,13 +668,21 @@ export async function openEditorSession(options: {
   snapshotsButton.textContent = 'Snapshots';
   snapshotsButton.addEventListener('click', () => void toggleSnapshots());
 
+  /** T-085 (UX-02): one teardown for the in-surface Close button, Escape and the toggle. */
+  function closeSnapshots(): void {
+    if (!snapshotsElement) return;
+    snapshotsPanelInstance?.dispose();
+    snapshotsElement.remove();
+    snapshotsElement = null;
+    snapshotsPanelInstance = null;
+    snapshotsButton.setAttribute('aria-expanded', 'false');
+    unregisterSnapshotsCloser?.();
+    unregisterSnapshotsCloser = null;
+  }
+
   async function toggleSnapshots(): Promise<void> {
     if (snapshotsElement) {
-      snapshotsPanelInstance?.dispose();
-      snapshotsElement.remove();
-      snapshotsElement = null;
-      snapshotsPanelInstance = null;
-      snapshotsButton.setAttribute('aria-expanded', 'false');
+      closeSnapshots();
       return;
     }
     snapshotsPanelInstance = createSnapshotsPanel(noteId, {
@@ -637,10 +692,12 @@ export async function openEditorSession(options: {
       rename: (id, title) => snapshotsApi.rename(id, title),
       remove: (id) => snapshotsApi.remove(id),
       announce: (message) => callbacks.announce(message),
+      onClose: closeSnapshots,
     });
     snapshotsElement = snapshotsPanelInstance.element;
     container.insertBefore(snapshotsElement, header.nextSibling);
     snapshotsButton.setAttribute('aria-expanded', 'true');
+    unregisterSnapshotsCloser = registerPanelCloser(closeSnapshots);
     await snapshotsPanelInstance.refresh();
     await updateSnapshotCount();
   }
@@ -661,6 +718,7 @@ export async function openEditorSession(options: {
 
   let remindersElement: HTMLElement | null = null;
   let remindersPanelInstance: RemindersPanel | null = null;
+  let unregisterRemindersCloser: (() => void) | null = null;
 
   const remindersButton = document.createElement('button');
   remindersButton.type = 'button';
@@ -669,13 +727,21 @@ export async function openEditorSession(options: {
   remindersButton.textContent = 'Reminders';
   remindersButton.addEventListener('click', () => void toggleReminders());
 
+  /** T-085 (UX-03): one teardown for the in-surface Close button, Escape and the toggle. */
+  function closeReminders(): void {
+    if (!remindersElement) return;
+    remindersPanelInstance?.dispose();
+    remindersElement.remove();
+    remindersElement = null;
+    remindersPanelInstance = null;
+    remindersButton.setAttribute('aria-expanded', 'false');
+    unregisterRemindersCloser?.();
+    unregisterRemindersCloser = null;
+  }
+
   async function toggleReminders(): Promise<void> {
     if (remindersElement) {
-      remindersPanelInstance?.dispose();
-      remindersElement.remove();
-      remindersElement = null;
-      remindersPanelInstance = null;
-      remindersButton.setAttribute('aria-expanded', 'false');
+      closeReminders();
       return;
     }
     remindersPanelInstance = createRemindersPanel(noteId, {
@@ -688,10 +754,12 @@ export async function openEditorSession(options: {
       snooze: (id, until) => remindersApi.snooze(id, until),
       remove: (id) => remindersApi.remove(id),
       announce: (message) => callbacks.announce(message),
+      onClose: closeReminders,
     });
     remindersElement = remindersPanelInstance.element;
     container.insertBefore(remindersElement, header.nextSibling);
     remindersButton.setAttribute('aria-expanded', 'true');
+    unregisterRemindersCloser = registerPanelCloser(closeReminders);
     await remindersPanelInstance.refresh();
     await updateReminderCount();
   }
@@ -798,6 +866,7 @@ export async function openEditorSession(options: {
 
   let aiElement: HTMLElement | null = null;
   let aiPanelInstance: AiPanel | null = null;
+  let unregisterAiCloser: (() => void) | null = null;
 
   const aiButton = document.createElement('button');
   aiButton.type = 'button';
@@ -806,13 +875,21 @@ export async function openEditorSession(options: {
   aiButton.textContent = 'AI';
   aiButton.addEventListener('click', () => void toggleAi());
 
+  /** T-085 (UX-04): one teardown for the in-surface Close button, Escape and the toggle. */
+  function closeAi(): void {
+    if (!aiElement) return;
+    aiPanelInstance?.dispose();
+    aiElement.remove();
+    aiElement = null;
+    aiPanelInstance = null;
+    aiButton.setAttribute('aria-expanded', 'false');
+    unregisterAiCloser?.();
+    unregisterAiCloser = null;
+  }
+
   async function toggleAi(): Promise<void> {
     if (aiElement) {
-      aiPanelInstance?.dispose();
-      aiElement.remove();
-      aiElement = null;
-      aiPanelInstance = null;
-      aiButton.setAttribute('aria-expanded', 'false');
+      closeAi();
       return;
     }
     aiPanelInstance = createAiPanel(
@@ -820,12 +897,14 @@ export async function openEditorSession(options: {
         chat: (input) => aiApi.chat(input),
         isEnabled: () => aiApi.isEnabled(),
         announce: (message) => callbacks.announce(message),
+        onClose: closeAi,
       },
       noteId,
     );
     aiElement = aiPanelInstance.element;
     container.insertBefore(aiElement, header.nextSibling);
     aiButton.setAttribute('aria-expanded', 'true');
+    unregisterAiCloser = registerPanelCloser(closeAi);
   }
 
   const closeButton = document.createElement('button');
@@ -1006,6 +1085,8 @@ export async function openEditorSession(options: {
       await autosave.flush();
       autosave.dispose();
       panel.dispose();
+      container.removeEventListener('keydown', onSessionKeyDown);
+      panelClosers.length = 0;
       if (revisionElement) revisionElement.remove();
       attachmentsPanelInstance?.dispose();
       attachmentsElement = null;

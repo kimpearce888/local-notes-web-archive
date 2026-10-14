@@ -29,6 +29,8 @@ export interface FiltersPanelCallbacks {
   onApplyView(viewId: EntityId): void;
   /** Delete a saved view. */
   onDeleteView(viewId: EntityId): void;
+  /** T-085 (UX-05): dismiss the filters region (Close button / after Apply). */
+  onClose(): void;
 }
 
 export interface FiltersPanelHosts {
@@ -207,7 +209,13 @@ export function createFiltersPanel(hosts: FiltersPanelHosts, callbacks: FiltersP
   saveViewButton.type = 'button';
   saveViewButton.className = 'btn';
   saveViewButton.textContent = 'Save as view…';
-  actions.append(applyButton, clearButton, saveViewButton);
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.className = 'btn btn--ghost';
+  closeButton.textContent = 'Close';
+  closeButton.setAttribute('aria-label', 'Close filters');
+  closeButton.addEventListener('click', () => callbacks.onClose());
+  actions.append(applyButton, clearButton, saveViewButton, closeButton);
 
   const grid = document.createElement('div');
   grid.className = 'filters-panel';
@@ -228,7 +236,20 @@ export function createFiltersPanel(hosts: FiltersPanelHosts, callbacks: FiltersP
     categoryField,
     actions,
   );
-  hosts.region.replaceChildren(grid);
+
+  // T-085 (UX-05): the region itself carries a titled header row with its
+  // own Close control, and applying the filters dismisses the bar instead
+  // of leaving it occupying the screen with no way out.
+  const headerRow = document.createElement('div');
+  headerRow.className = 'filters-region__header';
+  const heading = document.createElement('h2');
+  heading.className = 'filters-region__heading';
+  heading.textContent = 'Filters';
+  const hint = document.createElement('span');
+  hint.className = 'filters-region__hint';
+  hint.textContent = 'Narrow the list below';
+  headerRow.append(heading, hint, closeButton);
+  hosts.region.replaceChildren(headerRow, grid);
 
   /* ------------------------ Reading state --------------------------- */
 
@@ -453,7 +474,13 @@ export function createFiltersPanel(hosts: FiltersPanelHosts, callbacks: FiltersP
 
   /* -------------------------- Wiring -------------------------------- */
 
-  applyButton.addEventListener('click', () => callbacks.onApply(readFilters()));
+  // Applying the filters dismisses the bar (T-085, UX-05): the work is
+  // done, the region should not keep occupying the screen.
+  const applyAndClose = (): void => {
+    callbacks.onApply(readFilters());
+    callbacks.onClose();
+  };
+  applyButton.addEventListener('click', applyAndClose);
   clearButton.addEventListener('click', () => {
     writeFilters({});
     callbacks.onClear();
@@ -464,14 +491,14 @@ export function createFiltersPanel(hosts: FiltersPanelHosts, callbacks: FiltersP
       const target = event.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'SELECT') {
         event.preventDefault();
-        callbacks.onApply(readFilters());
+        applyAndClose();
       }
     }
   });
   sourceDomain.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      callbacks.onApply(readFilters());
+      applyAndClose();
     }
   });
 

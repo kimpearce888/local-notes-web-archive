@@ -12,6 +12,7 @@
 
 import type { CaptureArtifactState, CaptureStatus, EntityId, Snapshot } from '../../core/types';
 import { formatByteSize } from './attachments-panel';
+import { createPanelHeader } from './panel-header';
 
 /** Human labels for the per-artifact capture states (FR-CAP-07). */
 export const ARTIFACT_STATE_LABELS: Readonly<Record<CaptureArtifactState, string>> = {
@@ -55,6 +56,8 @@ export interface SnapshotsPanelCallbacks {
   rename(snapshotId: EntityId, title: string): Promise<boolean>;
   remove(snapshotId: EntityId): Promise<boolean>;
   announce(message: string): void;
+  /** T-085 (UX-02): the panel's own Close control. */
+  onClose(): void;
 }
 
 export interface SnapshotsPanel {
@@ -71,13 +74,14 @@ export function createSnapshotsPanel(
   element.className = 'snapshots-panel';
   element.setAttribute('aria-label', 'Captured snapshots');
 
-  const heading = document.createElement('h2');
-  heading.className = 'snapshots-panel__heading';
-  heading.textContent = 'Snapshots';
-
-  const count = document.createElement('span');
-  count.className = 'snapshots-panel__count';
-  count.setAttribute('aria-live', 'polite');
+  // T-085 (UX-02): in-surface Close control (see panel-header.ts).
+  const header = createPanelHeader({
+    title: 'Snapshots',
+    titleClassName: 'snapshots-panel__heading',
+    countClassName: 'snapshots-panel__count',
+    closeAriaLabel: 'Close snapshots',
+    onClose: () => callbacks.onClose(),
+  });
 
   const listbox = document.createElement('ul');
   listbox.className = 'snapshots-panel__list';
@@ -93,7 +97,7 @@ export function createSnapshotsPanel(
   status.setAttribute('aria-live', 'polite');
   status.hidden = true;
 
-  element.append(heading, count, status, listbox, empty);
+  element.append(header.row, status, listbox, empty);
 
   function setStatus(message: string, isError: boolean): void {
     status.textContent = message;
@@ -532,7 +536,7 @@ export function createSnapshotsPanel(
     compareSelection = null;
     listbox.replaceChildren(...snapshots.map(rowFor));
     empty.hidden = snapshots.length > 0;
-    count.textContent =
+    header.count.textContent =
       snapshots.length === 0
         ? ''
         : `${snapshots.length} snapshot${snapshots.length === 1 ? '' : 's'}`;

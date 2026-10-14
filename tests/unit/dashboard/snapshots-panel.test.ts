@@ -111,6 +111,7 @@ interface PanelHarness {
     exports: { id: EntityId; format: string }[];
     pngRequests: EntityId[];
     announced: string[];
+    closed: number;
     snapshots: Snapshot[];
   };
   panel: ReturnType<typeof createSnapshotsPanel>;
@@ -124,6 +125,7 @@ async function mountPanel(initial: Snapshot[]): Promise<PanelHarness> {
     exports: [] as { id: EntityId; format: string }[],
     pngRequests: [] as EntityId[],
     announced: [] as string[],
+    closed: 0,
     snapshots: [...initial],
     async listForNote(noteId: EntityId): Promise<readonly Snapshot[]> {
       this.listed.push(noteId);
@@ -156,6 +158,9 @@ async function mountPanel(initial: Snapshot[]): Promise<PanelHarness> {
     },
     announce(message: string): void {
       this.announced.push(message);
+    },
+    onClose(): void {
+      this.closed += 1;
     },
   };
   const panel = createSnapshotsPanel(NOTE_ID, callbacks);
@@ -193,6 +198,14 @@ async function openPreview(panel: PanelHarness['panel']): Promise<HTMLDialogElem
 }
 
 describe('snapshots panel', () => {
+  it('carries an in-surface Close control that invokes onClose (UX-02)', async () => {
+    const { panel, callbacks } = await mountPanel([]);
+    const close = panel.element.querySelector('.panel-header__close') as HTMLButtonElement;
+    expect(close).toBeTruthy();
+    expect(close.getAttribute('aria-label')).toBe('Close snapshots');
+    close.click();
+    expect(callbacks.closed).toBe(1);
+  });
   it('renders rows with status chips, artifact summaries and warning counts', async () => {
     const { panel } = await mountPanel([
       makeSnapshot({
@@ -472,6 +485,7 @@ describe('snapshots panel', () => {
       rename: async (): Promise<boolean> => false,
       remove: async (): Promise<boolean> => false,
       announce: (): void => undefined,
+      onClose: (): void => undefined,
     };
     const panel = createSnapshotsPanel(NOTE_ID, callbacks);
     root.append(panel.element);

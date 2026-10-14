@@ -1458,6 +1458,27 @@ dialog textarea {
 
 /* Filters panel (T-065, FR-SEARCH-03): the real controls that replaced
    the previously-empty disclosure (audit D-02). */
+
+/* T-085 (UX-05): titled header row with the region's own Close control. */
+.filters-region__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.filters-region__heading {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  margin: 0;
+}
+
+.filters-region__hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-right: auto;
+}
+
 .filters-panel {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
@@ -2082,6 +2103,28 @@ surface, hairline border, heading row, consistent rows. */
 .editor-image__resize {
   padding: 2px var(--space-2);
   font-size: var(--text-xs);
+}
+
+/* ------------- Shared disclosure-panel header (T-085) ----------------- */
+/* Every popped-out bar carries its own Close control (UX-01..05): title,
+   live count, Close pushed to the end of the row. */
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.panel-header__close {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.ai-panel__count {
+  margin-left: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 
 /* --------------------- Attachments panel (T-019) ---------------------- */

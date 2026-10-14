@@ -112,6 +112,8 @@ export interface DashboardShell {
   setPagination(input: { page: number; pageCount: number; from: number; to: number; total: number }): void;
   /** Mirrors the sort field + direction selects to the live sort (T-066). */
   setSort(input: { field: string; direction: string }): void;
+  /** T-085: dismiss the filters disclosure (Close button / apply / Escape). */
+  closeFilters(): void;
   /** Syncs the select-all checkbox with the page selection state. */
   setSelectAllState(input: { checked: boolean; indeterminate: boolean; pageNoteIds: readonly string[] }): void;
   dispose(): void;
@@ -593,6 +595,18 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     filtersButton.setAttribute('aria-expanded', String(open));
     emit('filtersToggle', open);
   };
+
+  /**
+   * T-085 (UX-05): programmatic dismissal of the filters region — used by
+   * the panel's own Close control, by close-on-apply, and by Escape below.
+   * Idempotent: closing an already-hidden region is a no-op.
+   */
+  const closeFilters = (): void => {
+    if (filtersRegion.hidden) return;
+    filtersRegion.hidden = true;
+    filtersButton.setAttribute('aria-expanded', 'false');
+    emit('filtersToggle', false);
+  };
   filtersButton.addEventListener('click', onFiltersClick);
   disposers.push(() => filtersButton.removeEventListener('click', onFiltersClick));
 
@@ -629,6 +643,17 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
       event.preventDefault();
       emit('commandPaletteOpen');
+      return;
+    }
+    // T-085 (UX-05): Escape dismisses the filters bar. Native modal
+    // <dialog>s own Escape while any of them is open, so this stays inert
+    // underneath them.
+    if (
+      event.key === 'Escape' &&
+      !filtersRegion.hidden &&
+      document.querySelector('dialog[open]') === null
+    ) {
+      closeFilters();
       return;
     }
     if (event.key === '/' && !inTextField) {
@@ -737,6 +762,10 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     },
     setSort(input: { field: string; direction: string }): void {
       setSort(input);
+    },
+    /** T-085: dismiss the filters disclosure (Close button / apply / Escape). */
+    closeFilters(): void {
+      closeFilters();
     },
     setSelectAllState(input: { checked: boolean; indeterminate: boolean; pageNoteIds: readonly string[] }): void {
       selectAllCheckbox.checked = input.checked;

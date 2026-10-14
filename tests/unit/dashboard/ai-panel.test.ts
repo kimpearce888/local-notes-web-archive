@@ -12,6 +12,11 @@ import type { EntityId } from '../../../src/core/types';
  */
 
 let root: HTMLElement;
+let closedCount = 0;
+
+beforeEach(() => {
+  closedCount = 0;
+});
 
 const NOTE_ID = 'note-0001' as EntityId;
 
@@ -52,6 +57,7 @@ function mountPanel(enabled = true, noteId: EntityId | null = null): Harness {
       },
       isEnabled: async () => isEnabled,
       announce: (message) => announced.push(message),
+      onClose: () => closedCount++,
     },
     noteId,
   );
@@ -101,6 +107,15 @@ afterEach(() => {
 });
 
 describe('AI panel', () => {
+  it('carries an in-surface Close control that invokes onClose (UX-04)', () => {
+    const harness = mountPanel();
+    const close = harness.panel.element.querySelector('.panel-header__close') as HTMLButtonElement;
+    expect(close).toBeTruthy();
+    expect(close.getAttribute('aria-label')).toBe('Close the AI assistant');
+    close.click();
+    expect(closedCount).toBe(1);
+  });
+
   it('shows presets: search everywhere, note tasks only with a note id', () => {
     const generic = presetPrompts(null);
     expect(generic.length).toBe(1);

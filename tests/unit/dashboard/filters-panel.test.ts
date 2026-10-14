@@ -66,6 +66,7 @@ beforeEach(() => {
     onSaveView: vi.fn(),
     onApplyView: vi.fn(),
     onDeleteView: vi.fn(),
+    onClose: vi.fn(),
   };
 });
 
@@ -264,6 +265,47 @@ describe('active-filter chips', () => {
     clear?.click();
     expect(callbacks.onClear).toHaveBeenCalledTimes(1);
     expect((region.querySelector('#filter-pinned') as HTMLInputElement).checked).toBe(false);
+  });
+});
+
+describe('dismissal (T-085, UX-05 regression)', () => {
+  it('renders the region header with its own Close control', () => {
+    const panel = createFiltersPanel({ region, chips, savedViews: savedViewsHost }, callbacks);
+    panel.sync({ filters: {}, tags: [], categories: [], savedViews: [] });
+    expect(region.querySelector('.filters-region__heading')?.textContent).toBe('Filters');
+    const close = [...region.querySelectorAll<HTMLButtonElement>('button')].find(
+      (button) => button.getAttribute('aria-label') === 'Close filters',
+    );
+    expect(close).toBeTruthy();
+    close?.click();
+    expect(callbacks.onClose).toHaveBeenCalledTimes(1);
+    // Close is dismissal only — the applied filters are untouched.
+    expect(callbacks.onApply).not.toHaveBeenCalled();
+    expect(callbacks.onClear).not.toHaveBeenCalled();
+  });
+
+  it('Apply filters applies AND dismisses the bar (close-on-apply)', () => {
+    const panel = createFiltersPanel({ region, chips, savedViews: savedViewsHost }, callbacks);
+    panel.sync({ filters: {}, tags: [], categories: [], savedViews: [] });
+    (region.querySelector('#filter-pinned') as HTMLInputElement).checked = true;
+    const apply = [...region.querySelectorAll<HTMLButtonElement>('button')].find(
+      (button) => button.textContent === 'Apply filters',
+    );
+    apply?.click();
+    expect(callbacks.onApply).toHaveBeenCalledTimes(1);
+    expect(callbacks.onApply).toHaveBeenCalledWith({ pinned: true });
+    expect(callbacks.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('the Enter shortcut applies and dismisses like the button', () => {
+    const panel = createFiltersPanel({ region, chips, savedViews: savedViewsHost }, callbacks);
+    panel.sync({ filters: {}, tags: [], categories: [], savedViews: [] });
+    const state = region.querySelector<HTMLSelectElement>('#filter-state');
+    state?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+    );
+    expect(callbacks.onApply).toHaveBeenCalledTimes(1);
+    expect(callbacks.onClose).toHaveBeenCalledTimes(1);
   });
 });
 

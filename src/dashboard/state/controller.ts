@@ -134,6 +134,9 @@ export function createDashboardController(options: {
       onSaveView: (name) => void saveCurrentView(name),
       onApplyView: (viewId) => void applySavedView(viewId),
       onDeleteView: (viewId) => void deleteSavedView(viewId),
+      // T-085 (UX-05): the region's Close control and close-on-apply land on
+      // the shell's programmatic dismissal (aria-expanded stays truthful).
+      onClose: () => shell.closeFilters(),
     },
   );
 

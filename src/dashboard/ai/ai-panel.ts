@@ -12,6 +12,7 @@
 import type { EntityId } from '../../core/types';
 import type { AgentTurnResult } from '../../background/ai/agent';
 import { MCP_DISCLOSURE } from '../../background/ai/hygiene';
+import { createPanelHeader } from '../editor/panel-header';
 
 export interface AiPanelCallbacks {
   /** One agent turn over ai/chat. Approved ids continue a pending turn. */
@@ -22,6 +23,8 @@ export interface AiPanelCallbacks {
   /** Whether AI is enabled (honest off state, FR-AI-10). */
   isEnabled(): Promise<boolean>;
   announce(message: string): void;
+  /** T-085 (UX-04): the panel's own Close control. */
+  onClose(): void;
 }
 
 export interface AiPanel {
@@ -67,9 +70,15 @@ export function createAiPanel(callbacks: AiPanelCallbacks, noteId: EntityId | nu
   element.className = 'ai-panel';
   element.setAttribute('aria-label', 'AI assistant');
 
-  const heading = document.createElement('h2');
-  heading.className = 'ai-panel__heading';
-  heading.textContent = 'AI assistant (local LM Studio)';
+  // T-085 (UX-04): in-surface Close control (see panel-header.ts). The
+  // AI panel has no live count, so its count span stays empty.
+  const header = createPanelHeader({
+    title: 'AI assistant (local LM Studio)',
+    titleClassName: 'ai-panel__heading',
+    countClassName: 'ai-panel__count',
+    closeAriaLabel: 'Close the AI assistant',
+    onClose: () => callbacks.onClose(),
+  });
 
   const disclosure = document.createElement('p');
   disclosure.className = 'ai-panel__disclosure';
@@ -267,7 +276,7 @@ export function createAiPanel(callbacks: AiPanelCallbacks, noteId: EntityId | nu
   footer.textContent =
     'Status per proposal: proposed → needs approval → running → done/failed. Denied proposals are canceled and never execute.';
 
-  element.append(heading, disclosure, status, conversation, presets, input, sendButton, footer);
+  element.append(header.row, disclosure, status, conversation, presets, input, sendButton, footer);
 
   // Honest off state (FR-AI-10): the panel renders but states the gate.
   void callbacks

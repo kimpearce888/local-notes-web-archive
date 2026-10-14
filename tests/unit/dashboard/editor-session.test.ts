@@ -289,6 +289,95 @@ describe('revision history (FR-NOTE-06)', () => {
   });
 });
 
+describe('panel dismissal (T-085, UX-01..04 + UX-09 regression)', () => {
+  it('every popped-out panel closes from its own Close control', async () => {
+    const note = await seedNote('Dismissal', 'close me');
+    const mount = document.createElement('div');
+    root.append(mount);
+    const session = await openEditorSession({ mount, note, callbacks: makeCallbacks() });
+
+    const buttonByName = (name: string): HTMLButtonElement | undefined =>
+      [...session.element.querySelectorAll('.editor-session__header button')].find(
+        (button) => button.textContent === name,
+      ) as HTMLButtonElement | undefined;
+
+    for (const name of ['Attachments', 'Snapshots', 'Reminders', 'AI']) {
+      buttonByName(name)?.click();
+      await waitFor(() =>
+        session.element.querySelector('.panel-header__close') !== null,
+      );
+      const close = session.element.querySelector('.panel-header__close') as HTMLButtonElement;
+      close.click();
+      await waitFor(() => session.element.querySelector('.panel-header__close') === null);
+      const toggle = buttonByName(name);
+      expect(toggle?.getAttribute('aria-expanded')).toBe('false');
+    }
+
+    // Revisions already had Close (UX-09 was Escape-only): still works.
+    buttonByName('Revision history')?.click();
+    await waitFor(() => session.element.querySelector('.revision-panel') !== null);
+    (
+      session.element.querySelector(
+        '.revision-panel button',
+      ) as HTMLButtonElement | null
+    )?.click();
+    await waitFor(() => session.element.querySelector('.revision-panel') === null);
+
+    await session.close();
+  });
+
+  it('Escape closes the most recently opened panel; inert under a modal dialog', async () => {
+    const note = await seedNote('Escape', 'press esc');
+    const mount = document.createElement('div');
+    root.append(mount);
+    const session = await openEditorSession({ mount, note, callbacks: makeCallbacks() });
+
+    const buttonByName = (name: string): HTMLButtonElement | undefined =>
+      [...session.element.querySelectorAll('.editor-session__header button')].find(
+        (button) => button.textContent === name,
+      ) as HTMLButtonElement | undefined;
+
+    // Open two panels; the last-opened (top of the stack, visually topmost)
+    // must be the one Escape dismisses.
+    buttonByName('Attachments')?.click();
+    await waitFor(() => session.element.querySelector('.attachments-panel') !== null);
+    buttonByName('Reminders')?.click();
+    await waitFor(() => session.element.querySelector('.reminders-panel') !== null);
+    expect(session.element.querySelector('.attachments-panel')).not.toBeNull();
+
+    session.element.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    );
+    await waitFor(() => session.element.querySelector('.reminders-panel') === null);
+    expect(session.element.querySelector('.attachments-panel')).not.toBeNull();
+
+    // Escape again closes the next one — repeated Escape unwinds the stack.
+    session.element.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    );
+    await waitFor(() => session.element.querySelector('.attachments-panel') === null);
+    expect(
+      buttonByName('Attachments')?.getAttribute('aria-expanded'),
+    ).toBe('false');
+
+    // While a native modal <dialog> is open, Escape belongs to the dialog —
+    // opening a panel must NOT be dismissed underneath it.
+    buttonByName('Attachments')?.click();
+    await waitFor(() => session.element.querySelector('.attachments-panel') !== null);
+    const dialog = document.createElement('dialog');
+    dialog.open = true;
+    document.body.append(dialog);
+    session.element.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(session.element.querySelector('.attachments-panel')).not.toBeNull();
+    dialog.remove();
+
+    await session.close();
+  });
+});
+
 describe('multi-tab conflict (FR-NOTE-07)', () => {
   it('surfaces the three options with both versions when a save goes stale', async () => {
     const note = await seedNote('Conflict', 'base');
