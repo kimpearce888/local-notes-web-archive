@@ -935,3 +935,46 @@ search keeps its results, true no-match stays empty; q-only miss term
 prefix-matches short tokens like 'no' against 'Note'). Gates at
 completion: eslint green, tsc strict green, vitest 836/836, full
 Playwright battery 67/67 including zip-acceptance.
+
+### T-079 Upgrade/rollback validation + artifact inspection + dependency audit
+Upgrade testing: install the PREVIOUS released artifact (v1.0.5 zip from
+GitHub, byte-verified), create real application data through the UI
+(notes with tags, a reminder, settings changes), then upgrade to the
+current build (dist/) over the same profile — verify data survives,
+settings survive, workflows survive, migrations succeed. Rollback: reload
+the previous version over the upgraded profile, verify data remains
+intact and document the downgrade path honestly (schema-forward
+compatibility semantics). Artifact inspection: unzip the current release
+candidate — required files present (manifest, dashboard, background,
+icons, docs), zero dev/test/debug/temp files, zero secrets, zero
+accidental files. Dependency audit: npm audit (vulnerabilities),
+duplicate/outdated dependency review via the lockfile, DEPENDENCIES.json
+consistency.
+
+### T-080 Evidence consolidation + coverage matrix + QA report
+Screenshots for every area the protocol lists (dashboard, navigation,
+dialogs, settings, forms, search, notes, reminders, archive, AI
+workflows, responsive layouts, fixed bugs, regression validation) under
+qa-evidence/screenshots/; video walkthrough of the major workflows under
+qa-evidence/videos/ (Playwright recordVideo); coverage matrix
+(screen x interaction x status x evidence) targeting 100% of DISCOVERED
+items with honest BLOCKED/NOT RUN accounting; the final QA report
+(features/screens/interactions/workflows discovered, tests executed,
+bugs + root causes + fixes, a11y/security/performance/regression
+findings, remaining issues = none).
+
+### T-081 Completion challenge loop — two consecutive clean passes
+Per the protocol: assume the application is still broken; run the FULL
+gate battery + all five QA spec batteries (t072 inventory, t073
+security, t074 perf/memory, t075 integrity, t076 a11y) as pass #1;
+fix anything found; re-run everything as an INDEPENDENT pass #2. Two
+consecutive passes discovering no new defects gate the release.
+
+### T-082 Release v1.0.6
+The release protocol (T-061/T-069 pattern): version 1.0.5 -> 1.0.6 in
+all five authoritative places + pinning tests; release-notes section
+(the two QA-program fixes: D-08 requery sequencing, D-09 contrast);
+README numbers refreshed; full gates; npm run release + verify-release;
+publish GitHub Release with API verification (digest match, tag == HEAD,
+byte-identical download-back); RELEASE_VERIFICATION.md + REPOSITORY_AUDIT
+regenerated; records commit.
