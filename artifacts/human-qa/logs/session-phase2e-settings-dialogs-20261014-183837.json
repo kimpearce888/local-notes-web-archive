@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "d8a0370",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T18:36:56.316Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase2e-settings-dialogs",
+    "startedAt": "2026-10-14T18:36:56.197Z",
+    "endedAt": "2026-10-14T18:38:37.515Z",
+    "profileDir": "/tmp/lnwa-qa-phase2e-settings-dialogs-kbiE3o"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 2 Batch E: settings (theme live + persist via Save + Reset + unsaved-close, controls sweep, AI Test connection honest failure), backup export + restore review (cancel path), diagnostics full sweep (refresh/self-test/LM-fail/rebuild/export-review), palette (filter/keyboard/empty state/command families), save-page validation (empty + protocol), import workflows (md + sanitized html + invalid). 28/30 PASSED. Defect candidates: section settings-theme: locator.click: Timeout 30000ms exceeded..",
+  "artifacts": []
+}

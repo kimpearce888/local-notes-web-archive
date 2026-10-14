@@ -32,3 +32,31 @@ QA-D02 (query syntax errors never surfaced — FR-SEARCH-04 violation).
 failing interactions through the real UI: both VERIFIED_FIXED
 (`scripts/qa/verify-defects-d01-d02.mjs`, final evidence under
 `artifacts/human-qa/screenshots/final/` + final-build video).
+
+---
+
+## 2026-10-15 — fix(settings/editor): QA-D03 + QA-D04 (phase 2, batch F discoveries)
+
+**Defects addressed:** QA-D03 (saved settings never reached the live session —
+toolbar-group preferences stale until page reload), QA-D04 (image dialog
+inserted on file-pick and closed, silently dropping Alt text / Caption typed
+afterwards).
+
+**Files changed:**
+- `src/dashboard/state/controller.ts` — new public `refreshSettings()`
+  (settings-only store reload; no loading flash, no requery).
+- `src/dashboard/index.ts` — the settings panel's `patchSettings` now calls
+  `controller.refreshSettings()` after a successful patch.
+- `src/dashboard/editor/editor-panel.ts` — image dialog: file is staged on
+  change with a role=status "Ready to insert …" line; new primary "Insert
+  image" button applies alt/caption at press time; Cancel and Choose picture…
+  retained.
+- `tests/unit/dashboard/controller.test.ts` — QA-D03 regression test
+  (real settings/patch RPC; store pickup asserted; no loading flash).
+- `artifacts/human-qa/defects.md`, `artifacts/human-qa/fix-log.md` — records.
+
+**Gates at commit time:** `tsc --noEmit` both configs PASS; `eslint .` PASS;
+`vitest run` 902/902 PASS. Rebuilt `dist/` and re-executed the original failing
+interactions through the real UI: both VERIFIED_FIXED (phase2f re-run 27/27 —
+toolbar group hidden after save without reload; image alt reads the filled
+text).

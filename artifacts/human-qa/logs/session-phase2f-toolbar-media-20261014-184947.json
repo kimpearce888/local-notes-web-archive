@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "d8a0370",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T18:47:50.798Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase2f-toolbar-media",
+    "startedAt": "2026-10-14T18:47:50.701Z",
+    "endedAt": "2026-10-14T18:49:47.626Z",
+    "profileDir": "/tmp/lnwa-qa-phase2f-toolbar-media-OGj52G"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 2 Batch F: remaining toolbar marks (strike/code/super/sub/clear), code block + HR, indent/outdent, align x4, table row/col/header ops, font size + colours + highlights + clears, link dialog (insert/edit/protocol-refusal), image dialog (file/alt/caption/resize), toolbar-group visibility setting, Apply-filters close-on-apply. 15/25 PASSED. Defect candidates: section font:   - waiting for getByLabel('Font size') | section link:   - waiting for locator('.ProseMirror').first().locator('a[href=\"https://example.com/docs\"]').first() | section image: locator.fill: Error: strict mode violation: getByLabel(/Alt text/i) resolved to 2 elements:.",
+  "artifacts": []
+}

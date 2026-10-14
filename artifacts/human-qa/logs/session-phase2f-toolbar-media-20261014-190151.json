@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "d8a0370",
+  "distDirty": true,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T19:00:39.599Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase2f-toolbar-media",
+    "startedAt": "2026-10-14T19:00:39.502Z",
+    "endedAt": "2026-10-14T19:01:51.710Z",
+    "profileDir": "/tmp/lnwa-qa-phase2f-toolbar-media-Zs8wEc"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 2 Batch F (v2, verified locators): font size + hex colour swatches + highlights, marks (strike/code/super/sub/clear), align x4 via paragraph styles, code block + HR, indent/outdent, table ops, link dialog (insert/edit/refusal), image dialog (alt/caption/resize), toolbar-group visibility setting, filters save-as-view + chip switch. 26/27 PASSED. Defect candidates: none.",
+  "artifacts": []
+}

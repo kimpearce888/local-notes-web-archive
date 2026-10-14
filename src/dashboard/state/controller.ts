@@ -36,6 +36,11 @@ export interface DashboardController {
   readonly store: DashboardStore;
   /** Reloads settings, counts and results from durable state. */
   refresh(): Promise<void>;
+  /** Reloads ONLY settings into the store (no loading flash, no requery) —
+   *  used after a settings-dialog save so the live session picks up the
+   *  saved preferences immediately (QA-D03: toolbar groups and other
+   *  store-backed settings used to stay stale until a page reload). */
+  refreshSettings(): Promise<void>;
   /** Creates a note (New Note action). Optimistic with truthful rollback. */
   createNote(): Promise<EntityId | null>;
   /** Import a note file (JSON/Markdown/HTML) as a NEW note (FR-DATA-05). */
@@ -321,6 +326,21 @@ export function createDashboardController(options: {
     } catch {
       // Organization data is decorative for cards; failing to load it must
       // not fail the results view.
+    }
+  }
+
+  /** QA-D03 fix: settings-only refresh (no loading flash, no requery) so a
+   *  saved settings patch is picked up by the LIVE session — toolbar groups
+   *  and other store-backed preferences previously stayed stale until reload. */
+  async function refreshSettings(): Promise<void> {
+    try {
+      const { settings } = await client.request('settings/get', {});
+      if (disposed) return;
+      theme.setPreference(settings.theme);
+      store.setState({ settings });
+    } catch {
+      // A failed settings re-read leaves the previous snapshot in place;
+      // the next full refresh reports storage problems honestly.
     }
   }
 
@@ -1082,6 +1102,7 @@ export function createDashboardController(options: {
   return {
     store,
     refresh,
+    refreshSettings,
     createNote,
     importNoteFile,
     exportOpenNote,

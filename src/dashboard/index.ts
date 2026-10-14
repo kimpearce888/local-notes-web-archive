@@ -81,7 +81,14 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
   // theme applies live, and a saved patch re-loads the controller state.
   const settings: SettingsPanel = createSettingsPanel({
     getSettings: async () => (await client.request('settings/get', {})).settings,
-    patchSettings: async (patch) => (await client.request('settings/patch', { patch })).settings,
+    patchSettings: async (patch) => {
+      const { settings } = await client.request('settings/patch', { patch });
+      // QA-D03 fix: a saved patch re-loads the controller state so the LIVE
+      // session picks up the saved preferences (toolbar groups etc.)
+      // immediately instead of after a manual page reload.
+      void controller.refreshSettings().catch(() => undefined);
+      return settings;
+    },
     listGranted: async () => await client.request('permissions/list-granted', {}),
     revokeOrigin: async (origin) => await client.request('permissions/revoke', { origin }),
     listModels: async () => await client.request('ai/list-models', {}),

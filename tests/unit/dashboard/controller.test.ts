@@ -462,3 +462,20 @@ async function clientSeedNote(title: string, plainText: string): Promise<Note> {
   const { note } = await client.request('notes/create', { title, plainText });
   return note;
 }
+
+describe('settings propagation (QA-D03, FR-SET-01)', () => {
+  it('refreshSettings picks up a saved patch without a loading flash', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    const client = createApiClient(transport);
+    // Save a toolbar-group change through the real settings/patch RPC.
+    await client.request('settings/patch', { patch: { editor: { toolbar: { tools: false } } } });
+    // The store still holds the stale snapshot…
+    expect(controller!.store.getState().settings?.editor.toolbar?.['tools']).toBeUndefined();
+    // …until refreshSettings() reloads it (this is what the settings panel
+    // save flow now calls — previously nothing did until a page reload).
+    await controller!.refreshSettings();
+    expect(controller!.store.getState().settings?.editor.toolbar?.['tools']).toBe(false);
+    // No loading flash: the results region status stayed ready.
+    expect(controller!.store.getState().status).toBe('ready');
+  });
+});

@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "d8a0370",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T18:25:48.999Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase2c-cards-bulk-editor",
+    "startedAt": "2026-10-14T18:25:48.950Z",
+    "endedAt": "2026-10-14T18:26:54.061Z",
+    "profileDir": "/tmp/lnwa-qa-phase2c-cards-bulk-editor-3pLkJz"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 2 Batch C: cards/select-all/bulk (archive/restore/pin/unpin/assign-tags/assign-category/move-to-trash), trash lifecycle incl delete-forever, editor core (title/subtitle/body autosave/pin/trash/back + persistence reopen), toolbar marks + blocks + table + undo/redo + find bar + HTML source + file-menu exports. 36/36 PASSED. Defect candidates: none.",
+  "artifacts": []
+}

@@ -66,3 +66,59 @@ Per ai/qa-instructions.md §14. One entry per session/probe. Evidence paths are 
 - Phase 2 Batch B2 (filters re-run after locator fix): 7/7 PASSED. Defect candidates: none.
 - Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2b2-filters-20261014-182017.json
 
+### phase2c-cards-bulk-editor — 2026-10-14T18:25:11.758Z
+- Phase 2 Batch C: cards/select-all/bulk (archive/restore/pin/unpin/assign-tags/assign-category/move-to-trash), trash lifecycle incl delete-forever, editor core (title/subtitle/body autosave/pin/trash/back + persistence reopen), toolbar marks + blocks + table + undo/redo + find bar + HTML source + file-menu exports. 10/14 PASSED. Defect candidates: section trash-lifecycle: locator.click: Timeout 30000ms exceeded. | section editor-core: locator.click: Timeout 30000ms exceeded. | section toolbar-marks: locator.click: Timeout 30000ms exceeded..
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2c-cards-bulk-editor-20261014-182449.json
+
+### phase2c-cards-bulk-editor — 2026-10-14T18:26:58.994Z
+- Phase 2 Batch C: cards/select-all/bulk (archive/restore/pin/unpin/assign-tags/assign-category/move-to-trash), trash lifecycle incl delete-forever, editor core (title/subtitle/body autosave/pin/trash/back + persistence reopen), toolbar marks + blocks + table + undo/redo + find bar + HTML source + file-menu exports. 36/36 PASSED. Defect candidates: none.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2c-cards-bulk-editor-20261014-182654.json
+
+### phase2d-panels — 2026-10-14T18:29:53.670Z
+- Phase 2 Batch D: revisions (open + restore), attachments (attach real PNG + rename + delete with cancel/confirm), reminders (validation, create, edit/snooze presence, delete + confirm), snapshots empty state, AI panel honest degradation + collapsed technical details. 10/14 PASSED. Defect candidates: section reminders: locator.click: Timeout 30000ms exceeded..
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2d-panels-20261014-182947.json
+
+### phase2d-panels — 2026-10-14T18:32:52.398Z
+- Phase 2 Batch D: revisions (open + restore), attachments (attach real PNG + rename + delete with cancel/confirm), reminders (validation, create, edit/snooze presence, delete + confirm), snapshots empty state, AI panel honest degradation + collapsed technical details. 16/17 PASSED. Defect candidates: none.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2d-panels-20261014-183250.json
+
+### phase2d-panels — 2026-10-14T18:33:49.645Z
+- Phase 2 Batch D: revisions (open + restore), attachments (attach real PNG + rename + delete with cancel/confirm), reminders (validation, create, edit/snooze presence, delete + confirm), snapshots empty state, AI panel honest degradation + collapsed technical details. 17/17 PASSED. Defect candidates: none.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2d-panels-20261014-183347.json
+
+### phase2e-settings-dialogs — 2026-10-14T18:35:39.150Z
+- Phase 2 Batch E: settings (theme live + persist via Save + Reset + unsaved-close, controls sweep, AI Test connection honest failure), backup export + restore review (cancel path), diagnostics full sweep (refresh/self-test/LM-fail/rebuild/export-review), palette (filter/keyboard/empty state/command families), save-page validation (empty + protocol), import workflows (md + sanitized html + invalid). 15/19 PASSED. Defect candidates: section settings-theme: locator.click: Error: strict mode violation: getByRole('button', { name: 'Open settings' }) resolved to 2 elements: | section settings-controls: locator.click: Error: strict mode violation: getByRole('button', { name: 'Open settings' }) resolved to 2 elements: | section backup: locator.click: Error: strict mode violation: getByRole('button', { name: 'Open settings' }) resolved to 2 elements:.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2e-settings-dialogs-20261014-183537.json
+
+### phase2e-settings-dialogs — 2026-10-14T18:38:45.877Z
+- Phase 2 Batch E: settings (theme live + persist via Save + Reset + unsaved-close, controls sweep, AI Test connection honest failure), backup export + restore review (cancel path), diagnostics full sweep (refresh/self-test/LM-fail/rebuild/export-review), palette (filter/keyboard/empty state/command families), save-page validation (empty + protocol), import workflows (md + sanitized html + invalid). 28/30 PASSED. Defect candidates: section settings-theme: locator.click: Timeout 30000ms exceeded..
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2e-settings-dialogs-20261014-183837.json
+
+### phase2e-settings-dialogs — 2026-10-14T18:42:44.566Z
+- Phase 2 Batch E: settings (theme live + persist via Save + Reset + unsaved-close, controls sweep, AI Test connection honest failure), backup export + restore review (cancel path), diagnostics full sweep (refresh/self-test/LM-fail/rebuild/export-review), palette (filter/keyboard/empty state/command families), save-page validation (empty + protocol), import workflows (md + sanitized html + invalid). 28/30 PASSED. Defect candidates: section settings-theme: locator.click: Timeout 30000ms exceeded..
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2e-settings-dialogs-20261014-184237.json
+
+### phase2e-settings-dialogs — 2026-10-14T18:44:57.902Z
+- Phase 2 Batch E: settings (theme live + persist via Save + Reset + unsaved-close, controls sweep, AI Test connection honest failure), backup export + restore review (cancel path), diagnostics full sweep (refresh/self-test/LM-fail/rebuild/export-review), palette (filter/keyboard/empty state/command families), save-page validation (empty + protocol), import workflows (md + sanitized html + invalid). 28/30 PASSED. Defect candidates: section settings-theme: locator.click: Timeout 30000ms exceeded. ||   - waiting for getByRole('button', { name: 'Save changes', exact: true }).first().
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2e-settings-dialogs-20261014-184450.json
+
+### phase2e-settings-dialogs — 2026-10-14T18:46:02.725Z
+- Phase 2 Batch E: settings (theme live + persist via Save + Reset + unsaved-close, controls sweep, AI Test connection honest failure), backup export + restore review (cancel path), diagnostics full sweep (refresh/self-test/LM-fail/rebuild/export-review), palette (filter/keyboard/empty state/command families), save-page validation (empty + protocol), import workflows (md + sanitized html + invalid). 32/32 PASSED. Defect candidates: none.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2e-settings-dialogs-20261014-184559.json
+
+### phase2f-toolbar-media — 2026-10-14T18:49:56.459Z
+- Phase 2 Batch F: remaining toolbar marks (strike/code/super/sub/clear), code block + HR, indent/outdent, align x4, table row/col/header ops, font size + colours + highlights + clears, link dialog (insert/edit/protocol-refusal), image dialog (file/alt/caption/resize), toolbar-group visibility setting, Apply-filters close-on-apply. 15/25 PASSED. Defect candidates: section font:   - waiting for getByLabel('Font size') | section link:   - waiting for locator('.ProseMirror').first().locator('a[href="https://example.com/docs"]').first() | section image: locator.fill: Error: strict mode violation: getByLabel(/Alt text/i) resolved to 2 elements:.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2f-toolbar-media-20261014-184947.json
+
+### phase2f-toolbar-media — 2026-10-14T18:56:01.936Z
+- Phase 2 Batch F (v2, verified locators): font size + hex colour swatches + highlights, marks (strike/code/super/sub/clear), align x4 via paragraph styles, code block + HR, indent/outdent, table ops, link dialog (insert/edit/refusal), image dialog (alt/caption/resize), toolbar-group visibility setting, filters save-as-view + chip switch. 21/25 PASSED. Defect candidates: section font: - waiting for getByLabel('Font size') | section image: - waiting for getByRole('button', { name: 'Full', exact: true }).
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2f-toolbar-media-20261014-185549.json
+
+### phase2f-toolbar-media — 2026-10-14T19:01:58.841Z
+- Phase 2 Batch F (v2, verified locators): font size + hex colour swatches + highlights, marks (strike/code/super/sub/clear), align x4 via paragraph styles, code block + HR, indent/outdent, table ops, link dialog (insert/edit/refusal), image dialog (alt/caption/resize), toolbar-group visibility setting, filters save-as-view + chip switch. 26/27 PASSED. Defect candidates: none.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2f-toolbar-media-20261014-190151.json
+
+### phase2f-toolbar-media — 2026-10-14T19:05:48.513Z
+- Phase 2 Batch F (v2, verified locators): font size + hex colour swatches + highlights, marks (strike/code/super/sub/clear), align x4 via paragraph styles, code block + HR, indent/outdent, table ops, link dialog (insert/edit/refusal), image dialog (alt/caption/resize), toolbar-group visibility setting, filters save-as-view + chip switch. 27/27 PASSED. Defect candidates: none.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2f-toolbar-media-20261014-190544.json
+

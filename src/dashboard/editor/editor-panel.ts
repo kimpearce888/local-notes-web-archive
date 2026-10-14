@@ -497,10 +497,36 @@ export function createEditorPanel(
     tip.className = 'dialog__hint';
     tip.textContent =
       'You can also drag a picture straight into the note, or paste it with Ctrl+V. iPhone photos (HEIC) are converted to JPEG automatically — nothing is uploaded.';
-    body.append(srcField, altField, captionField, tip);
+    // QA-D04 fix: the file is STAGED on change (dialog stays open so the
+    // alt/caption fields are genuinely usable AFTER picking the picture);
+    // the Insert button applies them. Previously the change handler inserted
+    // immediately and closed the dialog, silently dropping anything typed
+    // after the pick.
+    let stagedFile: File | null = null;
+    const status = document.createElement('p');
+    status.className = 'dialog__hint';
+    status.setAttribute('role', 'status');
+    status.textContent = '';
+    body.append(srcField, altField, captionField, tip, status);
+    const insertButton = document.createElement('button');
+    insertButton.type = 'button';
+    insertButton.className = 'btn btn--primary';
+    insertButton.textContent = 'Insert image';
+    insertButton.disabled = true;
 
     fileInput.addEventListener('change', () => {
-      const file = fileInput.files?.[0];
+      stagedFile = fileInput.files?.[0] ?? null;
+      if (!stagedFile) {
+        insertButton.disabled = true;
+        status.textContent = '';
+        return;
+      }
+      insertButton.disabled = false;
+      status.textContent = `Ready to insert ${stagedFile.name}. Add alt text or a caption first if you like, then press Insert image.`;
+    });
+
+    insertButton.addEventListener('click', () => {
+      const file = stagedFile ?? fileInput.files?.[0];
       if (!file) return;
       void (async () => {
         const outcome = await callbacks.onAttachImage(file);
@@ -527,10 +553,11 @@ export function createEditorPanel(
         } else {
           callbacks.onNotify(outcome.message, 'error');
           fileInput.value = '';
+          stagedFile = null;
+          insertButton.disabled = true;
         }
       })();
     });
-
     const cancel = document.createElement('button');
     cancel.type = 'button';
     cancel.className = 'btn';
@@ -538,10 +565,10 @@ export function createEditorPanel(
     cancel.addEventListener('click', () => dialog.close());
     const choose = document.createElement('button');
     choose.type = 'button';
-    choose.className = 'btn btn--primary';
+    choose.className = 'btn';
     choose.textContent = 'Choose picture…';
     choose.addEventListener('click', () => fileInput.click());
-    actions.append(cancel, choose);
+    actions.append(cancel, choose, insertButton);
     dialog.showModal();
   };
 

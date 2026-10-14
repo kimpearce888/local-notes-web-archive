@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "d8a0370",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T18:33:17.303Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase2d-panels",
+    "startedAt": "2026-10-14T18:33:17.250Z",
+    "endedAt": "2026-10-14T18:33:47.012Z",
+    "profileDir": "/tmp/lnwa-qa-phase2d-panels-WJn9V0"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 2 Batch D: revisions (open + restore), attachments (attach real PNG + rename + delete with cancel/confirm), reminders (validation, create, edit/snooze presence, delete + confirm), snapshots empty state, AI panel honest degradation + collapsed technical details. 17/17 PASSED. Defect candidates: none.",
+  "artifacts": []
+}
