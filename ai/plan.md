@@ -1142,6 +1142,11 @@ snapshots permanently unreachable (fb4481a, 2 regression tests). The
 Phase 2 deferred rows QA-147 (Compare needs 2+ same-link snapshots) and
 QA-149 (Delete + confirm) are now covered via the D09 recapture flow.
 
+T-097 DONE: edge-cases.md — EC-01..06 + P7-SWEEP all PASSED (Unicode/emoji/
+RTL round-trip incl. CJK search, ~5.5k-char content, whitespace-only
+title/search/tag, degenerate queries, duplicate dialog submissions, long
+titles, both-theme visual states); no new defects.
+
 T-096 DONE: interaction-coverage.csv 15/15 PASSED — undo/redo across an
 autosave flush, entry-point equivalence (palette vs toolbar), rapid panel
 switching without bleed, capture-while-editing, duplicate-policy reuse

@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "7571bb5",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T22:30:38.553Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase6-edges",
+    "startedAt": "2026-10-14T22:30:38.452Z",
+    "endedAt": "2026-10-14T22:35:07.226Z",
+    "profileDir": "/tmp/lnwa-qa-phase3-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 6+7 edges + visual sweep (EC-01..06 + P7): Unicode/emoji/RTL round-trip, long content, whitespace-only inputs, degenerate queries, duplicate submissions, long titles, both-theme visual states. 2/3 PASSED. Defect candidates: section ec01-unicode: - waiting for locator('article.card').filter({ hasText: 'Unicode' }).first().getByRole('button', { name: /Open Unicode for editing/ }).first() | section ec03-whitespace: - waiting for getByRole('button', { name: 'Open Untitled for editing' }).first() | section ec05-double-submit: - waiting for locator('article.card').filter({ hasText: 'Unicode' }).first().getByRole('button', { name: /Open Unicode for editing/ }).first() | section p7-visual-sweep: - waiting for locator('input[aria-label=\"Find in note\"]').",
+  "artifacts": []
+}

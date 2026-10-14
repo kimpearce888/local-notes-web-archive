@@ -946,3 +946,25 @@ chaining (previousSnapshotId), attachment dedupe.
 logs/ (phase4 + phase4-fixup + ic05-final + ic-final-rechecks + probes),
 videos/}. No product code changed — no gates applicable beyond the
 recorded sessions.
+
+---
+
+## T-097 — Phase 6+7 error/edge cases + visual testing
+
+**Completed:** 2026-10-15 (Asia/Dhaka)
+**Validation:** edge-cases.md — EC-01..EC-06 + P7-SWEEP, all PASSED through
+the real UI (sessions phase6-edges + phase6-fixup + probe-ec01, logged +
+videoed). Highlights: Unicode/emoji/RTL content round-trips through the
+editor, storage AND search (你好世界 finds the note); ~5,500-char documents
+autosave+reopen intact; whitespace-only title/search/tag inputs degrade
+honestly (Untitled fallback, full-list search, tag rejected); degenerate
+queries ('tag:', '""', '-') never crash; double-clicking a dialog's save
+button is idempotent (one reminder); 184-char titles stay contained. The
+visual sweep captured 6 fresh interface states in BOTH themes, joining the
+validation-error/failure/empty states already evidenced across Phases 2-4.
+**No new product defects.** The three section failures during the first
+pass were locator artifacts (the card-open accessible name embeds the full
+Unicode title; a section started in the editor view; Ctrl+F needs editor
+focus) — all re-run clean.
+**Scope:** artifacts/human-qa/{edge-cases.md, test-runs.md, logs/,
+screenshots/baseline/ p6-* + p7-*, videos/}. No product code changed.

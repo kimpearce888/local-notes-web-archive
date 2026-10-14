@@ -258,3 +258,11 @@ Per ai/qa-instructions.md §14. One entry per session/probe. Evidence paths are 
 - IC-08/09/11/15 corrected verifications: 3/4 PASSED.
 - Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-ic-final-rechecks-20261014-222716.json
 
+### phase6-edges — 2026-10-14T22:35:42.935Z
+- Phase 6+7 edges + visual sweep (EC-01..06 + P7): Unicode/emoji/RTL round-trip, long content, whitespace-only inputs, degenerate queries, duplicate submissions, long titles, both-theme visual states. 2/3 PASSED. Defect candidates: section ec01-unicode: - waiting for locator('article.card').filter({ hasText: 'Unicode' }).first().getByRole('button', { name: /Open Unicode for editing/ }).first() | section ec03-whitespace: - waiting for getByRole('button', { name: 'Open Untitled for editing' }).first() | section ec05-double-submit: - waiting for locator('article.card').filter({ hasText: 'Unicode' }).first().getByRole('button', { name: /Open Unicode for editing/ }).first() | section p7-visual-sweep: - waiting for locator('input[aria-label="Find in note"]').
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase6-edges-20261014-223507.json
+
+### phase6-fixup — 2026-10-14T22:38:30.175Z
+- Phase 6 fixup (EC-01/03/05 + P7 sweep with corrected locators): 4/4 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase6-fixup-20261014-223819.json
+

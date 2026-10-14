@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "7571bb5",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T22:37:00.554Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase6-fixup",
+    "startedAt": "2026-10-14T22:37:00.451Z",
+    "endedAt": "2026-10-14T22:38:19.157Z",
+    "profileDir": "/tmp/lnwa-qa-phase3-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 6 fixup (EC-01/03/05 + P7 sweep with corrected locators): 4/4 PASSED.",
+  "artifacts": []
+}
