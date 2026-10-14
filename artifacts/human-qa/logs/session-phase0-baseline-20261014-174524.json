@@ -1,0 +1,34 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "0926e7f",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T17:45:10.850Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase0-baseline",
+    "startedAt": "2026-10-14T17:45:10.826Z",
+    "endedAt": "2026-10-14T17:45:24.376Z",
+    "profileDir": "/tmp/lnwa-qa-phase0-baseline-IJa74W"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 0 baseline: extension v1.0.7 built, installed unpacked, service worker started, dashboard + onboarding + editor + settings + diagnostics + palette all opened through the real UI; baseline screenshots + video captured. Findings: no blockers.",
+  "artifacts": [
+    "screenshots/baseline/phase0-01-first-run-onboarding.png",
+    "screenshots/baseline/phase0-02-onboarding-dialog-open.png",
+    "screenshots/baseline/phase0-03-after-skip-dashboard.png",
+    "screenshots/baseline/phase0-04-editor-first-note.png",
+    "screenshots/baseline/phase0-05-settings-open.png",
+    "screenshots/baseline/phase0-06-diagnostics-open.png",
+    "screenshots/baseline/phase0-07-command-palette.png",
+    "screenshots/baseline/phase0-08-library-end-of-tour.png"
+  ]
+}

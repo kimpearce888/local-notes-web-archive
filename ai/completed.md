@@ -767,3 +767,22 @@ final-report outline. Header notes keep ai/rule.md governing (repairs pass the
 §2 gate; commits follow §7). plan.md/progress.md/completed.md updated in the
 same commit per protocol. No code, build, or release surfaces touched
 (docs-only change); no secrets introduced.
+
+---
+
+## T-092 — Phase 0 environment established + baseline evidence
+
+**Completed:** 2026-10-15 (Asia/Dhaka)
+**Validation:** real Chromium persistent context (156.0.8078.4, Xvfb 1440x900,
+disposable profile): service worker started; dashboard, first-run onboarding
+(skip path), note creation → card → editor session, settings dialog,
+diagnostics dialog and command palette all opened through the real UI with
+ZERO console errors and ZERO uncaught page errors; 8 baseline screenshots +
+2 baseline session videos captured; session log with environment facts written.
+Two driver-side false leads investigated and resolved (not product defects):
+"Back" button accessible name is "Back to notes"; New Note creates the card
+and the editor mounts on card-open (intended flow, matches E2E reference).
+**Scope:** artifacts/human-qa/{README.md, test-runs.md, logs/, screenshots/
+baseline/ (8), videos/baseline/ (2)}; QA drivers live outside the repo at
+/home/z/my-project/scripts/qa/ (harness + phase0 + probe). No product code
+touched — no compile/lint/test gates applicable beyond the session itself.
