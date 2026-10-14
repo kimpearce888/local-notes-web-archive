@@ -978,3 +978,27 @@ README numbers refreshed; full gates; npm run release + verify-release;
 publish GitHub Release with API verification (digest match, tag == HEAD,
 byte-identical download-back); RELEASE_VERIFICATION.md + REPOSITORY_AUDIT
 regenerated; records commit.
+
+## §N — Task-file archival in GitHub (maintainer instruction, 2026-10-14)
+
+### T-083 task-deliverables — all task files in one separate folder on GitHub
+Maintainer instruction: "all files in task should be kept in a separate
+folder in github" (the maintainer counted 116 deliverable files produced
+by the task program — the QA-evidence, reports and verification records
+that so far lived only outside the repo). Create `task-deliverables/` at
+the repo root as THE single separate folder for every task output:
+`task-briefs/` (the two maintainer instruction documents that drove the
+task programs), `release-verification/` (v1.0.4/v1.0.5/v1.0.6 API
+verification records), `local-notes-human-qa-20261014/` (the T-062
+universal human-behavior QA audit, 102 files) and `qa-validation-v106/`
+(the T-070..T-082 zero-trust validation program: 8 report files plus
+`qa-evidence/` — the 46 files inside qa-evidence-full.zip, extracted so
+everything is browsable). Redundant zip archives are not committed
+(their contents are committed instead, byte-identical — verified);
+gitignore's `*.zip` rule stays untouched. Guard the toolchain so the
+evidence copies cannot perturb gates: eslint ignores task-deliverables/
+(tsc, vitest and Playwright are already path-scoped); README documents
+the folder with a resolving link. Pre-push secret scan over all 162
+files with the audit's exact patterns (0 findings). Verify on GitHub via
+the API (file count + digests), regenerate REPOSITORY_AUDIT.md, records
+commit.
