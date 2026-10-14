@@ -1021,3 +1021,68 @@ without calls-to-action, hidden-only interactions); (5) dead ends
 (no-visible-effect buttons, unrecoverable errors). Method: static source
 sweep of every user-facing string and surface + live Playwright walk of
 every screen/control. Fixes are queued AFTER the register is presented.
+
+## §P — T-084 register fixes: make every surface dismissible, human, and reachable
+
+Maintainer confirmed "yes, please" to fixing the complete T-084 register
+(task-deliverables/t084-ux-audit/t084-ux-audit.md — 8 severe / 7 moderate /
+2 low). UX-17 (diagnostics vocabulary) is accepted-as-is per the register's
+own judgment (that page's audience opts in); everything else is fixed.
+
+### T-085 universal dismissal for every disclosure surface (UX-01..UX-05, UX-09)
+One mechanism, five surfaces: every popped-out bar carries its own Close
+control, Escape dismisses it, and the Filters bar additionally closes on
+Apply. Concretely: attachments/snapshots/reminders/AI panels gain an onClose
+callback + an in-header Close button (wired through editor-session's toggle
+teardown); the session container handles Escape (closes the most recently
+opened panel; inert while any native <dialog> is modal); the revisions view
+gains Escape parity with its existing Close button; the filters panel gains
+an in-region header with Close, the Filters button/region gains Escape
+handling in the shell, and Apply closes the region. Regression tests for
+every surface (button + Escape + apply-closes).
+
+### T-086 insert-image rework + HEIC photo support (UX-06, UX-07, UX-15)
+The dialog stops asking for data:image URLs (field removed; replaced with a
+tip that drag-and-drop and paste both work) and gains an explicit Insert
+flow; the file picker's accept list admits HEIC/HEIF (MIME + .heic/.heif
+extensions so OS pickers stop greying out iPhone photos). Because Chrome
+cannot render HEIC inline (verified: no <img> HEIF decode in any Chrome
+version), a local WASM decoder (heic2any, MIT, pinned exact) converts
+HEIC/HEIF to JPEG before the attachment pipeline — lazily imported, one
+conversion choke point covering dialog/paste/drop, honest failure messages.
+Manifest CSP gains 'wasm-unsafe-eval' for the decoder's WASM; third-party
+notices documented; unit tests mock the dynamic import; E2E covers the
+dialog surface changes and the honest fake-HEIC failure path.
+
+### T-087 tags and categories reachable from the editor (UX-08)
+New editor metadata bar (chips row under the note subtitle): existing tags
+as removable chips + an add-tag input with suggestions; categories as chips
+with an add input. Backed by the existing RPCs (tags/list, tags/create,
+tags/set-note-tags, categories/*) applied immediately like attachments and
+reminders — not deferred to autosave. Controller wires the API + refreshes
+the roster so cards reflect the change; announcements for every outcome.
+
+### T-088 plain-language copy pass (UX-10, UX-11, UX-12)
+AI panel disclosure rewritten for notes users (technical MCP detail moves
+into a collapsed "Technical details" disclosure); attachment rows show
+"PNG image"-style descriptions instead of raw MIME (raw type kept in the
+title attribute); snapshots copy humanizes MHTML ("complete saved copy of
+the page (an .mhtml file)") across the export buttons, preview note,
+missing-artifact tooltips and the artifact summary line. Pinned-string
+tests updated alongside.
+
+### T-089 capture entry points, onboarding that teaches the product, empty-state action (UX-13, UX-14, UX-16)
+A visible "Save a web page…" action (header, next to New note) opens a
+paste-a-URL dialog that creates the note + link and queues the capture —
+the same pipeline the context menu and paste-into-note use; snapshots empty
+state explains how links get there; onboarding is restructured product-
+first (concrete first actions: create a note, save a page, tag, filter;
+privacy points condensed, backup advice kept) with a "Create my first
+note" primary action; the empty notes list gains an inline create button.
+
+### T-090 release v1.0.7 packaging the T-084 fixes
+Five-place version bump + pinning tests; release notes mapping every
+register finding to its fix; README numbers; full gates (tsc strict,
+eslint, vitest, perf, full Playwright battery incl. zip-acceptance);
+npm run release + publish + API verification; RELEASE_VERIFICATION.md and
+REPOSITORY_AUDIT.md regenerated; records commits.
