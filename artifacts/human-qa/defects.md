@@ -186,3 +186,115 @@ Every entry links evidence and the regression tests that pin the fix.
 - **Final verification (real UI, repaired build):** phase2f re-run →
   "Alt text + caption fields" PASSED: `alt="A tiny test square"`, caption
   element present (screenshot `screenshots/baseline/p2f-03-image-inserted.png`).
+
+---
+
+## QA-D05 — "Save a web page…" never actually queues the capture (dishonest queued: true)
+
+- **Status:** FIXED (regression-verified against the repaired build through the real UI)
+- **Affected feature/action:** Capture / inventory rows "Save valid http(s) URL",
+  "Capture failure honest reporting"; Entry points (context-menu captures use the
+  same function); the core web-archive promise.
+- **Discovered:** phase2g-capture-persistence session (2026-10-14): after saving
+  https://example.com via the dialog, the link sat in state `detected` and the
+  snapshots panel stayed empty forever; the RPC response still reported
+  `queued: true`.
+- **Reproduction steps:**
+  1. "Save a web page…" → https://example.com → Save page.
+  2. Open the note → Snapshots panel.
+- **Expected:** The link is queued and the capture pipeline runs (the dialog copy:
+  "a complete offline copy is captured automatically").
+- **Actual:** `attachSourceLink` called `createLink` with the DEFAULT state
+  `'detected'` — never queued, never notified — so no capture ever ran, while the
+  API reported queued: true.
+- **Reproducible:** Deterministic.
+- **Baseline evidence:** probe-linkstate session (`[t+25s] links: [{"state":"detected"}]`
+  pre-fix), logs/session-phase2g-*.json.
+- **Root cause (confirmed):** `src/background/quick-capture.ts` — direct
+  `createLink(...)` bypassed the links API's queue notification AND used the
+  default 'detected' state.
+- **Files changed:** `src/background/quick-capture.ts` — `attachSourceLink` now
+  creates the link with captureState `'queued'`, upgrades an existing
+  `'detected'` link to queued (explicit user intent), and fires
+  `notifyLinkQueued` so the pipeline starts immediately.
+- **Regression tests:** `tests/unit/background/context-menus.test.ts` —
+  "saveCurrentPageAsNote creates the link queued and notifies the capture queue"
+  (asserts state + notification).
+- **Final verification (real UI, repaired build):** save → link state
+  `captured` within seconds; snapshot record with PNG saved + text saved;
+  MHTML honestly "failed" (environment CDP quirk) with the panel reporting
+  "partial — Page copy failed · Screenshot saved · Text saved · 1 warning".
+  Evidence: `screenshots/final/e2e-capture-snapshots-panel.png`, final video,
+  `scripts/qa/results-verify-d05-d06.json`.
+
+---
+
+## QA-D06 — The capture permission flow is unreachable (no UI ever calls it)
+
+- **Status:** FIXED (regression-verified; full grant prompt is an automation
+  limitation — see below)
+- **Affected feature/action:** Every capture of a not-yet-granted origin; PRD
+  FR-CAP-02; the entire "web archive" feature on fresh installs.
+- **Discovered:** phase2g session + direct IndexedDB inspection: links stuck in
+  `permission-required` forever; `grep` showed ZERO call sites of
+  `links/request-capture-permission` anywhere in the dashboard.
+- **Reproduction steps:**
+  1. "Save a web page…" for any origin (pre-fix: also after QA-D05 fix).
+  2. The capture pipeline stops at `permission-required`.
+  3. No button, dialog or setting anywhere lets the user grant access — the
+     RPC exists with full grant+resume logic but nothing invokes it.
+- **Expected:** An affordance to grant the origin permission and resume the capture.
+- **Actual:** Dead RPC; captures permanently stalled; the "Granted site access"
+  list in Settings could never grow.
+- **Reproducible:** Deterministic.
+- **Root cause (confirmed):** the flow was designed (RPC + FR-CAP-02 transitions)
+  but never wired into any view. Additionally — and this is WHY it likely stayed
+  unwired — `chrome.permissions.request` called from the service worker behind
+  the RPC fails with "This function must be called during a user gesture":
+  the gesture does NOT survive the RPC hop (verified through the real UI),
+  contradicting the comment in `src/background/permissions.ts`.
+- **Files changed:**
+  - `src/dashboard/editor/snapshots-panel.ts` — a Grant access… affordance for
+    links in `permission-required` state; the click handler performs
+    `chrome.permissions.request` DIRECTLY in the dashboard page (user-gesture
+    context), then calls the RPC which re-checks and resumes the capture.
+  - `src/dashboard/state/editor-session.ts` + `src/dashboard/state/snapshot-client.ts`
+    — `listLinks` + `requestCapturePermission` wiring.
+  - `src/dashboard/styles.css` — grant row styling.
+  - `src/background/permissions.ts` — the incorrect gesture-propagation comment
+    corrected (honesty).
+- **Regression tests:** `tests/unit/dashboard/snapshots-panel.test.ts` —
+  "shows Grant access for a permission-required link and requests the permission
+  on click" + "hides the affordance when no link is waiting".
+- **Final verification (real UI, repaired build):**
+  - Grant affordance renders ("Capture waiting for access to https://example.com.
+    Grant access…") — screenshot `screenshots/final/d06-grant-affordance.png`.
+  - The page-level permission request is correct product code; completing the
+    Chrome NATIVE permission prompt cannot be automated (the prompt lives in
+    browser chrome, outside web content — Playwright cannot click it; the
+    request promise hangs). **Documented environmental limitation.**
+  - End-to-end completion verified by pre-seeding the profile's granted
+    optional-host permission (Chromium Preferences `granted_permissions` +
+    `active_permissions` explicit_host) — the standard automation-equivalent of
+    the user clicking Allow: the capture then ran through the REAL pipeline to
+    `captured` with PNG + text artifacts (see QA-D05 verification).
+
+---
+
+## Environmental limitations (honest disclosure)
+
+- **L04 — Chrome's native permission prompt cannot be answered by automation.**
+  `chrome.permissions.request` shows browser-chrome UI outside web content.
+  The grant flow's product code is verified (affordance renders, page-level
+  request in the gesture context, RPC resume path unit-tested); full-prompt
+  completion is verified via profile pre-seeding (the automation equivalent of
+  the user clicking Allow).
+- **L05 — MHTML Page.captureSnapshot returns a failure in this sandbox**
+  (screenshot PNG + text extraction succeed; the app reports the partial
+  state honestly: "Page copy failed · Screenshot saved · Text saved"). The
+  MHTML artifact path is covered by unit tests (capture-steps/capture-cdp) with
+  injected drivers.
+- **L06 — Alt+Shift+N / Alt+Shift+C browser-command dispatch did not fire via
+  CDP keyboard events** (phase2g: no note created). The commands are registered
+  in the manifest; the handler paths are unit-covered; physical keyboard
+  verification is not possible in this environment.

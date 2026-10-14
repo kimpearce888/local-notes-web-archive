@@ -9,6 +9,7 @@ import {
 } from '../../../src/background/context-menus';
 import { plainTextToEditorDoc, linkParagraph } from '../../../src/background/quick-capture';
 import { getNote } from '../../../src/core/repo/notes';
+import type { EntityId } from '../../../src/core/types';
 import { listNoteLinks } from '../../../src/core/repo/links';
 import { DB_NAME } from '../../../src/core/version';
 
@@ -186,5 +187,31 @@ describe('context menu actions (FR §4.1 — explicit invocations only)', () => 
       } as chrome.contextMenus.OnClickData,
     );
     expect(result).toBeNull();
+  });
+});
+
+describe('explicit page saves actually queue the capture (QA-D05)', () => {
+  it('saveCurrentPageAsNote creates the link queued and notifies the capture queue', async () => {
+    const notified: Array<Record<string, unknown>> = [];
+    const { onLinkQueued } = await import('../../../src/background/capture/queue');
+    const unregister = onLinkQueued((link) => notified.push({ id: link.id, state: link.captureState }));
+    try {
+      const { saveCurrentPageAsNote } = await import('../../../src/background/quick-capture');
+      const result = await saveCurrentPageAsNote({
+        pageUrl: 'https://example.com/qa-d05',
+        pageTitle: 'QA D05 page',
+      });
+      expect(result.linkId).not.toBeNull();
+      const links = await listNoteLinks(await repo(), result.noteId as EntityId);
+      expect(links).toHaveLength(1);
+      expect(links[0]?.captureState).toBe('queued');
+      expect(notified).toHaveLength(1);
+      expect((notified[0] as { state: string }).state).toBe('queued');
+      // The note body still links the page (same shape the context menu builds).
+      const note = await getNote(await repo(), result.noteId as EntityId);
+      expect(note?.plainText).toContain('https://example.com/qa-d05');
+    } finally {
+      unregister();
+    }
   });
 });

@@ -7,12 +7,13 @@
  * `scheme://host[:port]/*` pattern.
  *
  * Chrome's own gesture rules apply: `permissions.request` succeeds only when
- * called inside a user-gesture window (a click in the dashboard propagates
- * the gesture across `chrome.runtime.sendMessage`). Callers must therefore
- * invoke `requestOriginPermission` directly from the user-action RPC, never
- * from background-initiated retries — a declined request is retained as a
- * `permission-required` link and is never retried without another user
- * action (FR-CAP-02).
+ * called inside a user-gesture window. Verified through the real UI (QA-D06):
+ * the gesture does NOT propagate across the RPC hop into the service worker —
+ * so the DASHBOARD PAGE performs the request in its own click handler
+ * (snapshots panel grant button) and this worker-side helper only re-checks
+ * and resumes. Never call this from background-initiated retries — a declined
+ * request is retained as a `permission-required` link and is never retried
+ * without another user action (FR-CAP-02).
  */
 
 import { parseUrl } from '../core/util/urls';

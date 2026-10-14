@@ -42,6 +42,7 @@ import { detectHttpUrlsInText } from '../../core/util/urls';
 import type {
   Attachment,
   EntityId,
+  Link,
   Note,
   RecurrenceRule,
   Reminder,
@@ -78,6 +79,12 @@ export interface SnapshotsApi {
   ): Promise<{ blob: Blob; filename: string }>;
   rename(snapshotId: EntityId, title: string): Promise<boolean>;
   remove(snapshotId: EntityId): Promise<boolean>;
+  /** QA-D06: the note's links (so the panel can offer the grant-access
+   *  action for captures waiting on host permission). */
+  listLinks(noteId: EntityId): Promise<readonly Link[]>;
+  /** QA-D06: ask Chrome for the origin permission and resume the capture
+   *  (the previously unreachable links/request-capture-permission flow). */
+  requestCapturePermission(linkId: EntityId): Promise<{ granted: boolean }>;
 }
 
 /** Reminder operations the session needs (T-027, RPC-backed). */
@@ -778,6 +785,8 @@ export async function openEditorSession(options: {
     }
     snapshotsPanelInstance = createSnapshotsPanel(noteId, {
       listForNote: (id) => snapshotsApi.listForNote(id),
+      listLinks: (id) => snapshotsApi.listLinks(id),
+      requestCapturePermission: (linkId) => snapshotsApi.requestCapturePermission(linkId),
       getPng: (id) => snapshotsApi.getPng(id),
       exportArtifact: (id, format) => snapshotsApi.exportArtifact(id, format),
       rename: (id, title) => snapshotsApi.rename(id, title),

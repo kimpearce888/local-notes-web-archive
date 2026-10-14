@@ -122,3 +122,39 @@ Per ai/qa-instructions.md §14. One entry per session/probe. Evidence paths are 
 - Phase 2 Batch F (v2, verified locators): font size + hex colour swatches + highlights, marks (strike/code/super/sub/clear), align x4 via paragraph styles, code block + HR, indent/outdent, table ops, link dialog (insert/edit/refusal), image dialog (alt/caption/resize), toolbar-group visibility setting, filters save-as-view + chip switch. 27/27 PASSED. Defect candidates: none.
 - Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2f-toolbar-media-20261014-190544.json
 
+### phase2g-capture-persistence — 2026-10-14T19:15:22.123Z
+- Phase 2 Batch G: entry shortcut Alt+Shift+C, REAL capture of https://example.com via save-page dialog, unreachable-host honesty, snapshots panel on real capture (exports/rename/preview), reload persistence, concurrent-tab conflict, attachments open/download, yearly + overdue-complete reminders, AI chat honest failure, JSON import, pagination with 52 notes, find-bar navigation. 3/13 PASSED. Defect candidates: section entry-shortcuts: - waiting for getByRole('button', { name: 'Open Untitled for editing' }).first() | section snapshots-real: - waiting for getByRole('button', { name: 'Export saved page…' }).first() | section persistence: - waiting for getByRole('button', { name: 'Open Capture host note for editing' }).first() | section attachments-rest: - waiting for getByRole('button', { name: 'Open Capture host note for editing' }).first() | section reminders-rest: - waiting for getByRole('button', { name: 'Open Capture host note for editing' }).first() | section ai-chat: - waiting for getByRole('button', { name: 'Open Capture host note for editing' }).first() | section find-bar: - waiting for getByRole('button', { name: 'Open Capture host note for editing' }).first().
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase2g-capture-persistence-20261014-191501.json
+
+### verify-d05-d06 — 2026-10-14T19:35:24.944Z
+- QA-D05/D06 real-UI verification: Grant access affordance visible=VERIFIED; capture completed after grant=VERIFIED; link state after grant=CHECK; snapshot artifacts=CHECK
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-d05-d06-20261014-193521.json
+
+### verify-d05-d06 — 2026-10-14T19:38:16.224Z
+- QA-D05/D06 real-UI verification: Grant access affordance visible=VERIFIED; capture completed after grant=VERIFIED; link state after grant=CHECK; snapshot artifacts=CHECK
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-d05-d06-20261014-193814.json
+
+### verify-e2e-capture — 2026-10-14T19:45:33.671Z
+- E2E capture with seeded permission: 
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-e2e-capture-20261014-194527.json
+
+### verify-e2e-capture — 2026-10-14T19:46:29.914Z
+- E2E capture with seeded permission: 
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-e2e-capture-20261014-194623.json
+
+### verify-e2e-capture — 2026-10-14T19:47:38.252Z
+- E2E capture with seeded permission: 
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-e2e-capture-20261014-194731.json
+
+### verify-e2e-capture — 2026-10-14T19:48:42.945Z
+- E2E capture with seeded permission: 
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-e2e-capture-20261014-194836.json
+
+### verify-e2e-capture — 2026-10-14T19:49:46.240Z
+- E2E capture with seeded permission: 
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-e2e-capture-20261014-194939.json
+
+### verify-e2e-capture — 2026-10-14T19:50:11.152Z
+- E2E capture with seeded permission: link state=[{"state":"captured","hasSnapshot":true}]; snapshots in DB=[{"mhtml":"failed","png":"saved","text":"saved","warnings":1; panel text=Snapshots1 snapshotClosepartialExample Domain2026-10-14 · Pa; E2E CAPTURE=VERIFIED_FIXED
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-e2e-capture-20261014-195009.json
+

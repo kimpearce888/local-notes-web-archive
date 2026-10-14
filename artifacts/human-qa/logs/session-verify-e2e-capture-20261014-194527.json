@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "33a5949",
+  "distDirty": true,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T19:44:47.804Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "verify-e2e-capture",
+    "startedAt": "2026-10-14T19:44:47.650Z",
+    "endedAt": "2026-10-14T19:45:27.099Z",
+    "profileDir": "/tmp/lnqa-seeded-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "E2E capture with seeded permission: ",
+  "artifacts": []
+}

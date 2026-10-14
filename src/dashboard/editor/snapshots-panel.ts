@@ -10,7 +10,7 @@
  * exclusively through an explicit export download.
  */
 
-import type { CaptureArtifactState, CaptureStatus, EntityId, Snapshot } from '../../core/types';
+import type { CaptureArtifactState, CaptureStatus, EntityId, Link, Snapshot } from '../../core/types';
 import { formatByteSize } from './attachments-panel';
 import { createPanelHeader } from './panel-header';
 
@@ -46,6 +46,11 @@ export function artifactSummary(snapshot: Snapshot): string {
 
 export interface SnapshotsPanelCallbacks {
   listForNote(noteId: EntityId): Promise<readonly Snapshot[]>;
+  /** QA-D06: links of the note (grant-access affordance for captures
+   *  waiting on host permission — previously unreachable from any UI). */
+  listLinks(noteId: EntityId): Promise<readonly Link[]>;
+  /** QA-D06: request the origin permission and resume the capture. */
+  requestCapturePermission(linkId: EntityId): Promise<{ granted: boolean }>;
   /** Saved PNG bytes for preview (FR-CAP-06); null when not saved. */
   getPng(snapshotId: EntityId): Promise<Blob | null>;
   /** User-initiated export of one artifact (FR-CAP-06). */
@@ -92,12 +97,18 @@ export function createSnapshotsPanel(
   empty.textContent =
     'No snapshots yet. Save a web page — the "Save a web page…" button on the left, or right-click a page in Chrome and choose "Save page as note" — and its archived copy, text and screenshot appear here.';
 
+  // QA-D06: captures that stopped at permission-required get an in-panel
+  // Grant access action — the affordance that was missing entirely.
+  const grantSection = document.createElement('div');
+  grantSection.className = 'snapshots-panel__grant';
+  grantSection.hidden = true;
+
   const status = document.createElement('p');
   status.className = 'snapshots-panel__status';
   status.setAttribute('aria-live', 'polite');
   status.hidden = true;
 
-  element.append(header.row, status, listbox, empty);
+  element.append(header.row, status, grantSection, listbox, empty);
 
   function setStatus(message: string, isError: boolean): void {
     status.textContent = message;
@@ -540,6 +551,82 @@ export function createSnapshotsPanel(
       snapshots.length === 0
         ? ''
         : `${snapshots.length} snapshot${snapshots.length === 1 ? '' : 's'}`;
+
+    // QA-D06: render the Grant access affordance for links waiting on host
+    // permission. The capture pipeline deliberately stops at
+    // permission-required; without this action the archived copy could
+    // never be completed from the UI.
+    try {
+      const links = await callbacks.listLinks(noteId);
+      const waiting = links.filter((link) => link.captureState === 'permission-required');
+      grantSection.replaceChildren();
+      grantSection.hidden = waiting.length === 0;
+      for (const link of waiting) {
+        const row = document.createElement('div');
+        row.className = 'snapshots-panel__grant-row';
+        const text = document.createElement('span');
+        text.className = 'snapshots-panel__grant-text';
+        text.textContent = `Capture waiting for access to ${link.origin}.`;
+        const grant = document.createElement('button');
+        grant.type = 'button';
+        grant.className = 'btn btn--primary';
+        grant.textContent = 'Grant access…';
+        grant.addEventListener('click', () => {
+          grant.disabled = true;
+          void (async () => {
+            let granted = false;
+            try {
+              // chrome.permissions.request MUST run inside the user-gesture
+              // context — HERE, in the dashboard page's click handler. The
+              // gesture does NOT survive the RPC hop into the service worker
+              // (verified through the real UI: the SW call fails with "This
+              // function must be called during a user gesture"), which is
+              // why this flow could never complete from behind an RPC.
+              const chromeApi = (
+                globalThis as {
+                  chrome?: { permissions?: { request(options: { origins: string[] }): Promise<boolean> } };
+                }
+              ).chrome;
+              if (chromeApi?.permissions) {
+                granted = await chromeApi.permissions.request({ origins: [`${link.origin}/*`] });
+              }
+            } catch {
+              granted = false;
+            }
+            // The RPC re-checks the held permission (hasOriginPermission now
+            // sees the page-level grant) and resumes the capture; it never
+            // needs to re-request from the worker.
+            let resumed = false;
+            try {
+              const result = await callbacks.requestCapturePermission(link.id);
+              resumed = result.granted;
+            } catch (error) {
+              setStatus(
+                `Requesting access failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+                true,
+              );
+            }
+            if (resumed) {
+              setStatus(`Access granted for ${link.origin} — the capture is resuming.`, false);
+              callbacks.announce(`Access granted for ${link.origin}; capture resuming.`);
+            } else if (granted) {
+              setStatus(`Access granted for ${link.origin}; resuming the capture is pending.`, false);
+            } else {
+              setStatus('Access was not granted — the capture stays paused.', true);
+              callbacks.announce('Capture access was not granted.');
+            }
+            grant.disabled = false;
+            await refresh();
+          })();
+        });
+        row.append(text, grant);
+        grantSection.append(row);
+      }
+    } catch {
+      // Link listing is supplementary: a failure never breaks the snapshot
+      // list, it only hides the grant affordance for this refresh.
+      grantSection.hidden = true;
+    }
   }
 
   void refresh();

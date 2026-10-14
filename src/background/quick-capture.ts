@@ -7,8 +7,9 @@
 
 import { repo, searchEngine } from './db';
 import { createNote } from '../core/repo/notes';
-import { createLink, type CreateLinkResult } from '../core/repo/links';
+import { createLink, setLinkCaptureState, type CreateLinkResult } from '../core/repo/links';
 import { appendLog } from '../core/repo/logs';
+import { notifyLinkQueued } from './capture/queue';
 import type { EntityId } from '../core/types';
 
 const TITLE_MAX = 200;
@@ -66,8 +67,21 @@ export function linkParagraph(url: string, anchorText: string): object {
 
 async function attachSourceLink(noteId: EntityId, url: string, anchor: string): Promise<string | null> {
   try {
-    const result: CreateLinkResult = await createLink(await repo(), noteId, url, anchor);
-    return result.link.id;
+    // QA-D05 fix: a page the user EXPLICITLY saved must actually queue its
+    // capture ("a complete offline copy is captured automatically" — the
+    // dialog's own copy). The link is created directly (not through the
+    // links API), so it must be queued here AND the capture queue must be
+    // notified — previously the link stayed 'detected' forever while
+    // capture/save-url still reported queued: true (dishonest success).
+    const result: CreateLinkResult = await createLink(await repo(), noteId, url, anchor, 'queued');
+    let link = result.link;
+    if (!result.created && link.captureState === 'detected') {
+      // An earlier-detected link for the same URL: the explicit save
+      // upgrades it to queued (the user asked for the archive now).
+      link = await setLinkCaptureState(await repo(), link.id, 'queued');
+    }
+    if (link.captureState === 'queued') notifyLinkQueued(link);
+    return link.id;
   } catch {
     // The URL failed the link gate (FR-CAP-04); the note survives with the
     // URL as plain text and no capture is queued. Logged truthfully below.

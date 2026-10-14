@@ -31,5 +31,9 @@ export function createSnapshotsApi(client: ApiClient): SnapshotsApi {
         return false;
       }
     },
+    listLinks: async (noteId) =>
+      (await client.request('links/list-for-note', { noteId })).links,
+    requestCapturePermission: (linkId) =>
+      client.request('links/request-capture-permission', { linkId }).then((r) => ({ granted: r.granted })),
   };
 }

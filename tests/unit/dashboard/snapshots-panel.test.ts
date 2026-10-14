@@ -9,7 +9,7 @@ import {
   type DuplicateDecisionCallbacks,
 } from '../../../src/dashboard/views/duplicate-dialog';
 import type { WaitingDedupEntry } from '../../../src/background/capture/queue';
-import type { EntityId, Snapshot, UtcTimestamp } from '../../../src/core/types';
+import type { EntityId, Link, LinkCaptureState, Snapshot, UtcTimestamp } from '../../../src/core/types';
 
 /**
  * T-026 UI (FR-CAP-06/07/08): the snapshots panel previews saved PNGs and
@@ -112,6 +112,9 @@ interface PanelHarness {
     pngRequests: EntityId[];
     announced: string[];
     closed: number;
+    links: Link[];
+    permissionRequests: EntityId[];
+    grantResult: boolean;
     snapshots: Snapshot[];
   };
   panel: ReturnType<typeof createSnapshotsPanel>;
@@ -127,9 +130,23 @@ async function mountPanel(initial: Snapshot[]): Promise<PanelHarness> {
     announced: [] as string[],
     closed: 0,
     snapshots: [...initial],
+    links: [] as Link[],
+    permissionRequests: [] as EntityId[],
+    grantResult: true,
     async listForNote(noteId: EntityId): Promise<readonly Snapshot[]> {
       this.listed.push(noteId);
       return this.snapshots;
+    },
+    async listLinks(): Promise<readonly Link[]> {
+      return this.links;
+    },
+    async requestCapturePermission(linkId: EntityId): Promise<{ granted: boolean }> {
+      this.permissionRequests.push(linkId);
+      if (this.grantResult) {
+        const link = this.links.find((l) => l.id === linkId);
+        if (link) link.captureState = 'queued';
+      }
+      return { granted: this.grantResult };
     },
     async getPng(snapshotId: EntityId): Promise<Blob | null> {
       this.pngRequests.push(snapshotId);
@@ -478,6 +495,8 @@ describe('snapshots panel', () => {
       listForNote: async (): Promise<readonly Snapshot[]> => {
         throw new Error('database unavailable');
       },
+      listLinks: async (): Promise<readonly Link[]> => [],
+      requestCapturePermission: async (): Promise<{ granted: boolean }> => ({ granted: false }),
       getPng: async (): Promise<null> => null,
       exportArtifact: async (): Promise<{ blob: Blob; filename: string }> => {
         throw new Error('unreachable');
@@ -635,5 +654,34 @@ describe('duplicate decision monitor (FR-CAP-08 ask policy)', () => {
     await waitFor(() => document.querySelector('.dialog--confirm') === null);
     expect(callbacks.announced.length).toBe(0); // no false success announcement
     monitor.dispose();
+  });
+});
+
+describe('grant-access affordance (QA-D06)', () => {
+  it('shows Grant access for a permission-required link and requests the permission on click', async () => {
+    const { callbacks, panel } = await mountPanel([]);
+    const r = panel.element;
+    callbacks.links = [{ id: 'link-1' as EntityId, noteId: NOTE_ID, originalUrl: 'https://example.com/x', dedupKey: 'k1', anchorText: '', origin: 'https://example.com', createdAt: '2026-01-01T00:00:00.000Z' as UtcTimestamp, snapshotId: null, captureState: 'permission-required' as LinkCaptureState }];
+    await panel.refresh();
+    const grantRow = r.querySelector('.snapshots-panel__grant-row');
+    expect(grantRow).not.toBeNull();
+    expect(grantRow?.textContent).toContain('Capture waiting for access to https://example.com.');
+    const button = grantRow?.querySelector('button');
+    expect(button?.textContent).toBe('Grant access…');
+    await (button as HTMLButtonElement).click();
+    await waitFor(() => callbacks.permissionRequests.length === 1);
+    expect(callbacks.permissionRequests[0]).toBe('link-1' as EntityId);
+    expect(callbacks.announced.some((m) => m.includes('Access granted'))).toBe(true);
+    // Granted link no longer waits: the affordance disappears on refresh.
+    await waitFor(() => r.querySelector('.snapshots-panel__grant-row') === null);
+  });
+
+  it('hides the affordance when no link is waiting on permission', async () => {
+    const { callbacks, panel } = await mountPanel([]);
+    const r = panel.element;
+    callbacks.links = [{ id: 'link-2' as EntityId, noteId: NOTE_ID, originalUrl: 'https://other.test/y', dedupKey: 'k2', anchorText: '', origin: 'https://other.test', createdAt: '2026-01-01T00:00:00.000Z' as UtcTimestamp, snapshotId: null, captureState: 'captured' as LinkCaptureState }];
+    await panel.refresh();
+    expect(r.querySelector('.snapshots-panel__grant-row')).toBeNull();
+    expect((r.querySelector('.snapshots-panel__grant') as HTMLElement).hidden).toBe(true);
   });
 });

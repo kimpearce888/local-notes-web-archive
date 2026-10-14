@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "33a5949",
+  "distDirty": true,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T19:35:01.625Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "verify-d05-d06",
+    "startedAt": "2026-10-14T19:35:01.516Z",
+    "endedAt": "2026-10-14T19:35:21.414Z",
+    "profileDir": "/tmp/lnwa-qa-verify-d05-d06-sWmJbn"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "QA-D05/D06 real-UI verification: Grant access affordance visible=VERIFIED; capture completed after grant=VERIFIED; link state after grant=CHECK; snapshot artifacts=CHECK",
+  "artifacts": []
+}

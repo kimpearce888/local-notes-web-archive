@@ -60,3 +60,33 @@ afterwards).
 interactions through the real UI: both VERIFIED_FIXED (phase2f re-run 27/27 —
 toolbar group hidden after save without reload; image alt reads the filled
 text).
+
+---
+
+## 2026-10-15 — fix(capture): QA-D05 + QA-D06 (phase 2, batch G discoveries)
+
+**Defects addressed:** QA-D05 (save-page/context-menu captures never queued —
+link left 'detected' while the API reported queued: true), QA-D06 (the capture
+permission flow was unreachable — no UI called links/request-capture-permission,
+and the SW-side request cannot work because the user gesture does not survive
+the RPC hop).
+
+**Files changed:**
+- `src/background/quick-capture.ts` — attachSourceLink creates links 'queued',
+  upgrades existing 'detected' links, and notifies the capture queue.
+- `src/dashboard/editor/snapshots-panel.ts` — Grant access… affordance for
+  permission-required links; page-level `chrome.permissions.request` inside the
+  click gesture, then the RPC resume.
+- `src/dashboard/state/editor-session.ts`, `src/dashboard/state/snapshot-client.ts`
+  — listLinks + requestCapturePermission wiring.
+- `src/dashboard/styles.css` — grant row styling.
+- `src/background/permissions.ts` — incorrect gesture-propagation comment corrected.
+- `tests/unit/background/context-menus.test.ts` (+1), 
+  `tests/unit/dashboard/snapshots-panel.test.ts` (+2) — regression tests.
+- `artifacts/human-qa/defects.md`, `artifacts/human-qa/fix-log.md` — records.
+
+**Gates at commit time:** tsc both configs PASS; eslint PASS; vitest 905/905.
+**Real-UI verification:** the FIRST end-to-end capture through the real UI:
+save → queue → pipeline → link `captured`, snapshot record with PNG saved +
+text saved + honest partial-MHTML reporting (screenshots/final/
+e2e-capture-snapshots-panel.png + d06-grant-affordance.png, final video).

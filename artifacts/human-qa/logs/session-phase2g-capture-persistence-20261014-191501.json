@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "33a5949",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T19:10:27.716Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase2g-capture-persistence",
+    "startedAt": "2026-10-14T19:10:27.699Z",
+    "endedAt": "2026-10-14T19:15:01.792Z",
+    "profileDir": "/tmp/lnwa-qa-phase2g-capture-persistence-ufzklO"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 2 Batch G: entry shortcut Alt+Shift+C, REAL capture of https://example.com via save-page dialog, unreachable-host honesty, snapshots panel on real capture (exports/rename/preview), reload persistence, concurrent-tab conflict, attachments open/download, yearly + overdue-complete reminders, AI chat honest failure, JSON import, pagination with 52 notes, find-bar navigation. 3/13 PASSED. Defect candidates: section entry-shortcuts: - waiting for getByRole('button', { name: 'Open Untitled for editing' }).first() | section snapshots-real: - waiting for getByRole('button', { name: 'Export saved page…' }).first() | section persistence: - waiting for getByRole('button', { name: 'Open Capture host note for editing' }).first() | section attachments-rest: - waiting for getByRole('button', { name: 'Open Capture host note for editing' }).first() | section reminders-rest: - waiting for getByRole('button', { name: 'Open Capture host note for editing' }).first() | section ai-chat: - waiting for getByRole('button', { name: 'Open Capture host note for editing' }).first() | section find-bar: - waiting for getByRole('button', { name: 'Open Capture host note for editing' }).first().",
+  "artifacts": []
+}
