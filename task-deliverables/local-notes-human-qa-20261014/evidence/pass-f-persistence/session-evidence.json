@@ -1,0 +1,22 @@
+{
+  "spec": "pass-f-persistence",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [
+    "F2-after-restart.png",
+    "F2-reminder-indicator-survived.png",
+    "F4-recovery-probe.png"
+  ],
+  "notes": [
+    "theme after restart: dark at 2026-10-13T21:39:34.490Z",
+    "screenshot F2-after-restart at 2026-10-13T21:39:34.528Z",
+    "screenshot F2-reminder-indicator-survived at 2026-10-13T21:39:34.797Z",
+    "reload + search-over-index after restart verified at 2026-10-13T21:39:35.270Z",
+    "recovery probe: dialog visible=false, body contains recovery token=false at 2026-10-13T21:39:36.196Z",
+    "screenshot F4-recovery-probe at 2026-10-13T21:39:36.196Z",
+    "second tab sees the same durable state at 2026-10-13T21:39:36.615Z"
+  ]
+}

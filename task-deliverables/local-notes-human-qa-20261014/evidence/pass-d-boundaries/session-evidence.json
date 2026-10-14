@@ -1,0 +1,27 @@
+{
+  "spec": "pass-d-boundaries",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [
+    "D2-long-title-card.png",
+    "D4-feb30-error.png"
+  ],
+  "notes": [
+    "untitled-labelled cards after whitespace-only note: 1 at 2026-10-13T21:38:51.383Z",
+    "long-title card horizontal overflow px: 0 at 2026-10-13T21:38:54.433Z",
+    "screenshot D2-long-title-card at 2026-10-13T21:38:54.433Z",
+    "bulk trash cancel: note untouched at 2026-10-13T21:38:55.242Z",
+    "permanent delete cancel + confirm verified at 2026-10-13T21:38:55.943Z",
+    "Feb-30 yearly error text: Day 30 does not exist in February. at 2026-10-13T21:38:56.786Z",
+    "screenshot D4-feb30-error at 2026-10-13T21:38:56.786Z",
+    "invalid zone error: \"Not/A_Zone\" is not a valid IANA time zone. at 2026-10-13T21:38:57.432Z",
+    "link cancel left content unchanged: true at 2026-10-13T21:38:57.921Z",
+    "cards after rapid creation with selection: 6 at 2026-10-13T21:39:00.140Z",
+    "offline note creation + search verified at 2026-10-13T21:39:01.036Z",
+    "empty .md import: editor opened=false at 2026-10-13T21:39:03.620Z",
+    "cards after empty import: 7 at 2026-10-13T21:39:03.624Z"
+  ]
+}

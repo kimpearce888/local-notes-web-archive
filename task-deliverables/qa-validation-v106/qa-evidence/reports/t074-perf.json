@@ -1,0 +1,220 @@
+{
+  "startedAt": "2026-10-14T03:05:41.456Z",
+  "measurements": {
+    "P1 initial load (5 runs, ms)": {
+      "runs": [
+        251,
+        205,
+        218,
+        242,
+        225
+      ],
+      "median": 225,
+      "threshold": 2000
+    },
+    "P1 initial load:verdict": {
+      "ok": true,
+      "detail": "median 225ms < 2000ms"
+    },
+    "P2 editor open/close": {
+      "opens": [
+        72,
+        80,
+        105,
+        54,
+        58
+      ],
+      "closes": [
+        68,
+        53,
+        51,
+        46,
+        33
+      ],
+      "worst": 105
+    },
+    "P2 editor open/close:verdict": {
+      "ok": true,
+      "detail": "worst 105ms < 500ms"
+    },
+    "P2 command palette": {
+      "opens": [
+        38,
+        28,
+        21,
+        23,
+        30
+      ],
+      "closes": [
+        171,
+        163,
+        161,
+        162,
+        167
+      ],
+      "worst": 171
+    },
+    "P2 command palette:verdict": {
+      "ok": true,
+      "detail": "worst 171ms < 500ms"
+    },
+    "P2 filters panel": {
+      "opens": [
+        337,
+        330,
+        338,
+        340,
+        328
+      ],
+      "closes": [
+        216,
+        212,
+        210,
+        223,
+        209
+      ],
+      "worst": 340
+    },
+    "P2 filters panel:verdict": {
+      "ok": true,
+      "detail": "worst 340ms < 500ms"
+    },
+    "P2 settings dialog": {
+      "opens": [
+        95,
+        52,
+        60,
+        93,
+        56
+      ],
+      "closes": [
+        320,
+        308,
+        350,
+        380,
+        317
+      ],
+      "worst": 380
+    },
+    "P2 settings dialog:verdict": {
+      "ok": true,
+      "detail": "worst 380ms < 500ms"
+    },
+    "P3 dataset creation": {
+      "batches": 12,
+      "clicksPerBatch": 10,
+      "createMs": 8791,
+      "cardsOnPage1": 50,
+      "note": "PAGE_SIZE caps visible cards at 50"
+    },
+    "P3 list render with 121 notes (reload, ms)": {
+      "renderMs": 489
+    },
+    "P3 list render:verdict": {
+      "ok": true,
+      "detail": "489ms to first card after reload"
+    },
+    "P3 pagination next (ms)": {
+      "pageMs": 701
+    },
+    "P3 pagination:verdict": {
+      "ok": true,
+      "detail": "701ms"
+    },
+    "P3 search over 121 notes (Enter -> rendered, ms)": {
+      "hitMs": 69,
+      "hitCards": 1,
+      "missMs": 124,
+      "missCards": 0,
+      "threshold": 500
+    },
+    "P3 search hit:verdict": {
+      "ok": true,
+      "detail": "69ms to render 1 hit card(s)"
+    },
+    "P3 search miss:verdict": {
+      "ok": true,
+      "detail": "124ms to render the empty result (missCards=0)"
+    },
+    "M1 memory loops (CDP Performance.getMetrics)": {
+      "before": {
+        "Documents": 3,
+        "JSEventListeners": 465,
+        "Nodes": 5684,
+        "LayoutDuration": 0.023791,
+        "RecalcStyleDuration": 0.024915,
+        "ScriptDuration": 0.026708,
+        "JSHeapUsedSize": 11037848,
+        "JSHeapTotalSize": 13856768
+      },
+      "afterNav": {
+        "Documents": 3,
+        "JSEventListeners": 1495,
+        "Nodes": 14046,
+        "LayoutDuration": 0.132771,
+        "RecalcStyleDuration": 0.113388,
+        "ScriptDuration": 0.075355,
+        "JSHeapUsedSize": 14767308,
+        "JSHeapTotalSize": 17788928
+      },
+      "afterModal": {
+        "Documents": 3,
+        "JSEventListeners": 282,
+        "Nodes": 4448,
+        "LayoutDuration": 0.235391,
+        "RecalcStyleDuration": 0.264991,
+        "ScriptDuration": 0.139336,
+        "JSHeapUsedSize": 12311264,
+        "JSHeapTotalSize": 14381056
+      },
+      "afterSearch": {
+        "Documents": 3,
+        "JSEventListeners": 104,
+        "Nodes": 1993,
+        "LayoutDuration": 0.280503,
+        "RecalcStyleDuration": 0.282644,
+        "ScriptDuration": 0.182506,
+        "JSHeapUsedSize": 11338196,
+        "JSHeapTotalSize": 13070336
+      },
+      "afterPalette": {
+        "Documents": 3,
+        "JSEventListeners": 200,
+        "Nodes": 3252,
+        "LayoutDuration": 0.3141,
+        "RecalcStyleDuration": 0.42184,
+        "ScriptDuration": 0.229798,
+        "JSHeapUsedSize": 11365228,
+        "JSHeapTotalSize": 13332480
+      },
+      "heapGrowthPct": "3.0",
+      "nodeGrowthPct": "-42.8",
+      "listenerGrowth": -265,
+      "docGrowth": 0,
+      "loopCounts": {
+        "navigation": 15,
+        "modal": 15,
+        "search": 30,
+        "palette": 15
+      }
+    },
+    "M1 heap growth bounded:verdict": {
+      "ok": true,
+      "detail": "3.0% < 25% after 75 loops"
+    },
+    "M1 DOM node growth bounded:verdict": {
+      "ok": true,
+      "detail": "-42.8% < 300%"
+    },
+    "M1 listener growth bounded:verdict": {
+      "ok": true,
+      "detail": "+-265 listeners"
+    },
+    "M1 document count stable:verdict": {
+      "ok": true,
+      "detail": "+0 documents"
+    }
+  },
+  "finishedAt": "2026-10-14T03:06:21.455Z",
+  "verdict": "PASS"
+}

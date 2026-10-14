@@ -1,0 +1,18 @@
+{
+  "spec": "probe-b2",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [
+    "probe-state.png"
+  ],
+  "notes": [
+    "card count: 1 at 2026-10-13T19:03:59.614Z",
+    "open native dialogs: 0 at 2026-10-13T19:03:59.620Z",
+    "alpha card html: <article class=\"card card--grid\" data-note-id=\"d0335043-82cd-4ed4-8d76-b12eb7ff95bb\" aria-label=\"Audit Alpha zebra. Modified 2026-10-13.\"><input type=\"checkbox\" class=\"card__select\" aria-label=\"Select Audit Alpha zebra\"><div class=\"card__content\"><h3 class=\"card__title\"><button type=\"button\" class=\"card__title-button\" aria-label=\"Open Audit Alpha zebra for editing\">Audit Alpha zebra</button></h3><p class=\"card__preview\">QA-AUDIT-MARKER-BODY-7f3a alpha</p><p class=\"card__meta\">Created 2026-10-13 · Modified 2026-10-13</p></div></article> at 2026-10-13T19:03:59.648Z",
+    "checkbox labels: [\"Select Audit Alpha zebra\"] at 2026-10-13T19:03:59.655Z",
+    "screenshot probe-state at 2026-10-13T19:03:59.655Z"
+  ]
+}

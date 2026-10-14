@@ -1,0 +1,27 @@
+{
+  "spec": "pass-e-crossfeature",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [
+    "X3-conflict-state.png",
+    "X4-edit-after-trash.png",
+    "X5-dark-theme-note-created.png",
+    "X6-palette-from-editor.png"
+  ],
+  "notes": [
+    "selection probe: bar after select=true, bar in Pinned=false, still checked after return=false at 2026-10-13T21:39:08.213Z",
+    "card titles after clearing search: [\"Crossbeta Journey Note\"] at 2026-10-13T21:39:09.501Z",
+    "search+bulk archive scoped correctly; restored afterwards at 2026-10-13T21:39:09.749Z",
+    "conflict probe: dialog visible=true, announcement=Save failed: this note changed in another tab. Reload or save as a duplicate. at 2026-10-13T21:39:13.085Z",
+    "screenshot X3-conflict-state at 2026-10-13T21:39:13.094Z",
+    "edit-after-background-trash announcement: Note saved. at 2026-10-13T21:39:19.081Z",
+    "screenshot X4-edit-after-trash at 2026-10-13T21:39:19.081Z",
+    "screenshot X5-dark-theme-note-created at 2026-10-13T21:39:20.678Z",
+    "palette-from-editor: editor still open=true, announcement=Note saved. at 2026-10-13T21:39:22.444Z",
+    "screenshot X6-palette-from-editor at 2026-10-13T21:39:22.444Z",
+    "six rapid theme toggles survived; shell healthy at 2026-10-13T21:39:27.300Z"
+  ]
+}

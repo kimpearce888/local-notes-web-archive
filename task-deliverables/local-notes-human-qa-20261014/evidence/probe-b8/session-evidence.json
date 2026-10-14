@@ -1,0 +1,18 @@
+{
+  "spec": "probe-b8",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [
+    "probe-pagination.png",
+    "probe-pagination-after-reload.png"
+  ],
+  "notes": [
+    "pagination probe: {\"cards\":52,\"count\":\"52 notes\",\"paginationText\":\"Previous pageShowing 1–52 of 52 · Page 1 of 2Next page\",\"paginationVisible\":true,\"prevDisabled\":true,\"html\":\"system\"} at 2026-10-13T19:26:48.685Z",
+    "screenshot probe-pagination at 2026-10-13T19:26:48.686Z",
+    "after reload: {\"cards\":50,\"count\":\"52 notes\",\"paginationText\":\"Previous pageShowing 1–50 of 52 · Page 1 of 2Next page\"} at 2026-10-13T19:26:50.531Z",
+    "screenshot probe-pagination-after-reload at 2026-10-13T19:26:50.532Z"
+  ]
+}

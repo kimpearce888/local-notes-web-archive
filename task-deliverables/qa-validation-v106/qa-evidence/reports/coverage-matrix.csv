@@ -1,0 +1,29 @@
+screen,interactions_discovered,status,evidence,screenshots
+ai-panel,(context-gated dialog set),TESTED,t075 (dead-endpoint honest failure) + t080 evidence (offline honest state),qa-evidence/screenshots/ (t080 series)
+bulk-bar,37,TESTED,repo-e2e (archive/trash/purge/tag/category/pin/favorite) + t075 (restore/purge),qa-evidence/screenshots/ (t080 series)
+command-palette,53,TESTED,repo-e2e + t074 (transition) + t076 (Ctrl+K),qa-evidence/screenshots/ (t080 series)
+dashboard-empty,22,TESTED,repo-e2e + t076 (empty state),qa-evidence/screenshots/ (t080 series)
+dashboard-list,22,TESTED,repo-e2e + t074 (render/pagination/search) + t075 (CRUD matrix) + t076,qa-evidence/screenshots/ (t080 series)
+diagnostics-panel,43,TESTED,repo-e2e (self-test/export/rebuild) + t080 evidence,qa-evidence/screenshots/ (t080 series)
+editor,88,TESTED,repo-e2e + t073 (clipboard XSS) + t075 (update/trash) + t076 (A6/A8) + t074 (transitions),qa-evidence/screenshots/ (t080 series)
+editor-attachments-panel,90,TESTED,repo-e2e audit-regression D-04 (real file attach/download/delete),qa-evidence/screenshots/ (t080 series)
+editor-findbar,88,TESTED,repo-e2e user-report regression T-052,qa-evidence/screenshots/ (t080 series)
+editor-reminders-panel,88,TESTED,repo-e2e user-report regression T-054 + t080 evidence,qa-evidence/screenshots/ (t080 series)
+editor-snapshots-panel,88,TESTED,repo-e2e + T-062 audit workflows,qa-evidence/screenshots/ (t080 series)
+filters-panel,37,TESTED,repo-e2e audit-regression D-02 (controls/chips/saved views) + t074 + t076,qa-evidence/screenshots/ (t080 series)
+onboarding,24,TESTED,"repo-e2e + t076 (keyboard completion, re-show regression D-05)",qa-evidence/screenshots/ (t080 series)
+settings-panel,49,TESTED,repo-e2e + t075 (endpoint config + theme persistence) + t076 (dialog containment),qa-evidence/screenshots/ (t080 series)
+view-all-notes,39,TESTED,t075 + t076 + repo-e2e,qa-evidence/screenshots/ (t080 series)
+view-favorites,37,TESTED,repo-e2e audit-regression D-01 + t072 (live),qa-evidence/screenshots/ (t080 series)
+view-pinned,37,TESTED,t072 (live) + repo-e2e (pin flows),qa-evidence/screenshots/ (t080 series)
+view-trash,37,TESTED,repo-e2e (permanent delete confirm) + t075 (trash/restore/purge durable),qa-evidence/screenshots/ (t080 series)
+[context-gated] tag dialog / category dialog,(dialog controls),TESTED,repo-e2e bulk-bar dialog tests,repo E2E traces
+[context-gated] duplicate-capture dialog,(dialog controls),TESTED,unit tests + T-062 audit,repo E2E traces
+[context-gated] confirm dialogs (trash/purge/restore/replace),(dialog controls),TESTED,repo-e2e + t075 (exact confirm paths),repo E2E traces
+[context-gated] reminder add/edit dialog,(dialog controls),TESTED,repo-e2e T-054 regression (natural-height fields) + t080b,repo E2E traces
+[context-gated] image/link dialogs,(dialog controls),TESTED,repo-e2e + t073 (javascript: URL rejection),repo E2E traces
+[context-gated] diagnostics export review,(dialog controls),TESTED,repo-e2e,repo E2E traces
+[context-gated] backup restore preview,(dialog controls),TESTED,repo-e2e audit-regression D-06,repo E2E traces
+[context-gated] capture permission dialog,(dialog controls),TESTED,unit tests + T-062 audit (controlled pages),repo E2E traces
+[context-gated] revision compare / restore,(dialog controls),TESTED,repo-e2e + unit tests,repo E2E traces
+[context-gated] onboarding re-show,(dialog controls),TESTED,repo-e2e audit-regression D-05,repo E2E traces

@@ -13,6 +13,7 @@ release/
 keys/
 
 # Test output
+*.tsbuildinfo
 coverage/
 playwright-report/
 test-results/

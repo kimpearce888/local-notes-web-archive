@@ -1,0 +1,16 @@
+{
+  "spec": "probe-attach",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [
+    "probe-attach-state.png"
+  ],
+  "notes": [
+    "panel text after attach: Attachmentsattachments/add: data must be a BlobNo attachments yet. Attach images or files with the button below, or paste/drop them into the note.Attach files… at 2026-10-13T19:35:39.720Z",
+    "live regions: [\"Attach Probe NoteQA-AUDIT-MARKER-BODY-7f3aCreated 2026-10-13 · Modified 2026-10-13\",\"\",\"attachments/add: data must be a Blob\",\"\",\"Showing 1–1 of 1 · Page 1 of 1\",\"Note saved.\"] at 2026-10-13T19:35:39.729Z",
+    "screenshot probe-attach-state at 2026-10-13T19:35:39.729Z"
+  ]
+}

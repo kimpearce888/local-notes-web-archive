@@ -1,0 +1,14 @@
+=== T-081 COMPLETION CHALLENGE — PASS #2 (independent: clean rebuild + reversed order, 03:02:06) ===
+✓ built in 446ms
+lint: PASS
+tsc: PASS
+      Tests  840 passed (840)
+--- QA batteries (pass 2, reversed order) ---
+t079-upgrade:   1 passed (37.6s)
+t076-a11y:   1 passed (1.1m)
+t075-integrity:   1 passed (30.3s)
+t074-perf:   1 passed (42.3s)
+t073-security:   1 passed (54.9s)
+
+  67 passed (1.3m)
+[perf] OVERALL 200 samples: p50 71 ms, p95 123 ms, p99 335 ms, max 363 ms

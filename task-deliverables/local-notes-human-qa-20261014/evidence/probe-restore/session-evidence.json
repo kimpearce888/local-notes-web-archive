@@ -1,0 +1,16 @@
+{
+  "spec": "probe-restore",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [],
+  "notes": [
+    "restore buttons: 2 at 2026-10-13T20:01:14.865Z",
+    "restore done; now testing click responsiveness at 2026-10-13T20:01:18.439Z",
+    "revision-history toggle click after restore took 24ms at 2026-10-13T20:01:18.463Z",
+    "Reminders click after restore took 114ms at 2026-10-13T20:01:18.577Z",
+    "reload after restore took 225ms at 2026-10-13T20:01:18.866Z"
+  ]
+}

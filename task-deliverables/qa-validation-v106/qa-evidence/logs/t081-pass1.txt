@@ -1,0 +1,18 @@
+=== T-081 COMPLETION CHALLENGE — PASS #1 (02:52:38) ===
+--- repo gates ---
+✓ built in 435ms
+
+LINT: 0
+
+TSC: 0
+      Tests  840 passed (840)
+[perf] OVERALL 200 samples: p50 77 ms, p95 120 ms, p99 329 ms, max 368 ms
+   ✓ search performance (PRD §11: p95 < 500 ms over 10k notes + 2k snapshots) (1)
+
+  67 passed (1.3m)
+--- QA batteries (pass 1) ---
+t073-security:   1 passed (54.4s)
+t074-perf:   1 passed (41.5s)
+t075-integrity:   1 passed (30.6s)
+t076-a11y:   1 passed (1.1m)
+t079-upgrade:   1 passed (38.1s)

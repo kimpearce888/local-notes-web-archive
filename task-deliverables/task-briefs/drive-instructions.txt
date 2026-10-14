@@ -1,0 +1,218 @@
+# Universal Human-Behavior QA Audit — Local Notes & Web Archive
+
+Repository: https://github.com/kimpearce888/local-notes-web-archive
+
+## Mission
+
+Act as a meticulous human user, exploratory QA engineer, accessibility tester, and test-coverage analyst. Discover and validate the behavior of the **entire application**, not just a supplied example or the scenarios already described in the repository.
+
+Your goal is to establish, with reproducible evidence:
+
+- what a user can actually do in the current build;
+- which user journeys work from beginning to end;
+- which controls are missing, inert, misleading, inconsistent, inaccessible, or contextually broken;
+- whether operations preserve the correct data and state across navigation, timing changes, restarts, and feature combinations;
+- where the implementation, product requirements, documentation, and visible behavior disagree;
+- what has not been tested and why.
+
+The New Note / unsaved-edit interruption is **one example only**. Do not build the audit around it. Discover all applicable workflows independently from the whole product and source tree.
+
+This is an **audit and testing task**, not an implementation task. Do not fix product code, weaken tests, skip failing cases to obtain a green result, or modify expected behavior merely to make a test pass. Preserve the repository's existing user changes. Use a separate worktree or clean disposable checkout if changes from test tooling/building could affect the working tree.
+
+No test plan can honestly claim mathematical proof of every possible runtime state. Instead, build a traceable coverage model, systematically test all discovered features and meaningful state transitions, exercise interactions between features, and explicitly account for every uncovered area.
+
+## 1. Establish the actual test target and environment
+
+1. Record repository URL, branch, exact HEAD SHA, working-tree status, recent commit, OS, Node/npm, Chrome/Chromium and Playwright versions.
+2. Inspect the real source and configuration, not just the README. Read the product requirements and known limitations, but treat them as intended contracts to compare against implementation and observed behavior—not evidence that a feature works.
+3. Inventory app entry points, screens/views, routes, dialogs, panels, overlays, menus, buttons, form fields, toolbar controls, keyboard shortcuts, background/service-worker handlers, persistence layers, integrations, import/export paths, permissions and runtime dependencies.
+4. Inspect and list every existing test file and test name. Run the test runner's list/count command and report discovered counts rather than trusting badges, copied reports or documentation counts.
+5. Run the repository's declared checks, including installation, lint, type-check, unit/integration tests, performance tests, build, release verification and E2E tests where available. Use the actual scripts in `package.json`; do not assume command names. Record the exact command, exit status, output summary and environment.
+6. Build the product and launch the built artifact through the real supported user-installation workflow. For this repository, load the actual built `dist/` extension into an isolated real Chrome/Chromium profile. Do not test only a dev server or mocked UI and call that the released product.
+7. If a prerequisite or platform limitation prevents a test, preserve its status as BLOCKED or NOT RUN and explain the exact reason. Never turn a blocker into a pass.
+
+Do not use the user's normal browser profile, personal files, credentials, notes or production services. Use an isolated profile, synthetic test data and controlled local fixtures. Do not install packages or invoke scripts from untrusted sources without reviewing them first.
+
+## 2. Build a complete application map before writing conclusions
+
+Create a **discovery ledger** from multiple sources:
+
+- product UI: all screens, states, visible and accessible controls, hidden-on-demand panels, empty/loading/error/success states, responsive variants and contextual actions;
+- source tree: features, commands, handlers, models, data stores, permissions, integrations and feature flags;
+- product documents: advertised features, requirements, constraints and known limitations;
+- test tree: what current tests actually execute and what they do not cover;
+- runtime: what is present, enabled, hidden, disabled, broken or different from expectations in the running build.
+
+For every discovered UI control, record a stable identifier, label/accessibility name, location/screen, control type, enabled/disabled/hidden conditions, applicable preconditions, action, expected state change, persistence expectation and related feature. Include icon-only controls, keyboard commands, context menus, tooltips, file inputs, dialog actions, row/card actions, bulk actions and actions only visible after another operation.
+
+Do not invent controls based on documentation. Verify whether each is actually available in the current build. Conversely, do not ignore an available control because the documentation failed to mention it.
+
+Create these artifacts before declaring the audit complete:
+
+- `application-map.md` — screens, panels, entry points, integrations and state boundaries;
+- `control-inventory.csv` — all discovered controls and their individual coverage status;
+- `feature-workflow-matrix.csv` — all discovered features and end-to-end workflow coverage;
+- `state-transition-matrix.csv` — meaningful before/action/after states and transition results;
+- `existing-test-coverage.md` — which existing tests cover each discovered behavior and what they do not prove.
+
+## 3. Derive scenarios from the application instead of relying on a fixed list
+
+For every discovered feature and control, derive tests based on its actual semantics. Do not stop after running the repository's existing suite or a predetermined smoke-test list.
+
+At minimum, consider these scenario classes wherever applicable:
+
+1. **First-use and normal use:** fresh profile, onboarding, create/open, ordinary success path, repeated use, returning user and empty/non-empty states.
+2. **Control behavior:** activate every button, menu item, shortcut, field, selector, toggle, picker, tab, link, toolbar action and dialog option in every meaningful context. Verify both the action and resulting state, not only that a click was accepted.
+3. **Field and content variations:** empty values, whitespace, long text, Unicode and emoji, punctuation, line breaks, pasted text, rich HTML, malformed input, duplicates, boundary values, supported/unsupported formats and realistic multi-step content.
+4. **State transitions:** test every meaningful state transition (for example, draft → saved → modified → saved, active → archived → restored, or enabled → disabled) in both directions where supported. Verify invalid transitions are blocked and explained.
+5. **Navigation and interruption:** change views, open other records, invoke global actions while a detail view is active, close panels/dialogs, reload, open/close tabs, navigate away during pending work, and return to unfinished work. Record exact outcomes and data integrity.
+6. **Timing and event order:** rapid repeated clicks, double activation, keyboard/pointer overlap, slow operations, operations still in flight, autosave debounce, delayed responses, cancellation, retry, stale UI, and action sequences that interleave before the prior operation settles.
+7. **Cancel, undo and destructive paths:** open every confirmation, cancel it, verify nothing changed, then confirm separately and verify the intended change. Test restoration and permanent deletion boundaries where available.
+8. **Errors and recovery:** invalid input, denied/revoked permissions, missing/unavailable integration, timeout, failed persistence, malformed imported data, interrupted operations, unavailable local services, inconsistent data and browser/service-worker restart. Verify honest, actionable feedback and recovery behavior.
+9. **Persistence and data integrity:** leave and reopen records, reload the app, close and reopen the browser/profile where practical, export and re-import, and compare persisted content with what the user entered. Verify relationships, formatting, flags, IDs, ordering and attachments—not just a visible title.
+10. **Cross-feature interactions:** combine features that share state. Generate scenario pairs and selected 3-feature combinations from the inventory, emphasizing shared records, global navigation, saving, selection, permissions, import/export, search/indexing, settings and destructive actions. Avoid testing each feature only in isolation.
+11. **Multi-window or multi-user concurrency:** where the architecture permits it, operate on the same record from different tabs/windows and test stale state, conflicts, duplicate submissions and last-write behavior. If unsupported, verify the UI and docs state that limitation honestly.
+12. **Search, filtering and sorting:** validate correct results, result counts, no-results, invalid expressions, filter combinations, clearing filters, navigation with filters active and persistence of view state wherever promised.
+13. **Import/export and backup:** verify actual files and contents, round-trip data, metadata, formatting, relationships and attachments. Test malformed, incomplete, duplicate and incompatible inputs. A failed operation must not corrupt pre-existing data.
+14. **Accessibility and input modalities:** keyboard-only operation, focus order, visible focus, screen-reader names, disabled states, Escape and Enter behavior, dialog focus containment, live announcements, zoom and narrow viewport behavior. Test that keyboard and pointer paths produce equivalent outcomes where intended.
+15. **Security and privacy:** test untrusted text/HTML/URLs, unsafe protocols, injection payloads, remote resources, permission boundaries, unexpected network calls and data leakage. Use benign test payloads and controlled endpoints. Do not perform destructive or external attacks.
+16. **Responsive and visual robustness:** inspect every meaningful layout breakpoint, scrolling behavior, clipped controls, overlays, dialogs, focus visibility and content-heavy cases. Capture screenshots of actual failures and representative states.
+17. **Operational quality:** console/page errors, rejected promises, duplicate event handling, stuck spinners, inaccessible error messages, memory/resource leaks observable through repeat use, corrupted storage, release artifact completeness and installation/update behavior.
+
+For an inapplicable scenario class, record why it does not apply. Do not mark it passed merely because the product has no such feature.
+
+## 4. Explore like a human, verify like a tester
+
+Perform at least these distinct passes:
+
+### Pass A — Unscripted discovery
+
+Start from a clean profile and explore the app as a first-time user. Follow the visible cues, use tooltips and help, try obvious actions, observe empty and error states, and record confusion or dead ends. Do not inspect internal runtime state during this pass except when needed for safety.
+
+### Pass B — Systematic screen and control sweep
+
+Visit every discovered screen and activate every control that can safely be exercised. Test controls in their valid context; an add-row action, for example, must be tried when a table exists. Track every control in the ledger. Re-test controls that appear in more than one context.
+
+### Pass C — Full end-to-end workflows
+
+Turn each feature into complete user journeys with a beginning, meaningful intermediate steps and a verified end state. Include realistic tasks, not merely isolated clicks. Examples should be generated from the actual app inventory, not limited to this paragraph. Include workflows that cross several screens and return to earlier records.
+
+### Pass D — Boundary, invalid, cancellation and failure exploration
+
+Vary inputs and preconditions. Cancel confirmation dialogs. Trigger safe negative cases. Simulate failures only through supported test methods or controlled fixtures; do not silently alter product data or bypass the UI. Check that error feedback is truthful and that retry/recovery works.
+
+### Pass E — Cross-feature and timing exploration
+
+Build a dependency map from shared records, state stores, handlers and UI navigation. Test every important pair of interacting features and selected higher-order combinations. Systematically interleave edits, saves, navigation and other global actions while operations are pending. Include rapid/repeated inputs and reversed action order where outcomes could differ.
+
+### Pass F — Persistence, restart and round-trip verification
+
+Check saved data after closing/reopening views, refreshing the dashboard, opening a second tab, restarting the browser/profile where practical, and performing supported import/export or backup/restore round trips. Verify both visible rendering and downloaded/restored data.
+
+### Pass G — Regression and independent repeat
+
+Re-run every failure, then rerun the affected workflow from a clean state. Re-test related workflows likely to share code. Do not declare a defect resolved or non-reproducible based on one attempt. Preserve evidence from both attempts.
+
+## 5. Use a state model and explicit coverage accounting
+
+Treat the application as a stateful system. For each feature, identify:
+
+- starting/precondition states;
+- user actions/events;
+- intermediate/loading/in-flight states;
+- success, failure, cancellation and recovery outcomes;
+- durable state after the operation;
+- related features that may be affected.
+
+Track **state and transition coverage**, not only the number of tests. For each transition, mark whether it was executed, passed, failed, blocked, not run or inconclusive. Track control coverage, workflow coverage, cross-feature pair coverage and relevant higher-order combinations separately.
+
+Use risk to guide the order and depth of exploration, but do not silently drop lower-risk coverage. Test destructive and data-loss boundaries carefully. For combinatorial testing, use pairwise coverage as a baseline for compatible features and add three-way/sequence tests where shared state, asynchronous behavior or data loss can arise. Explain the rationale for combinations that could not be run.
+
+When a new screen, action, state, error, or feature interaction is discovered during exploration, update the inventory and add tests before finishing. Discovery continues throughout the audit.
+
+## 6. Evidence rules
+
+Use the real user interface for actions. Do not create or edit application records through internal RPCs, direct database writes, hidden test hooks, direct function calls or DevTools code. Browser DOM/accessibility inspection, screenshots, tracing, console/network observation and read-only diagnostic inspection are permitted for evidence when they do not bypass the user path.
+
+For each scenario, record:
+
+- scenario ID and feature/control IDs;
+- user goal and starting conditions;
+- exact steps/actions and action timing where relevant;
+- expected outcome and source of that expectation (requirement, documented limit, established UI contract or explicit uncertainty);
+- actual visible outcome;
+- actual persisted outcome after reopening/reload/round-trip where applicable;
+- status, reproduction rate, environment and evidence paths;
+- any data leakage, unintended state change, error or cross-feature side effect.
+
+Statuses must be exactly: `PASS`, `FAIL`, `BLOCKED`, `NOT RUN`, or `INCONCLUSIVE`.
+
+A click producing an animation is not a pass. A toast alone is not proof of persistence. A source implementation is not proof of runtime success. A passing unit test is not proof that the UI workflow works. A screenshot alone is not proof of data integrity. For successful mutations, verify the postcondition and durable result wherever applicable.
+
+Capture Playwright traces, screenshots, console/page errors, unexpected network requests and test-created downloads as appropriate. Use unique synthetic marker strings in titles and content to detect loss, duplication or cross-record leakage. Redact secrets and avoid capturing real user data.
+
+## 7. Test infrastructure and trustworthy automation
+
+Prefer real browser automation against the actual built app. Playwright is already present in this repository, but use its current configuration correctly. Do not switch to mocked component tests when the task requires real-user verification.
+
+Add or extend **test-only** automation only if needed to execute repeatable real UI paths or collect evidence. Do not modify product behavior to satisfy tests. Keep the test environment isolated, deterministic where possible and explicit about sources of nondeterminism.
+
+When a workflow cannot be reliably automated, perform it manually in the real UI if the environment permits, record the precise steps and evidence, and explain why automation was unsuitable. Do not claim automation ran a case that was only reasoned about.
+
+Track flaky tests separately. Retry to diagnose flakiness, but report the initial failure and all retries; do not turn retries into an unqualified pass.
+
+## 8. Repository-specific scope to discover and cover
+
+Use the repository's actual implementation and current build to determine which of the following capabilities exist and how they are exposed: note creation/editing; title/subtitle and rich-text features; tags and categories; pin/favorite/archive/trash/restore; search/filter/sort and command palette; attachments and images; links and web-page capture; reminders; revisions/recovery/conflict handling; import/export and backup/restore; settings and toolbar visibility; onboarding, diagnostics, privacy and permissions; local AI; keyboard access and responsive UI; extension install, reload and update behavior.
+
+This list is a discovery starting point, **not a whitelist or a complete predefined test plan**. Discover additional features and controls from source and runtime. If a listed feature is not present in the current build, record the discrepancy rather than inventing a way to test it. If a capability is present but requires a permission, fixture, file, model, service or external condition, set it up safely when feasible and otherwise mark the case BLOCKED with evidence.
+
+For local AI, use only a genuinely configured loopback endpoint when available. Do not use a cloud model fallback. For web capture, use controlled pages and the product's real capture flow; do not claim full capture works based solely on mocks if browser permissions or environment constraints prevent it. For reminders, account for the documented limitation that Chrome must be running and cannot wake a sleeping computer.
+
+## 9. Defect handling
+
+Do not repair the product during this audit. When a failure occurs:
+
+1. Preserve the failing state and collect evidence before resetting anything.
+2. Repeat it from the same preconditions when practical.
+3. Repeat with a clean record/profile if needed to distinguish corruption from an interaction defect.
+4. Verify whether the result contradicts an explicit requirement, a documented limitation, or only an unclear assumption.
+5. Trace the likely affected code path only after recording runtime behavior. Report a root cause only when supported by evidence; otherwise label it a hypothesis.
+6. Identify related workflows and controls that need regression tests.
+
+Do not suppress or overwrite existing reports. Do not make a test pass by relaxing assertions, deleting a failing scenario, altering intended outcomes, or treating a product limitation as success without checking its documentation and actual behavior.
+
+## 10. Final deliverables
+
+Save the report and evidence outside the repository, for example:
+
+`/tmp/local-notes-human-qa-<timestamp>/`
+
+Produce:
+
+- `executive-summary.md` — exact target commit, environment, overall outcome and major conclusions;
+- `application-map.md` — discovered screens, features, data boundaries and integrations;
+- `control-inventory.csv` — every visible/accessibility-discovered control and status;
+- `feature-workflow-matrix.csv` — each feature's full workflows and results;
+- `state-transition-matrix.csv` — starting state/action/result/durable state coverage;
+- `cross-feature-coverage.csv` — feature pairs and selected higher-order interactions tested or not tested;
+- `scenario-catalog.md` — all generated scenarios, preconditions and expected postconditions;
+- `test-command-results.md` — exact commands, exit codes, real discovered counts and relevant output summaries;
+- `defects.md` — reproducible failures with steps, expected/actual behavior, reproduction rate, evidence and carefully qualified root-cause analysis;
+- `coverage-gaps.md` — every control, feature, state, workflow and interaction that remains blocked, not run or inconclusive, with precise reasons;
+- `existing-test-coverage.md` — mapping from current tests to discovered features and untested behavior;
+- `evidence/` — organized screenshots, traces, logs and download/round-trip artifacts.
+
+The report must separate observed fact, code-inspection finding, requirement mismatch, hypothesis and environment limitation. Use exact counts computed from the ledgers. Do not use statements like "everything works", "all features tested" or "complete coverage" unless the supporting inventory demonstrates the claimed scope; disclose any remaining gap.
+
+Finish with a clear answer to:
+
+1. What can a user actually accomplish in the current build?
+2. Which complete workflows passed from start to durable end state?
+3. Which controls/features are broken, misleading, inaccessible, inconsistent or only partially implemented?
+4. Which sequences, timing conditions or feature combinations cause data loss, duplication, corruption or stale UI?
+5. Do source, requirements, documentation and observed application behavior agree?
+6. Exactly what remains untested, blocked or inconclusive?
+7. Which minimal reproducible steps and evidence should a developer use to fix each confirmed defect?
+
+**Completion criterion:** do not stop at a successful build, a green existing test suite, one happy path, or the example supplied by the user. Stop only after the discovery ledgers have been reconciled against source and the live UI, every discovered control and meaningful state transition has an explicit status, complete workflows and feature interactions have been systematically exercised, failures have reproducible evidence, and every remaining coverage gap is documented.

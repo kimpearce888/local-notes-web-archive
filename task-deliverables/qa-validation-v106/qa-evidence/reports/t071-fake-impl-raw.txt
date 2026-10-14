@@ -1,0 +1,135 @@
+# T-071 — Fake-Implementation Detection Scan
+
+Scan target: /home/z/my-project/repo-local-notes @ HEAD (post-T-070)
+Code files scanned: 222 (node_modules/dist/release/test-results excluded)
+Patterns: TODO, FIXME, HACK, XXX, MOCK, STUB, PLACEHOLDER, TEMP, dummy, fakeX, simulated, not-implemented, deferred, hard-disabled, console-log-debug
+
+## Product-source findings (src/, public/): 81
+- package-lock.json:17 [PLACEHOLDER] "@tiptap/extension-placeholder": "3.31.4",
+- package-lock.json:1153 [PLACEHOLDER] "node_modules/@tiptap/extension-placeholder": {
+- package-lock.json:1155 [PLACEHOLDER] "resolved": "https://registry.npmjs.org/@tiptap/extension-placeholder/-/extension-placeholder-3.31.4.tgz",
+- DEPENDENCIES.json:58 [PLACEHOLDER] "name": "@tiptap/extension-placeholder",
+- DEPENDENCIES.json:613 [fakeX] "sourceUrl": "git://github.com/dumbmatter/fakeIndexedDB.git",
+- DEPENDENCIES.json:614 [fakeX] "homepage": "https://github.com/dumbmatter/fakeIndexedDB",
+- DEPENDENCIES.json:1080 [MOCK] "homepage": "https://vitest.dev/api/mock",
+- package.json:33 [PLACEHOLDER] "@tiptap/extension-placeholder": "3.31.4",
+- src/background/lifecycle.ts:8 [fakeX] * never swallowed into fake success.
+- src/background/ai/hygiene.ts:15 [fakeX] *   fakes server status.
+- src/background/ai/hygiene.ts:35 [PLACEHOLDER] // collapse everything else to a placeholder.
+- src/dashboard/shell.ts:255 [PLACEHOLDER] searchInput.placeholder = 'Search notes, tags, snapshots…';
+- src/dashboard/shell.ts:445 [hard-disabled] paginationPrev.disabled = true;
+- src/dashboard/shell.ts:453 [hard-disabled] paginationNext.disabled = true;
+- src/dashboard/styles.css:513 [PLACEHOLDER] .search-input::placeholder {
+- src/dashboard/styles.css:871 [PLACEHOLDER] .palette__input::placeholder {
+- src/dashboard/styles.css:1686 [PLACEHOLDER] content: attr(data-placeholder);
+- src/dashboard/styles.css:2055 [PLACEHOLDER] content: attr(data-placeholder);
+- src/dashboard/state/editor-session.ts:859 [hard-disabled] pinButton.disabled = true;
+- src/dashboard/state/editor-session.ts:894 [hard-disabled] favoriteButton.disabled = true;
+- src/dashboard/state/editor-session.ts:935 [hard-disabled] trashButton.disabled = true;
+- src/dashboard/state/controller.ts:461 [PLACEHOLDER] // Optimistic placeholder entry — replaced by the persisted note, or
+- src/dashboard/state/controller.ts:464 [PLACEHOLDER] // (the audit saw 52 cards on "Page 1 of 2"), so the placeholder is
+- src/dashboard/state/controller.ts:485 [PLACEHOLDER] // Full page: no placeholder (the invariant holds), only the honest
+- src/dashboard/state/client.ts:86 [fakeX] // an honest internal error — never as a fake success.
+- src/dashboard/views/filters-panel.ts:191 [PLACEHOLDER] sourceDomain.placeholder = 'example.com';
+- src/dashboard/views/filters-panel.ts:423 [PLACEHOLDER] input.setAttribute('placeholder', 'e.g. Research reading list');
+- src/dashboard/views/bulk-bar.ts:238 [PLACEHOLDER] newTagInput.setAttribute('placeholder', 'research, to-read');
+- src/dashboard/views/bulk-bar.ts:324 [PLACEHOLDER] newInput.setAttribute('placeholder', 'New category name');
+- src/dashboard/views/settings-panel.ts:235 [hard-disabled] saveButton.disabled = true;
+- src/dashboard/views/settings-panel.ts:240 [hard-disabled] resetButton.disabled = true;
+- src/dashboard/views/settings-panel.ts:430 [hard-disabled] revoke.disabled = true;
+- src/dashboard/views/settings-panel.ts:544 [hard-disabled] exportButton.disabled = true;
+- src/dashboard/views/settings-panel.ts:600 [PLACEHOLDER] baseUrlInput.placeholder = 'http://127.0.0.1:1234/v1';
+- src/dashboard/views/settings-panel.ts:616 [hard-disabled] modelRefresh.disabled = true;
+- src/dashboard/views/settings-panel.ts:656 [hard-disabled] testButton.disabled = true;
+- src/dashboard/views/settings-panel.ts:691 [fakeX] 'and no server status is ever faked. Tool calls are validated, bounded and audited; the model can propose, ' +
+- src/dashboard/views/settings-panel.ts:723 [hard-disabled] saveButton.disabled = true;
+- src/dashboard/views/settings-panel.ts:791 [hard-disabled] restore.disabled = true;
+- src/dashboard/views/settings-panel.ts:833 [hard-disabled] saveButton.disabled = true;
+- src/dashboard/views/settings-panel.ts:834 [hard-disabled] resetButton.disabled = true;
+- src/dashboard/views/settings-panel.ts:875 [hard-disabled] saveButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:167 [hard-disabled] refreshButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:173 [hard-disabled] selfTestButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:179 [hard-disabled] exportButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:201 [hard-disabled] selfTestButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:202 [hard-disabled] exportButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:210 [hard-disabled] refreshButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:211 [hard-disabled] selfTestButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:212 [hard-disabled] exportButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:282 [hard-disabled] rebuildButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:346 [hard-disabled] testButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:405 [hard-disabled] selfTestButton.disabled = true;
+- src/dashboard/views/diagnostics-panel.ts:446 [hard-disabled] exportButton.disabled = true;
+- src/dashboard/views/duplicate-dialog.ts:73 [hard-disabled] freshButton.disabled = true;
+- src/dashboard/views/duplicate-dialog.ts:74 [hard-disabled] reuseButton.disabled = true;
+- src/dashboard/views/command-palette.ts:85 [PLACEHOLDER] field.placeholder = 'Type a command…';
+- src/dashboard/views/onboarding.ts:110 [hard-disabled] startButton.disabled = true;
+- src/dashboard/ai/ai-panel.ts:105 [PLACEHOLDER] input.placeholder = 'Ask the local model… (Ctrl+Enter to send)';
+- src/dashboard/ai/ai-panel.ts:166 [hard-disabled] approve.disabled = true;
+- src/dashboard/ai/ai-panel.ts:167 [hard-disabled] deny.disabled = true;
+- src/dashboard/ai/ai-panel.ts:171 [hard-disabled] approve.disabled = true;
+- src/dashboard/ai/ai-panel.ts:172 [hard-disabled] deny.disabled = true;
+- src/dashboard/ai/ai-panel.ts:277 [hard-disabled] input.disabled = true;
+- src/dashboard/ai/ai-panel.ts:278 [hard-disabled] sendButton.disabled = true;
+- src/dashboard/editor/reminders-panel.ts:242 [hard-disabled] button.disabled = true;
+- src/dashboard/editor/reminders-panel.ts:247 [hard-disabled] button.disabled = true;
+- src/dashboard/editor/reminders-panel.ts:612 [hard-disabled] saveButton.disabled = true;
+- src/dashboard/editor/local-image.ts:119 [PLACEHOLDER] caption.dataset.placeholder = 'Write a caption…';
+- src/dashboard/editor/extensions.ts:7 [PLACEHOLDER] * labels, links, tables, images, placeholder text, character count and
+- src/dashboard/editor/extensions.ts:21 [PLACEHOLDER] import { Placeholder } from '@tiptap/extension-placeholder';
+- src/dashboard/editor/extensions.ts:104 [PLACEHOLDER] Placeholder.configure({ placeholder: PLACEHOLDER_TEXT }),
+- src/dashboard/editor/snapshots-panel.ts:215 [PLACEHOLDER] // falls through to the placeholder below
+- src/dashboard/editor/snapshots-panel.ts:254 [hard-disabled] exportPng.disabled = true;
+- src/dashboard/editor/snapshots-panel.ts:263 [hard-disabled] exportText.disabled = true;
+- src/dashboard/editor/snapshots-panel.ts:488 [hard-disabled] exportButton.disabled = true;
+- src/dashboard/editor/editor-panel.ts:76 [PLACEHOLDER] titleInput.placeholder = 'Untitled note';
+- src/dashboard/editor/editor-panel.ts:82 [PLACEHOLDER] subtitleInput.placeholder = 'Optional subtitle';
+- src/dashboard/editor/editor-panel.ts:266 [PLACEHOLDER] findInput.placeholder = 'Find in note';
+- src/dashboard/editor/editor-panel.ts:281 [PLACEHOLDER] replaceInput.placeholder = 'Replace with';
+- src/dashboard/editor/editor-panel.ts:471 [PLACEHOLDER] srcInput.placeholder = 'data:image/png;base64,…';
+
+## Test-source findings (tests/ — sanctioned fixtures, informational): 114
+- MOCK: 67 occurrence(s) in test code (sanctioned: seed data/mocks for tests per rule.md §2)
+- PLACEHOLDER: 3 occurrence(s) in test code (sanctioned: seed data/mocks for tests per rule.md §2)
+- STUB: 5 occurrence(s) in test code (sanctioned: seed data/mocks for tests per rule.md §2)
+- TODO: 1 occurrence(s) in test code (sanctioned: seed data/mocks for tests per rule.md §2)
+- console-log-debug: 6 occurrence(s) in test code (sanctioned: seed data/mocks for tests per rule.md §2)
+- fakeX: 28 occurrence(s) in test code (sanctioned: seed data/mocks for tests per rule.md §2)
+- simulated: 4 occurrence(s) in test code (sanctioned: seed data/mocks for tests per rule.md §2)
+
+## Build/release script findings (scripts/): 31
+- scripts/generate-dependencies.mjs:233 [console-log-debug] console.log(
+- scripts/release.mjs:29 [console-log-debug] console.log('[release] building dist/ ...');
+- scripts/release.mjs:34 [console-log-debug] console.log('[release] regenerating dependency inventory ...');
+- scripts/release.mjs:80 [console-log-debug] console.log(`[release] static gate passed (${files.length} files, ${jsFiles.length} JS files scanned)`);
+- scripts/release.mjs:113 [console-log-debug] console.log(`[release] wrote ${relative(root, zipPath)} (${statSync(zipPath).size} bytes)`);
+- scripts/release.mjs:114 [console-log-debug] console.log(`[release] sha256 ${sha256}`);
+- scripts/release.mjs:115 [console-log-debug] console.log('[release] done');
+- scripts/generate-identity.mjs:51 [console-log-debug] console.log(`[identity] private key: keys/local-notes-web-archive.pem (never commit)`);
+- scripts/generate-identity.mjs:52 [console-log-debug] console.log(`[identity] manifest "key" written; pinned extension ID: ${extensionId}`);
+- scripts/github-metadata.mjs:93 [console-log-debug] console.log(`[metadata] target ${slug}`);
+- scripts/github-metadata.mjs:101 [console-log-debug] console.log(`[metadata] description set (${DESCRIPTION.length} chars)`);
+- scripts/github-metadata.mjs:102 [console-log-debug] console.log(`[metadata] homepage set to ${patch.body.homepage}`);
+- scripts/github-metadata.mjs:110 [console-log-debug] console.log(`[metadata] ${topics.body.names.length} topics set: ${topics.body.names.join(', ')}`);
+- scripts/github-metadata.mjs:111 [console-log-debug] console.log('[metadata] done — https://github.com/' + slug);
+- scripts/github-release.mjs:192 [console-log-debug] console.log(`[publish] target ${slug} tag ${tag}`);
+- scripts/github-release.mjs:199 [console-log-debug] console.log(`[publish] release ${tag} already exists (id ${release.id}) — reusing`);
+- scripts/github-release.mjs:215 [console-log-debug] console.log(`[publish] created release ${tag} (id ${release.id})`);
+- scripts/github-release.mjs:226 [console-log-debug] console.log(`[publish] ${asset.name} already uploaded (${size} bytes) — skipped`);
+- scripts/github-release.mjs:235 [console-log-debug] console.log(`[publish] ${asset.name} size changed — old asset removed`);
+- scripts/github-release.mjs:248 [console-log-debug] console.log(`[publish] uploaded ${asset.name} (${size} bytes, sha256 ${sha256.slice(0, 16)}…)`);
+- scripts/github-release.mjs:251 [console-log-debug] console.log(`[publish] release live: ${release.html_url}`);
+- scripts/verify-release.mjs:45 [console-log-debug] console.log(`[verify] manifest sanity OK (MV3, Chrome >= ${minChrome}, stable key)`);
+- scripts/verify-release.mjs:75 [console-log-debug] console.log('[verify] CSP OK: script-src self-only, object-src self, connect-src loopback-only');
+- scripts/verify-release.mjs:101 [console-log-debug] console.log(`[verify] ${referenced.size} manifest/html-referenced assets present, icons are real PNGs`);
+- scripts/verify-release.mjs:118 [console-log-debug] console.log(`[verify] ${htmlEntries.length} html file(s) reference only existing local assets`);
+- scripts/verify-release.mjs:161 [console-log-debug] console.log(
+- scripts/verify-release.mjs:177 [console-log-debug] console.log(`[verify] dist/ complete: ${fileCount} files, all checks passed`);
+- scripts/generate-icons.mjs:181 [console-log-debug] console.log(`[icons] wrote ${file} (${png.length} bytes)`);
+- scripts/audit.mjs:276 [STUB] check('PRD §14 documentation bundle', missingDocs.length === 0, missingDocs.length === 0 ? `${requiredDocs.length} documents present and non-trivial` 
+- scripts/audit.mjs:502 [console-log-debug] console.log(`[audit] verdict ${verdict}: ${passed}/${checks.length} checks passed`);
+- scripts/audit.mjs:503 [console-log-debug] console.log(`[audit] report written to docs/REPOSITORY_AUDIT.md (${statSync(reportPath).size} bytes)`);
+
+## Documentation findings (docs/, *.md): 7
+- PLACEHOLDER: 2 occurrence(s) in documentation (honest-limitation statements expected)
+- fakeX: 1 occurrence(s) in documentation (honest-limitation statements expected)
+- simulated: 4 occurrence(s) in documentation (honest-limitation statements expected)

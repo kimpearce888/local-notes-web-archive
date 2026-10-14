@@ -1,0 +1,16 @@
+{
+  "spec": "probe-backup",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [
+    "probe-backup-no-download.png"
+  ],
+  "notes": [
+    "backup status @2.5s: Backup failed: Failed to execute 'createObjectURL' on 'URL': Overload resolution failed.. Your notes are unchanged. at 2026-10-13T20:46:51.142Z",
+    "NO download event within 30s at 2026-10-13T20:47:18.521Z",
+    "screenshot probe-backup-no-download at 2026-10-13T20:47:18.521Z"
+  ]
+}

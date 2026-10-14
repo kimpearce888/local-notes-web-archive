@@ -1,0 +1,31 @@
+{
+  "spec": "pass-b-editor",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [
+    "E5-link-protocol-refused.png",
+    "E8-source-view.png",
+    "E10-panels-toggled-state.png",
+    "E11-unicode-card.png"
+  ],
+  "notes": [
+    "marks html: strong=true, em=true, u=true, s=true, code=true, sup=true, sub=true at 2026-10-13T21:37:06.043Z",
+    "blocks html: h1=true, blockquote=true, pre=true, hr=true, ul=true, task=true at 2026-10-13T21:37:09.607Z",
+    "color html has span with style=true at 2026-10-13T21:37:10.330Z",
+    "table html: table=false, rows=3 at 2026-10-13T21:37:10.780Z",
+    "screenshot E5-link-protocol-refused at 2026-10-13T21:37:11.285Z",
+    "link html has example.com=true at 2026-10-13T21:37:11.599Z",
+    "image html has img=true, alt=true at 2026-10-13T21:37:12.075Z",
+    "find status for body marker: 1 of 1 at 2026-10-13T21:37:12.529Z",
+    "find+replace-all applied and find bar closed at 2026-10-13T21:37:12.715Z",
+    "screenshot E8-source-view at 2026-10-13T21:37:12.827Z",
+    "exported md length=306, has marker=true at 2026-10-13T21:37:13.311Z",
+    "screenshot E10-panels-toggled-state at 2026-10-13T21:37:15.640Z",
+    "editor pin/unpin and trash-cancel verified at 2026-10-13T21:37:17.723Z",
+    "screenshot E11-unicode-card at 2026-10-13T21:37:17.940Z",
+    "unicode/emoji/long title and subtitle persisted and rendered at 2026-10-13T21:37:18.029Z"
+  ]
+}

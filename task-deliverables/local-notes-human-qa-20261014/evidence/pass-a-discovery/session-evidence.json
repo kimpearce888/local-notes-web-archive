@@ -1,0 +1,40 @@
+{
+  "spec": "pass-a-discovery",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [
+    "A1-first-run-onboarding.png",
+    "A2-settings-from-onboarding.png",
+    "A3-empty-library.png",
+    "A4-empty-search.png",
+    "A5-first-note-editor.png",
+    "A5-first-note-card.png",
+    "A6-settings-dialog.png",
+    "A6-diagnostics-dialog.png",
+    "A6-filters-disclosure-open.png",
+    "A6-command-palette.png"
+  ],
+  "notes": [
+    "screenshot A1-first-run-onboarding at 2026-10-13T21:36:56.135Z",
+    "onboarding visible with both exits enabled at 2026-10-13T21:36:56.309Z",
+    "screenshot A2-settings-from-onboarding at 2026-10-13T21:36:56.441Z",
+    "empty-library results-count text: 0 notes at 2026-10-13T21:36:56.730Z",
+    "screenshot A3-empty-library at 2026-10-13T21:36:56.730Z",
+    "all seven smart lists visited; six empty lists render honestly at 2026-10-13T21:36:57.329Z",
+    "screenshot A4-empty-search at 2026-10-13T21:36:57.422Z",
+    "empty-library search shows zero cards, no error at 2026-10-13T21:36:57.583Z",
+    "screenshot A5-first-note-editor at 2026-10-13T21:36:59.314Z",
+    "screenshot A5-first-note-card at 2026-10-13T21:36:59.460Z",
+    "first note created through the UI only and durable at 2026-10-13T21:36:59.530Z",
+    "screenshot A6-settings-dialog at 2026-10-13T21:37:00.130Z",
+    "screenshot A6-diagnostics-dialog at 2026-10-13T21:37:00.518Z",
+    "Filters clicked: aria-expanded=true, region visible=true, region child elements=0 at 2026-10-13T21:37:01.145Z",
+    "screenshot A6-filters-disclosure-open at 2026-10-13T21:37:01.145Z",
+    "Filters toggled closed again at 2026-10-13T21:37:01.269Z",
+    "screenshot A6-command-palette at 2026-10-13T21:37:01.333Z",
+    "pageErrors=0, consoleErrors=0, externalRequests=0, windowDialogs=0 at 2026-10-13T21:37:01.532Z"
+  ]
+}

@@ -11,6 +11,9 @@ export default tseslint.config(
       'playwright-report/**',
       'test-results/**',
       'node_modules/**',
+      // T-083: archived task evidence (spec copies saved as QA evidence) —
+      // never linted; see task-deliverables/README.md
+      'task-deliverables/**',
     ],
   },
   js.configs.recommended,

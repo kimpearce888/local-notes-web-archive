@@ -1,0 +1,31 @@
+=== MANIFEST PERMISSIONS ===
+permissions: ["storage","unlimitedStorage","alarms","notifications","scripting","pageCapture","debugger","contextMenus"]
+optional_permissions: []
+optional_host_permissions: ["http://*/*","https://*/*"]
+host_permissions: ["http://127.0.0.1/*","http://localhost/*"]
+
+=== SOURCE USAGE PER PERMISSION ===
+chrome.alarms: used in 3 source file(s)
+chrome.storage: used in 4 source file(s)
+chrome.tabs: used in 6 source file(s)
+chrome.scripting: used in 2 source file(s)
+chrome.debugger: used in 1 source file(s)
+chrome.downloads: used in 1 source file(s)
+chrome.notifications: used in 2 source file(s)
+chrome.pageCapture: used in 1 source file(s)
+chrome.contextMenus: used in 2 source file(s)
+chrome.identity: used in 0 source file(s)
+
+=== host permission usage ===
+44:  return chrome.permissions.contains({ origins: [pattern] });
+55:  return chrome.permissions.request({ origins: [pattern] });
+62:  return chrome.permissions.remove({ origins: [pattern] });
+73:  const patterns = all.origins ?? [];
+74:  const origins = new Set<string>();
+79:    origins.add(pattern.slice(0, -2));
+
+=== PERMISSIONS.md justifications ===
+grep: docs/PERMISSIONS.md: No such file or directory
+
+=== CSP check ===
+{"extension_pages":"script-src 'self'; object-src 'self'; connect-src 'self' http://127.0.0.1:* http://localhost:*"}

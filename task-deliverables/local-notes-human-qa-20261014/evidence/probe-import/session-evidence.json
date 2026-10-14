@@ -1,0 +1,16 @@
+{
+  "spec": "probe-import",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [],
+  "notes": [
+    "chooser element BEFORE: {\"tag\":\"INPUT\",\"inDom\":false,\"accept\":\".json,.md,.markdown,.txt,.html,.htm\",\"files\":0,\"hasListener\":\"object\"} at 2026-10-13T20:39:24.920Z",
+    "chooser element AFTER setFiles: {\"files\":1,\"names\":[\"probe-import.md\"]} at 2026-10-13T20:39:25.031Z",
+    "my own once-listener fired on dispatched change: true at 2026-10-13T20:39:25.044Z",
+    "cards after dispatched change: 2 at 2026-10-13T20:39:27.080Z",
+    "announcement: Note saved. at 2026-10-13T20:39:27.087Z"
+  ]
+}

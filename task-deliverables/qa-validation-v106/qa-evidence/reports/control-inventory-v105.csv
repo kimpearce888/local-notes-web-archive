@@ -1,0 +1,1358 @@
+control_id,screen,selector,role,accessible_name,type,disabled,visible
+C-001,bulk-bar,#search-input,input,(unnamed),search,False,True
+C-002,bulk-bar,#filter-modifiedAfter,input,(unnamed),date,False,True
+C-003,bulk-bar,#filter-modifiedBefore,input,(unnamed),date,False,True
+C-004,bulk-bar,#filter-pinned,input,(unnamed),checkbox,False,True
+C-005,bulk-bar,#filter-favorite,input,(unnamed),checkbox,False,True
+C-006,bulk-bar,#filter-hasLink,input,(unnamed),checkbox,False,True
+C-007,bulk-bar,#filter-hasAttachment,input,(unnamed),checkbox,False,True
+C-008,bulk-bar,#filter-sourceDomain,input,(unnamed),text,False,True
+C-009,bulk-bar,#filter-capturedAfter,input,(unnamed),date,False,True
+C-010,bulk-bar,#filter-capturedBefore,input,(unnamed),date,False,True
+C-011,bulk-bar,#command-palette-input,combobox,(unnamed),text,False,False
+C-012,bulk-bar,app button,button,All notes,button,False,True
+C-013,bulk-bar,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,True
+C-014,bulk-bar,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,True
+C-015,bulk-bar,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,True
+C-016,bulk-bar,filters-region button,button,Apply filters,button,False,True
+C-017,bulk-bar,app button,button,Archived,button,False,True
+C-018,bulk-bar,filters-region button,button,Clear all,button,False,True
+C-019,bulk-bar,"button[aria-label=""""]",button,Close,button,False,False
+C-020,bulk-bar,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-021,bulk-bar,app button,button,Favorites,button,False,True
+C-022,bulk-bar,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-023,bulk-bar,"button[aria-label=""""]",button,Get started,button,True,False
+C-024,bulk-bar,app button,radio,Grid,button,False,True
+C-025,bulk-bar,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-026,bulk-bar,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-027,bulk-bar,app button,radio,List,button,False,True
+C-028,bulk-bar,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-029,bulk-bar,app button,button,Next page,button,True,True
+C-030,bulk-bar,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-031,bulk-bar,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-032,bulk-bar,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-033,bulk-bar,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-034,bulk-bar,app button,button,Overdue reminders,button,False,True
+C-035,bulk-bar,app button,button,Pinned,button,False,True
+C-036,bulk-bar,app button,button,Previous page,button,True,True
+C-037,bulk-bar,app button,button,Recently edited,button,False,True
+C-038,bulk-bar,"button[aria-label=""""]",button,Refresh,button,True,False
+C-039,bulk-bar,"button[aria-label=""""]",button,Reset,button,True,False
+C-040,bulk-bar,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-041,bulk-bar,filters-region button,button,Save as view…,button,False,True
+C-042,bulk-bar,"button[aria-label=""""]",button,Save changes,button,True,False
+C-043,bulk-bar,#select-all-page,input,Select all notes on this page,checkbox,True,True
+C-044,bulk-bar,app a,a,Skip to notes list,,False,True
+C-045,bulk-bar,#sort-direction-select,select,Sort direction,select-one,False,True
+C-046,bulk-bar,app button,button,Trash,button,False,True
+C-047,command-palette,#search-input,input,(unnamed),search,False,True
+C-048,command-palette,#filter-modifiedAfter,input,(unnamed),date,False,True
+C-049,command-palette,#filter-modifiedBefore,input,(unnamed),date,False,True
+C-050,command-palette,#filter-pinned,input,(unnamed),checkbox,False,True
+C-051,command-palette,#filter-favorite,input,(unnamed),checkbox,False,True
+C-052,command-palette,#filter-hasLink,input,(unnamed),checkbox,False,True
+C-053,command-palette,#filter-hasAttachment,input,(unnamed),checkbox,False,True
+C-054,command-palette,#filter-sourceDomain,input,(unnamed),text,False,True
+C-055,command-palette,#filter-capturedAfter,input,(unnamed),date,False,True
+C-056,command-palette,#filter-capturedBefore,input,(unnamed),date,False,True
+C-057,command-palette,#command-palette-input,combobox,(unnamed),text,False,True
+C-058,command-palette,app button,button,All notes,button,False,True
+C-059,command-palette,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,True
+C-060,command-palette,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,True
+C-061,command-palette,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,True
+C-062,command-palette,filters-region button,button,Apply filters,button,False,True
+C-063,command-palette,app button,button,Archived,button,False,True
+C-064,command-palette,filters-region button,button,Clear all,button,False,True
+C-065,command-palette,"button[aria-label=""""]",button,Close,button,False,False
+C-066,command-palette,#command-palette-option-theme-dark,option,Dark theme,,False,True
+C-067,command-palette,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-068,command-palette,app button,button,Favorites,button,False,True
+C-069,command-palette,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-070,command-palette,#command-palette-option-focus-search,option,Focus search/,,False,True
+C-071,command-palette,#command-palette-option-theme-system,option,Follow system themeActive,,False,True
+C-072,command-palette,"button[aria-label=""""]",button,Get started,button,True,False
+C-073,command-palette,#command-palette-option-go-all,option,Go to All notes,,False,True
+C-074,command-palette,#command-palette-option-go-archived,option,Go to Archived,,False,True
+C-075,command-palette,#command-palette-option-go-favorites,option,Go to Favorites,,False,True
+C-076,command-palette,#command-palette-option-go-overdue,option,Go to Overdue reminders,,False,True
+C-077,command-palette,#command-palette-option-go-pinned,option,Go to Pinned,,False,True
+C-078,command-palette,#command-palette-option-go-recent,option,Go to Recently edited,,False,True
+C-079,command-palette,#command-palette-option-go-trashed,option,Go to Trash,,False,True
+C-080,command-palette,app button,radio,Grid,button,False,True
+C-081,command-palette,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-082,command-palette,#command-palette-option-import-note,option,Import note…,,False,True
+C-083,command-palette,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-084,command-palette,#command-palette-option-theme-light,option,Light theme,,False,True
+C-085,command-palette,app button,radio,List,button,False,True
+C-086,command-palette,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-087,command-palette,#command-palette-option-new-note,option,New noteAlt+Shift+C,,False,True
+C-088,command-palette,app button,button,Next page,button,True,True
+C-089,command-palette,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-090,command-palette,#command-palette-option-open-diagnostics,option,Open diagnostics,,False,True
+C-091,command-palette,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-092,command-palette,#command-palette-option-open-settings,option,Open settings,,False,True
+C-093,command-palette,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-094,command-palette,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-095,command-palette,app button,button,Overdue reminders,button,False,True
+C-096,command-palette,app button,button,Pinned,button,False,True
+C-097,command-palette,app button,button,Previous page,button,True,True
+C-098,command-palette,app button,button,Recently edited,button,False,True
+C-099,command-palette,"button[aria-label=""""]",button,Refresh,button,True,False
+C-100,command-palette,"button[aria-label=""""]",button,Reset,button,True,False
+C-101,command-palette,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-102,command-palette,filters-region button,button,Save as view…,button,False,True
+C-103,command-palette,"button[aria-label=""""]",button,Save changes,button,True,False
+C-104,command-palette,#select-all-page,input,Select all notes on this page,checkbox,True,True
+C-105,command-palette,app a,a,Skip to notes list,,False,True
+C-106,command-palette,#sort-direction-select,select,Sort direction,select-one,False,True
+C-107,command-palette,app button,button,Trash,button,False,True
+C-108,dashboard-empty,#search-input,input,(unnamed),search,False,True
+C-109,dashboard-empty,#filter-modifiedAfter,input,(unnamed),date,False,False
+C-110,dashboard-empty,#filter-modifiedBefore,input,(unnamed),date,False,False
+C-111,dashboard-empty,#filter-pinned,input,(unnamed),checkbox,False,False
+C-112,dashboard-empty,#filter-favorite,input,(unnamed),checkbox,False,False
+C-113,dashboard-empty,#filter-hasLink,input,(unnamed),checkbox,False,False
+C-114,dashboard-empty,#filter-hasAttachment,input,(unnamed),checkbox,False,False
+C-115,dashboard-empty,#filter-sourceDomain,input,(unnamed),text,False,False
+C-116,dashboard-empty,#filter-capturedAfter,input,(unnamed),date,False,False
+C-117,dashboard-empty,#filter-capturedBefore,input,(unnamed),date,False,False
+C-118,dashboard-empty,#command-palette-input,combobox,(unnamed),text,False,False
+C-119,dashboard-empty,app button,button,All notes,button,False,True
+C-120,dashboard-empty,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,False
+C-121,dashboard-empty,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,False
+C-122,dashboard-empty,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,False
+C-123,dashboard-empty,filters-region button,button,Apply filters,button,False,False
+C-124,dashboard-empty,app button,button,Archived,button,False,True
+C-125,dashboard-empty,filters-region button,button,Clear all,button,False,False
+C-126,dashboard-empty,"button[aria-label=""""]",button,Close,button,False,False
+C-127,dashboard-empty,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-128,dashboard-empty,app button,button,Favorites,button,False,True
+C-129,dashboard-empty,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-130,dashboard-empty,"button[aria-label=""""]",button,Get started,button,True,False
+C-131,dashboard-empty,app button,radio,Grid,button,False,True
+C-132,dashboard-empty,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-133,dashboard-empty,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-134,dashboard-empty,app button,radio,List,button,False,True
+C-135,dashboard-empty,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-136,dashboard-empty,app button,button,Next page,button,True,True
+C-137,dashboard-empty,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-138,dashboard-empty,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-139,dashboard-empty,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-140,dashboard-empty,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-141,dashboard-empty,app button,button,Overdue reminders,button,False,True
+C-142,dashboard-empty,app button,button,Pinned,button,False,True
+C-143,dashboard-empty,app button,button,Previous page,button,True,True
+C-144,dashboard-empty,app button,button,Recently edited,button,False,True
+C-145,dashboard-empty,"button[aria-label=""""]",button,Refresh,button,True,False
+C-146,dashboard-empty,"button[aria-label=""""]",button,Reset,button,True,False
+C-147,dashboard-empty,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-148,dashboard-empty,filters-region button,button,Save as view…,button,False,False
+C-149,dashboard-empty,"button[aria-label=""""]",button,Save changes,button,True,False
+C-150,dashboard-empty,#select-all-page,input,Select all notes on this page,checkbox,True,True
+C-151,dashboard-empty,app a,a,Skip to notes list,,False,True
+C-152,dashboard-empty,#sort-direction-select,select,Sort direction,select-one,False,True
+C-153,dashboard-empty,app button,button,Trash,button,False,True
+C-154,dashboard-list,#search-input,input,(unnamed),search,False,True
+C-155,dashboard-list,#filter-modifiedAfter,input,(unnamed),date,False,False
+C-156,dashboard-list,#filter-modifiedBefore,input,(unnamed),date,False,False
+C-157,dashboard-list,#filter-pinned,input,(unnamed),checkbox,False,False
+C-158,dashboard-list,#filter-favorite,input,(unnamed),checkbox,False,False
+C-159,dashboard-list,#filter-hasLink,input,(unnamed),checkbox,False,False
+C-160,dashboard-list,#filter-hasAttachment,input,(unnamed),checkbox,False,False
+C-161,dashboard-list,#filter-sourceDomain,input,(unnamed),text,False,False
+C-162,dashboard-list,#filter-capturedAfter,input,(unnamed),date,False,False
+C-163,dashboard-list,#filter-capturedBefore,input,(unnamed),date,False,False
+C-164,dashboard-list,#command-palette-input,combobox,(unnamed),text,False,False
+C-165,dashboard-list,app button,button,All notes,button,False,True
+C-166,dashboard-list,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,False
+C-167,dashboard-list,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,False
+C-168,dashboard-list,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,False
+C-169,dashboard-list,filters-region button,button,Apply filters,button,False,False
+C-170,dashboard-list,app button,button,Archived,button,False,True
+C-171,dashboard-list,filters-region button,button,Clear all,button,False,False
+C-172,dashboard-list,"button[aria-label=""""]",button,Close,button,False,False
+C-173,dashboard-list,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-174,dashboard-list,app button,button,Favorites,button,False,True
+C-175,dashboard-list,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-176,dashboard-list,"button[aria-label=""""]",button,Get started,button,True,False
+C-177,dashboard-list,app button,radio,Grid,button,False,True
+C-178,dashboard-list,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-179,dashboard-list,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-180,dashboard-list,app button,radio,List,button,False,True
+C-181,dashboard-list,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-182,dashboard-list,app button,button,Next page,button,True,True
+C-183,dashboard-list,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-184,dashboard-list,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-185,dashboard-list,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-186,dashboard-list,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-187,dashboard-list,app button,button,Overdue reminders,button,False,True
+C-188,dashboard-list,app button,button,Pinned,button,False,True
+C-189,dashboard-list,app button,button,Previous page,button,True,True
+C-190,dashboard-list,app button,button,Recently edited,button,False,True
+C-191,dashboard-list,"button[aria-label=""""]",button,Refresh,button,True,False
+C-192,dashboard-list,"button[aria-label=""""]",button,Reset,button,True,False
+C-193,dashboard-list,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-194,dashboard-list,filters-region button,button,Save as view…,button,False,False
+C-195,dashboard-list,"button[aria-label=""""]",button,Save changes,button,True,False
+C-196,dashboard-list,#select-all-page,input,Select all notes on this page,checkbox,True,True
+C-197,dashboard-list,app a,a,Skip to notes list,,False,True
+C-198,dashboard-list,#sort-direction-select,select,Sort direction,select-one,False,True
+C-199,dashboard-list,app button,button,Trash,button,False,True
+C-200,diagnostics-panel,#search-input,input,(unnamed),search,False,True
+C-201,diagnostics-panel,#filter-modifiedAfter,input,(unnamed),date,False,True
+C-202,diagnostics-panel,#filter-modifiedBefore,input,(unnamed),date,False,True
+C-203,diagnostics-panel,#filter-pinned,input,(unnamed),checkbox,False,True
+C-204,diagnostics-panel,#filter-favorite,input,(unnamed),checkbox,False,True
+C-205,diagnostics-panel,#filter-hasLink,input,(unnamed),checkbox,False,True
+C-206,diagnostics-panel,#filter-hasAttachment,input,(unnamed),checkbox,False,True
+C-207,diagnostics-panel,#filter-sourceDomain,input,(unnamed),text,False,True
+C-208,diagnostics-panel,#filter-capturedAfter,input,(unnamed),date,False,True
+C-209,diagnostics-panel,#filter-capturedBefore,input,(unnamed),date,False,True
+C-210,diagnostics-panel,"input[aria-label=""""]",input,(unnamed),radio,False,False
+C-211,diagnostics-panel,#command-palette-input,combobox,(unnamed),text,False,False
+C-212,diagnostics-panel,app button,button,All notes,button,False,True
+C-213,diagnostics-panel,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,True
+C-214,diagnostics-panel,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,True
+C-215,diagnostics-panel,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,True
+C-216,diagnostics-panel,filters-region button,button,Apply filters,button,False,True
+C-217,diagnostics-panel,app button,button,Archived,button,False,True
+C-218,diagnostics-panel,filters-region button,button,Clear all,button,False,True
+C-219,diagnostics-panel,"button[aria-label=""""]",button,Close,button,False,True
+C-220,diagnostics-panel,#command-palette-option-theme-dark,option,Dark theme,,False,False
+C-221,diagnostics-panel,"select[aria-label=""""]",select,DescendingAscending,select-one,False,False
+C-222,diagnostics-panel,"button[aria-label=""""]",button,Export backup now,button,False,False
+C-223,diagnostics-panel,"button[aria-label=""""]",button,Export diagnostics…,button,False,True
+C-224,diagnostics-panel,app button,button,Favorites,button,False,True
+C-225,diagnostics-panel,"select[aria-label=""""]",select,February 28 (default)March 1Skip the year,select-one,False,False
+C-226,diagnostics-panel,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-227,diagnostics-panel,#command-palette-option-focus-search,option,Focus search/,,False,False
+C-228,diagnostics-panel,#command-palette-option-theme-system,option,Follow system themeActive,,False,False
+C-229,diagnostics-panel,"button[aria-label=""""]",button,Get started,button,True,False
+C-230,diagnostics-panel,#command-palette-option-go-all,option,Go to All notes,,False,False
+C-231,diagnostics-panel,#command-palette-option-go-archived,option,Go to Archived,,False,False
+C-232,diagnostics-panel,#command-palette-option-go-favorites,option,Go to Favorites,,False,False
+C-233,diagnostics-panel,#command-palette-option-go-overdue,option,Go to Overdue reminders,,False,False
+C-234,diagnostics-panel,#command-palette-option-go-pinned,option,Go to Pinned,,False,False
+C-235,diagnostics-panel,#command-palette-option-go-recent,option,Go to Recently edited,,False,False
+C-236,diagnostics-panel,#command-palette-option-go-trashed,option,Go to Trash,,False,False
+C-237,diagnostics-panel,app button,radio,Grid,button,False,True
+C-238,diagnostics-panel,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-239,diagnostics-panel,#command-palette-option-import-note,option,Import note…,,False,False
+C-240,diagnostics-panel,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-241,diagnostics-panel,"select[aria-label=""""]",select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,False
+C-242,diagnostics-panel,#command-palette-option-theme-light,option,Light theme,,False,False
+C-243,diagnostics-panel,app button,radio,List,button,False,True
+C-244,diagnostics-panel,"button[aria-label=""""]",button,Load models,button,False,False
+C-245,diagnostics-panel,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-246,diagnostics-panel,#command-palette-option-new-note,option,New noteAlt+Shift+C,,False,False
+C-247,diagnostics-panel,app button,button,Next page,button,True,True
+C-248,diagnostics-panel,"select[aria-label=""""]",select,not selected,select-one,False,False
+C-249,diagnostics-panel,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-250,diagnostics-panel,#command-palette-option-open-diagnostics,option,Open diagnostics,,False,False
+C-251,diagnostics-panel,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-252,diagnostics-panel,#command-palette-option-open-settings,option,Open settings,,False,False
+C-253,diagnostics-panel,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-254,diagnostics-panel,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-255,diagnostics-panel,app button,button,Overdue reminders,button,False,True
+C-256,diagnostics-panel,app button,button,Pinned,button,False,True
+C-257,diagnostics-panel,app button,button,Previous page,button,True,True
+C-258,diagnostics-panel,"button[aria-label=""""]",button,Rebuild search index,button,False,True
+C-259,diagnostics-panel,app button,button,Recently edited,button,False,True
+C-260,diagnostics-panel,"button[aria-label=""""]",button,Refresh,button,False,True
+C-261,diagnostics-panel,"button[aria-label=""""]",button,Reset,button,False,False
+C-262,diagnostics-panel,"button[aria-label=""""]",button,Restore backup…,button,False,False
+C-263,diagnostics-panel,"button[aria-label=""""]",button,Run network privacy self-test,button,False,True
+C-264,diagnostics-panel,filters-region button,button,Save as view…,button,False,True
+C-265,diagnostics-panel,"button[aria-label=""""]",button,Save changes,button,True,False
+C-266,diagnostics-panel,#select-all-page,input,Select all notes on this page,checkbox,True,True
+C-267,diagnostics-panel,"button[aria-label=""""]",button,Show the introduction again,button,False,False
+C-268,diagnostics-panel,app a,a,Skip to notes list,,False,True
+C-269,diagnostics-panel,#sort-direction-select,select,Sort direction,select-one,False,True
+C-270,diagnostics-panel,"button[aria-label=""""]",button,Test connection,button,False,False
+C-271,diagnostics-panel,"button[aria-label=""""]",button,Test LM Studio connection,button,False,True
+C-272,diagnostics-panel,app button,button,Trash,button,False,True
+C-273,editor,#search-input,input,(unnamed),search,False,True
+C-274,editor,#filter-modifiedAfter,input,(unnamed),date,False,False
+C-275,editor,#filter-modifiedBefore,input,(unnamed),date,False,False
+C-276,editor,#filter-pinned,input,(unnamed),checkbox,False,False
+C-277,editor,#filter-favorite,input,(unnamed),checkbox,False,False
+C-278,editor,#filter-hasLink,input,(unnamed),checkbox,False,False
+C-279,editor,#filter-hasAttachment,input,(unnamed),checkbox,False,False
+C-280,editor,#filter-sourceDomain,input,(unnamed),text,False,False
+C-281,editor,#filter-capturedAfter,input,(unnamed),date,False,False
+C-282,editor,#filter-capturedBefore,input,(unnamed),date,False,False
+C-283,editor,#find-case,input,(unnamed),checkbox,False,False
+C-284,editor,#command-palette-input,combobox,(unnamed),text,False,False
+C-285,editor,results button,button,Add column after,button,True,True
+C-286,editor,results button,button,Add row below,button,True,True
+C-287,editor,results button,button,AI,button,False,True
+C-288,editor,results button,button,Align center,button,False,True
+C-289,editor,results button,button,Align justify,button,False,True
+C-290,editor,results button,button,Align left,button,False,True
+C-291,editor,results button,button,Align right,button,False,True
+C-292,editor,app button,button,All notes,button,False,True
+C-293,editor,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,False
+C-294,editor,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,False
+C-295,editor,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,False
+C-296,editor,filters-region button,button,Apply filters,button,False,False
+C-297,editor,app button,button,Archived,button,False,True
+C-298,editor,results button,button,Attachments,button,False,True
+C-299,editor,results button,button,Back to notes,button,False,True
+C-300,editor,results button,button,Blockquote,button,False,True
+C-301,editor,results button,button,Bold (Ctrl+B),button,False,True
+C-302,editor,results button,button,Bullet list,button,False,True
+C-303,editor,filters-region button,button,Clear all,button,False,False
+C-304,editor,results button,button,Clear formatting,button,False,True
+C-305,editor,results button,button,Close,button,False,False
+C-306,editor,"button[aria-label=""""]",button,Close,button,False,False
+C-307,editor,results button,button,Code block with language label,button,False,True
+C-308,editor,results button,button,Delete column,button,True,True
+C-309,editor,results button,button,Delete row,button,True,True
+C-310,editor,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-311,editor,results button,button,Export this note as Markdown,button,False,True
+C-312,editor,results button,button,Favorite,button,False,True
+C-313,editor,app button,button,Favorites,button,False,True
+C-314,editor,results button,button,File,button,False,True
+C-315,editor,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-316,editor,results input,input,Find in note,search,False,False
+C-317,editor,results button,button,Find in note (Ctrl+F),button,False,True
+C-318,editor,results select,select,Font size,select-one,False,True
+C-319,editor,"button[aria-label=""""]",button,Get started,button,True,False
+C-320,editor,app button,radio,Grid,button,False,True
+C-321,editor,results button,button,Heading 1,button,False,True
+C-322,editor,results button,button,Heading 2,button,False,True
+C-323,editor,results button,button,Heading 3,button,False,True
+C-324,editor,results button,button,Heading 4,button,False,True
+C-325,editor,results button,button,Heading 5,button,False,True
+C-326,editor,results button,button,Heading 6,button,False,True
+C-327,editor,results button,button,Highlight #bbf7d0,button,False,True
+C-328,editor,results button,button,Highlight #bfdbfe,button,False,True
+C-329,editor,results button,button,Highlight #e9d5ff,button,False,True
+C-330,editor,results button,button,Highlight #fecaca,button,False,True
+C-331,editor,results button,button,Highlight #fef08a,button,False,True
+C-332,editor,results button,button,Horizontal rule,button,False,True
+C-333,editor,results textarea,textarea,HTML source view (sanitised),textarea,False,False
+C-334,editor,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-335,editor,results button,button,Import Markdown into this note,button,False,True
+C-336,editor,results button,button,Indent list item,button,True,True
+C-337,editor,results button,button,Inline code,button,False,True
+C-338,editor,results button,button,Insert image with alt text,button,False,True
+C-339,editor,results button,button,Insert or edit link,button,False,True
+C-340,editor,results button,button,Insert table (2x2 with header),button,False,True
+C-341,editor,results div,textbox,Inventory harvest body,div,False,True
+C-342,editor,results button,button,Italic (Ctrl+I),button,False,True
+C-343,editor,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-344,editor,app button,radio,List,button,False,True
+C-345,editor,results button,button,Move to trash…,button,False,True
+C-346,editor,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-347,editor,results button,button,Next,button,False,False
+C-348,editor,app button,button,Next page,button,True,False
+C-349,editor,results input,input,Note subtitle,text,False,True
+C-350,editor,results input,input,Note title,text,False,True
+C-351,editor,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-352,editor,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-353,editor,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-354,editor,results-region button,button,Open T-072 Inventory Note for editing,button,False,False
+C-355,editor,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-356,editor,results button,button,Ordered list,button,False,True
+C-357,editor,results button,button,Outdent list item,button,True,True
+C-358,editor,app button,button,Overdue reminders,button,False,True
+C-359,editor,results button,button,Paragraph,button,False,True
+C-360,editor,results button,button,Pin,button,False,True
+C-361,editor,app button,button,Pinned,button,False,True
+C-362,editor,results button,button,Previous,button,False,False
+C-363,editor,app button,button,Previous page,button,True,False
+C-364,editor,app button,button,Recently edited,button,False,True
+C-365,editor,results button,button,Redo (Ctrl+Y),button,True,True
+C-366,editor,"button[aria-label=""""]",button,Refresh,button,True,False
+C-367,editor,results button,button,Reminders,button,False,True
+C-368,editor,results button,button,Remove highlight,button,False,True
+C-369,editor,results button,button,Remove text colour,button,False,True
+C-370,editor,results button,button,Replace,button,False,False
+C-371,editor,results button,button,Replace all,button,False,False
+C-372,editor,results input,input,Replace with,text,False,False
+C-373,editor,"button[aria-label=""""]",button,Reset,button,True,False
+C-374,editor,results button,button,Revision history,button,False,True
+C-375,editor,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-376,editor,filters-region button,button,Save as view…,button,False,False
+C-377,editor,"button[aria-label=""""]",button,Save changes,button,True,False
+C-378,editor,#select-all-page,input,Select all notes on this page,checkbox,False,False
+C-379,editor,results-region input,input,Select T-072 Inventory Note,checkbox,False,False
+C-380,editor,app a,a,Skip to notes list,,False,True
+C-381,editor,results button,button,Snapshots,button,False,True
+C-382,editor,#sort-direction-select,select,Sort direction,select-one,False,True
+C-383,editor,results button,button,Strikethrough,button,False,True
+C-384,editor,results button,button,Subscript,button,False,True
+C-385,editor,results button,button,Superscript,button,False,True
+C-386,editor,results button,button,Task list,button,False,True
+C-387,editor,results button,button,Text colour #1c2333,button,False,True
+C-388,editor,results button,button,Text colour #1c6b3c,button,False,True
+C-389,editor,results button,button,Text colour #2e4fa3,button,False,True
+C-390,editor,results button,button,Text colour #55607a,button,False,True
+C-391,editor,results button,button,Text colour #8a5300,button,False,True
+C-392,editor,results button,button,Text colour #a4262c,button,False,True
+C-393,editor,results button,button,Toggle header cell,button,True,True
+C-394,editor,results button,button,Toggle HTML source view (sanitised),button,False,True
+C-395,editor,results button,button,Toolbar and document schema documentation,button,False,True
+C-396,editor,app button,button,Trash,button,False,True
+C-397,editor,results button,button,Underline (Ctrl+U),button,False,True
+C-398,editor,results button,button,Undo (Ctrl+Z),button,False,True
+C-399,editor-attachments-panel,#search-input,input,(unnamed),search,False,True
+C-400,editor-attachments-panel,#filter-modifiedAfter,input,(unnamed),date,False,False
+C-401,editor-attachments-panel,#filter-modifiedBefore,input,(unnamed),date,False,False
+C-402,editor-attachments-panel,#filter-pinned,input,(unnamed),checkbox,False,False
+C-403,editor-attachments-panel,#filter-favorite,input,(unnamed),checkbox,False,False
+C-404,editor-attachments-panel,#filter-hasLink,input,(unnamed),checkbox,False,False
+C-405,editor-attachments-panel,#filter-hasAttachment,input,(unnamed),checkbox,False,False
+C-406,editor-attachments-panel,#filter-sourceDomain,input,(unnamed),text,False,False
+C-407,editor-attachments-panel,#filter-capturedAfter,input,(unnamed),date,False,False
+C-408,editor-attachments-panel,#filter-capturedBefore,input,(unnamed),date,False,False
+C-409,editor-attachments-panel,#find-case,input,(unnamed),checkbox,False,False
+C-410,editor-attachments-panel,#command-palette-input,combobox,(unnamed),text,False,False
+C-411,editor-attachments-panel,results button,button,Add column after,button,True,True
+C-412,editor-attachments-panel,results button,button,Add row below,button,True,True
+C-413,editor-attachments-panel,results button,button,AI,button,False,True
+C-414,editor-attachments-panel,results button,button,Align center,button,False,True
+C-415,editor-attachments-panel,results button,button,Align justify,button,False,True
+C-416,editor-attachments-panel,results button,button,Align left,button,False,True
+C-417,editor-attachments-panel,results button,button,Align right,button,False,True
+C-418,editor-attachments-panel,app button,button,All notes,button,False,True
+C-419,editor-attachments-panel,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,False
+C-420,editor-attachments-panel,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,False
+C-421,editor-attachments-panel,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,False
+C-422,editor-attachments-panel,filters-region button,button,Apply filters,button,False,False
+C-423,editor-attachments-panel,app button,button,Archived,button,False,True
+C-424,editor-attachments-panel,results button,button,Attach files…,button,False,True
+C-425,editor-attachments-panel,results button,button,Attachments,button,False,True
+C-426,editor-attachments-panel,results button,button,Back to notes,button,False,True
+C-427,editor-attachments-panel,results button,button,Blockquote,button,False,True
+C-428,editor-attachments-panel,results button,button,Bold (Ctrl+B),button,False,True
+C-429,editor-attachments-panel,results button,button,Bullet list,button,False,True
+C-430,editor-attachments-panel,filters-region button,button,Clear all,button,False,False
+C-431,editor-attachments-panel,results button,button,Clear formatting,button,False,True
+C-432,editor-attachments-panel,results button,button,Close,button,False,False
+C-433,editor-attachments-panel,"button[aria-label=""""]",button,Close,button,False,False
+C-434,editor-attachments-panel,results button,button,Code block with language label,button,False,True
+C-435,editor-attachments-panel,results button,button,Delete column,button,True,True
+C-436,editor-attachments-panel,results button,button,Delete row,button,True,True
+C-437,editor-attachments-panel,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-438,editor-attachments-panel,results button,button,Export this note as Markdown,button,False,True
+C-439,editor-attachments-panel,results button,button,Favorite,button,False,True
+C-440,editor-attachments-panel,app button,button,Favorites,button,False,True
+C-441,editor-attachments-panel,results button,button,File,button,False,True
+C-442,editor-attachments-panel,results input,input,Files to attach,file,False,True
+C-443,editor-attachments-panel,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-444,editor-attachments-panel,results input,input,Find in note,search,False,False
+C-445,editor-attachments-panel,results button,button,Find in note (Ctrl+F),button,False,True
+C-446,editor-attachments-panel,results select,select,Font size,select-one,False,True
+C-447,editor-attachments-panel,"button[aria-label=""""]",button,Get started,button,True,False
+C-448,editor-attachments-panel,app button,radio,Grid,button,False,True
+C-449,editor-attachments-panel,results button,button,Heading 1,button,False,True
+C-450,editor-attachments-panel,results button,button,Heading 2,button,False,True
+C-451,editor-attachments-panel,results button,button,Heading 3,button,False,True
+C-452,editor-attachments-panel,results button,button,Heading 4,button,False,True
+C-453,editor-attachments-panel,results button,button,Heading 5,button,False,True
+C-454,editor-attachments-panel,results button,button,Heading 6,button,False,True
+C-455,editor-attachments-panel,results button,button,Highlight #bbf7d0,button,False,True
+C-456,editor-attachments-panel,results button,button,Highlight #bfdbfe,button,False,True
+C-457,editor-attachments-panel,results button,button,Highlight #e9d5ff,button,False,True
+C-458,editor-attachments-panel,results button,button,Highlight #fecaca,button,False,True
+C-459,editor-attachments-panel,results button,button,Highlight #fef08a,button,False,True
+C-460,editor-attachments-panel,results button,button,Horizontal rule,button,False,True
+C-461,editor-attachments-panel,results textarea,textarea,HTML source view (sanitised),textarea,False,False
+C-462,editor-attachments-panel,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-463,editor-attachments-panel,results button,button,Import Markdown into this note,button,False,True
+C-464,editor-attachments-panel,results button,button,Indent list item,button,True,True
+C-465,editor-attachments-panel,results button,button,Inline code,button,False,True
+C-466,editor-attachments-panel,results button,button,Insert image with alt text,button,False,True
+C-467,editor-attachments-panel,results button,button,Insert or edit link,button,False,True
+C-468,editor-attachments-panel,results button,button,Insert table (2x2 with header),button,False,True
+C-469,editor-attachments-panel,results div,textbox,Inventory harvest body,div,False,True
+C-470,editor-attachments-panel,results button,button,Italic (Ctrl+I),button,False,True
+C-471,editor-attachments-panel,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-472,editor-attachments-panel,app button,radio,List,button,False,True
+C-473,editor-attachments-panel,results button,button,Move to trash…,button,False,True
+C-474,editor-attachments-panel,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-475,editor-attachments-panel,results button,button,Next,button,False,False
+C-476,editor-attachments-panel,app button,button,Next page,button,True,False
+C-477,editor-attachments-panel,results input,input,Note subtitle,text,False,True
+C-478,editor-attachments-panel,results input,input,Note title,text,False,True
+C-479,editor-attachments-panel,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-480,editor-attachments-panel,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-481,editor-attachments-panel,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-482,editor-attachments-panel,results-region button,button,Open T-072 Inventory Note for editing,button,False,False
+C-483,editor-attachments-panel,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-484,editor-attachments-panel,results button,button,Ordered list,button,False,True
+C-485,editor-attachments-panel,results button,button,Outdent list item,button,True,True
+C-486,editor-attachments-panel,app button,button,Overdue reminders,button,False,True
+C-487,editor-attachments-panel,results button,button,Paragraph,button,False,True
+C-488,editor-attachments-panel,results button,button,Pin,button,False,True
+C-489,editor-attachments-panel,app button,button,Pinned,button,False,True
+C-490,editor-attachments-panel,results button,button,Previous,button,False,False
+C-491,editor-attachments-panel,app button,button,Previous page,button,True,False
+C-492,editor-attachments-panel,app button,button,Recently edited,button,False,True
+C-493,editor-attachments-panel,results button,button,Redo (Ctrl+Y),button,True,True
+C-494,editor-attachments-panel,"button[aria-label=""""]",button,Refresh,button,True,False
+C-495,editor-attachments-panel,results button,button,Reminders,button,False,True
+C-496,editor-attachments-panel,results button,button,Remove highlight,button,False,True
+C-497,editor-attachments-panel,results button,button,Remove text colour,button,False,True
+C-498,editor-attachments-panel,results button,button,Replace,button,False,False
+C-499,editor-attachments-panel,results button,button,Replace all,button,False,False
+C-500,editor-attachments-panel,results input,input,Replace with,text,False,False
+C-501,editor-attachments-panel,"button[aria-label=""""]",button,Reset,button,True,False
+C-502,editor-attachments-panel,results button,button,Revision history,button,False,True
+C-503,editor-attachments-panel,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-504,editor-attachments-panel,filters-region button,button,Save as view…,button,False,False
+C-505,editor-attachments-panel,"button[aria-label=""""]",button,Save changes,button,True,False
+C-506,editor-attachments-panel,#select-all-page,input,Select all notes on this page,checkbox,False,False
+C-507,editor-attachments-panel,results-region input,input,Select T-072 Inventory Note,checkbox,False,False
+C-508,editor-attachments-panel,app a,a,Skip to notes list,,False,True
+C-509,editor-attachments-panel,results button,button,Snapshots,button,False,True
+C-510,editor-attachments-panel,#sort-direction-select,select,Sort direction,select-one,False,True
+C-511,editor-attachments-panel,results button,button,Strikethrough,button,False,True
+C-512,editor-attachments-panel,results button,button,Subscript,button,False,True
+C-513,editor-attachments-panel,results button,button,Superscript,button,False,True
+C-514,editor-attachments-panel,results button,button,Task list,button,False,True
+C-515,editor-attachments-panel,results button,button,Text colour #1c2333,button,False,True
+C-516,editor-attachments-panel,results button,button,Text colour #1c6b3c,button,False,True
+C-517,editor-attachments-panel,results button,button,Text colour #2e4fa3,button,False,True
+C-518,editor-attachments-panel,results button,button,Text colour #55607a,button,False,True
+C-519,editor-attachments-panel,results button,button,Text colour #8a5300,button,False,True
+C-520,editor-attachments-panel,results button,button,Text colour #a4262c,button,False,True
+C-521,editor-attachments-panel,results button,button,Toggle header cell,button,True,True
+C-522,editor-attachments-panel,results button,button,Toggle HTML source view (sanitised),button,False,True
+C-523,editor-attachments-panel,results button,button,Toolbar and document schema documentation,button,False,True
+C-524,editor-attachments-panel,app button,button,Trash,button,False,True
+C-525,editor-attachments-panel,results button,button,Underline (Ctrl+U),button,False,True
+C-526,editor-attachments-panel,results button,button,Undo (Ctrl+Z),button,False,True
+C-527,editor-findbar,#search-input,input,(unnamed),search,False,True
+C-528,editor-findbar,#filter-modifiedAfter,input,(unnamed),date,False,False
+C-529,editor-findbar,#filter-modifiedBefore,input,(unnamed),date,False,False
+C-530,editor-findbar,#filter-pinned,input,(unnamed),checkbox,False,False
+C-531,editor-findbar,#filter-favorite,input,(unnamed),checkbox,False,False
+C-532,editor-findbar,#filter-hasLink,input,(unnamed),checkbox,False,False
+C-533,editor-findbar,#filter-hasAttachment,input,(unnamed),checkbox,False,False
+C-534,editor-findbar,#filter-sourceDomain,input,(unnamed),text,False,False
+C-535,editor-findbar,#filter-capturedAfter,input,(unnamed),date,False,False
+C-536,editor-findbar,#filter-capturedBefore,input,(unnamed),date,False,False
+C-537,editor-findbar,#find-case,input,(unnamed),checkbox,False,False
+C-538,editor-findbar,#command-palette-input,combobox,(unnamed),text,False,False
+C-539,editor-findbar,results button,button,Add column after,button,True,True
+C-540,editor-findbar,results button,button,Add row below,button,True,True
+C-541,editor-findbar,results button,button,AI,button,False,True
+C-542,editor-findbar,results button,button,Align center,button,False,True
+C-543,editor-findbar,results button,button,Align justify,button,False,True
+C-544,editor-findbar,results button,button,Align left,button,False,True
+C-545,editor-findbar,results button,button,Align right,button,False,True
+C-546,editor-findbar,app button,button,All notes,button,False,True
+C-547,editor-findbar,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,False
+C-548,editor-findbar,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,False
+C-549,editor-findbar,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,False
+C-550,editor-findbar,filters-region button,button,Apply filters,button,False,False
+C-551,editor-findbar,app button,button,Archived,button,False,True
+C-552,editor-findbar,results button,button,Attachments,button,False,True
+C-553,editor-findbar,results button,button,Back to notes,button,False,True
+C-554,editor-findbar,results button,button,Blockquote,button,False,True
+C-555,editor-findbar,results button,button,Bold (Ctrl+B),button,False,True
+C-556,editor-findbar,results button,button,Bullet list,button,False,True
+C-557,editor-findbar,filters-region button,button,Clear all,button,False,False
+C-558,editor-findbar,results button,button,Clear formatting,button,False,True
+C-559,editor-findbar,results button,button,Close,button,False,False
+C-560,editor-findbar,"button[aria-label=""""]",button,Close,button,False,False
+C-561,editor-findbar,results button,button,Code block with language label,button,False,True
+C-562,editor-findbar,results button,button,Delete column,button,True,True
+C-563,editor-findbar,results button,button,Delete row,button,True,True
+C-564,editor-findbar,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-565,editor-findbar,results button,button,Export this note as Markdown,button,False,True
+C-566,editor-findbar,results button,button,Favorite,button,False,True
+C-567,editor-findbar,app button,button,Favorites,button,False,True
+C-568,editor-findbar,results button,button,File,button,False,True
+C-569,editor-findbar,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-570,editor-findbar,results input,input,Find in note,search,False,False
+C-571,editor-findbar,results button,button,Find in note (Ctrl+F),button,False,True
+C-572,editor-findbar,results select,select,Font size,select-one,False,True
+C-573,editor-findbar,"button[aria-label=""""]",button,Get started,button,True,False
+C-574,editor-findbar,app button,radio,Grid,button,False,True
+C-575,editor-findbar,results button,button,Heading 1,button,False,True
+C-576,editor-findbar,results button,button,Heading 2,button,False,True
+C-577,editor-findbar,results button,button,Heading 3,button,False,True
+C-578,editor-findbar,results button,button,Heading 4,button,False,True
+C-579,editor-findbar,results button,button,Heading 5,button,False,True
+C-580,editor-findbar,results button,button,Heading 6,button,False,True
+C-581,editor-findbar,results button,button,Highlight #bbf7d0,button,False,True
+C-582,editor-findbar,results button,button,Highlight #bfdbfe,button,False,True
+C-583,editor-findbar,results button,button,Highlight #e9d5ff,button,False,True
+C-584,editor-findbar,results button,button,Highlight #fecaca,button,False,True
+C-585,editor-findbar,results button,button,Highlight #fef08a,button,False,True
+C-586,editor-findbar,results button,button,Horizontal rule,button,False,True
+C-587,editor-findbar,results textarea,textarea,HTML source view (sanitised),textarea,False,False
+C-588,editor-findbar,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-589,editor-findbar,results button,button,Import Markdown into this note,button,False,True
+C-590,editor-findbar,results button,button,Indent list item,button,True,True
+C-591,editor-findbar,results button,button,Inline code,button,False,True
+C-592,editor-findbar,results button,button,Insert image with alt text,button,False,True
+C-593,editor-findbar,results button,button,Insert or edit link,button,False,True
+C-594,editor-findbar,results button,button,Insert table (2x2 with header),button,False,True
+C-595,editor-findbar,results div,textbox,Inventory harvest body,div,False,True
+C-596,editor-findbar,results button,button,Italic (Ctrl+I),button,False,True
+C-597,editor-findbar,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-598,editor-findbar,app button,radio,List,button,False,True
+C-599,editor-findbar,results button,button,Move to trash…,button,False,True
+C-600,editor-findbar,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-601,editor-findbar,results button,button,Next,button,False,False
+C-602,editor-findbar,app button,button,Next page,button,True,False
+C-603,editor-findbar,results input,input,Note subtitle,text,False,True
+C-604,editor-findbar,results input,input,Note title,text,False,True
+C-605,editor-findbar,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-606,editor-findbar,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-607,editor-findbar,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-608,editor-findbar,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-609,editor-findbar,results button,button,Ordered list,button,False,True
+C-610,editor-findbar,results button,button,Outdent list item,button,True,True
+C-611,editor-findbar,app button,button,Overdue reminders,button,False,True
+C-612,editor-findbar,results button,button,Paragraph,button,False,True
+C-613,editor-findbar,results button,button,Pin,button,False,True
+C-614,editor-findbar,app button,button,Pinned,button,False,True
+C-615,editor-findbar,results button,button,Previous,button,False,False
+C-616,editor-findbar,app button,button,Previous page,button,True,False
+C-617,editor-findbar,app button,button,Recently edited,button,False,True
+C-618,editor-findbar,results button,button,Redo (Ctrl+Y),button,True,True
+C-619,editor-findbar,"button[aria-label=""""]",button,Refresh,button,True,False
+C-620,editor-findbar,results button,button,Reminders,button,False,True
+C-621,editor-findbar,results button,button,Remove highlight,button,False,True
+C-622,editor-findbar,results button,button,Remove text colour,button,False,True
+C-623,editor-findbar,results button,button,Replace,button,False,False
+C-624,editor-findbar,results button,button,Replace all,button,False,False
+C-625,editor-findbar,results input,input,Replace with,text,False,False
+C-626,editor-findbar,"button[aria-label=""""]",button,Reset,button,True,False
+C-627,editor-findbar,results button,button,Revision history,button,False,True
+C-628,editor-findbar,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-629,editor-findbar,filters-region button,button,Save as view…,button,False,False
+C-630,editor-findbar,"button[aria-label=""""]",button,Save changes,button,True,False
+C-631,editor-findbar,#select-all-page,input,Select all notes on this page,checkbox,True,False
+C-632,editor-findbar,app a,a,Skip to notes list,,False,True
+C-633,editor-findbar,results button,button,Snapshots,button,False,True
+C-634,editor-findbar,#sort-direction-select,select,Sort direction,select-one,False,True
+C-635,editor-findbar,results button,button,Strikethrough,button,False,True
+C-636,editor-findbar,results button,button,Subscript,button,False,True
+C-637,editor-findbar,results button,button,Superscript,button,False,True
+C-638,editor-findbar,results button,button,Task list,button,False,True
+C-639,editor-findbar,results button,button,Text colour #1c2333,button,False,True
+C-640,editor-findbar,results button,button,Text colour #1c6b3c,button,False,True
+C-641,editor-findbar,results button,button,Text colour #2e4fa3,button,False,True
+C-642,editor-findbar,results button,button,Text colour #55607a,button,False,True
+C-643,editor-findbar,results button,button,Text colour #8a5300,button,False,True
+C-644,editor-findbar,results button,button,Text colour #a4262c,button,False,True
+C-645,editor-findbar,results button,button,Toggle header cell,button,True,True
+C-646,editor-findbar,results button,button,Toggle HTML source view (sanitised),button,False,True
+C-647,editor-findbar,results button,button,Toolbar and document schema documentation,button,False,True
+C-648,editor-findbar,app button,button,Trash,button,False,True
+C-649,editor-findbar,results button,button,Underline (Ctrl+U),button,False,True
+C-650,editor-findbar,results button,button,Undo (Ctrl+Z),button,False,True
+C-651,editor-reminders-panel,#search-input,input,(unnamed),search,False,True
+C-652,editor-reminders-panel,#filter-modifiedAfter,input,(unnamed),date,False,False
+C-653,editor-reminders-panel,#filter-modifiedBefore,input,(unnamed),date,False,False
+C-654,editor-reminders-panel,#filter-pinned,input,(unnamed),checkbox,False,False
+C-655,editor-reminders-panel,#filter-favorite,input,(unnamed),checkbox,False,False
+C-656,editor-reminders-panel,#filter-hasLink,input,(unnamed),checkbox,False,False
+C-657,editor-reminders-panel,#filter-hasAttachment,input,(unnamed),checkbox,False,False
+C-658,editor-reminders-panel,#filter-sourceDomain,input,(unnamed),text,False,False
+C-659,editor-reminders-panel,#filter-capturedAfter,input,(unnamed),date,False,False
+C-660,editor-reminders-panel,#filter-capturedBefore,input,(unnamed),date,False,False
+C-661,editor-reminders-panel,#find-case,input,(unnamed),checkbox,False,False
+C-662,editor-reminders-panel,#command-palette-input,combobox,(unnamed),text,False,False
+C-663,editor-reminders-panel,results button,button,Add column after,button,True,True
+C-664,editor-reminders-panel,results button,button,Add row below,button,True,True
+C-665,editor-reminders-panel,results button,button,AI,button,False,True
+C-666,editor-reminders-panel,results button,button,Align center,button,False,True
+C-667,editor-reminders-panel,results button,button,Align justify,button,False,True
+C-668,editor-reminders-panel,results button,button,Align left,button,False,True
+C-669,editor-reminders-panel,results button,button,Align right,button,False,True
+C-670,editor-reminders-panel,app button,button,All notes,button,False,True
+C-671,editor-reminders-panel,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,False
+C-672,editor-reminders-panel,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,False
+C-673,editor-reminders-panel,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,False
+C-674,editor-reminders-panel,filters-region button,button,Apply filters,button,False,False
+C-675,editor-reminders-panel,app button,button,Archived,button,False,True
+C-676,editor-reminders-panel,results button,button,Attachments,button,False,True
+C-677,editor-reminders-panel,results button,button,Back to notes,button,False,True
+C-678,editor-reminders-panel,results button,button,Blockquote,button,False,True
+C-679,editor-reminders-panel,results button,button,Bold (Ctrl+B),button,False,True
+C-680,editor-reminders-panel,results button,button,Bullet list,button,False,True
+C-681,editor-reminders-panel,filters-region button,button,Clear all,button,False,False
+C-682,editor-reminders-panel,results button,button,Clear formatting,button,False,True
+C-683,editor-reminders-panel,results button,button,Close,button,False,False
+C-684,editor-reminders-panel,"button[aria-label=""""]",button,Close,button,False,False
+C-685,editor-reminders-panel,results button,button,Code block with language label,button,False,True
+C-686,editor-reminders-panel,results button,button,Delete column,button,True,True
+C-687,editor-reminders-panel,results button,button,Delete row,button,True,True
+C-688,editor-reminders-panel,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-689,editor-reminders-panel,results button,button,Export this note as Markdown,button,False,True
+C-690,editor-reminders-panel,results button,button,Favorite,button,False,True
+C-691,editor-reminders-panel,app button,button,Favorites,button,False,True
+C-692,editor-reminders-panel,results button,button,File,button,False,True
+C-693,editor-reminders-panel,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-694,editor-reminders-panel,results input,input,Find in note,search,False,False
+C-695,editor-reminders-panel,results button,button,Find in note (Ctrl+F),button,False,True
+C-696,editor-reminders-panel,results select,select,Font size,select-one,False,True
+C-697,editor-reminders-panel,"button[aria-label=""""]",button,Get started,button,True,False
+C-698,editor-reminders-panel,app button,radio,Grid,button,False,True
+C-699,editor-reminders-panel,results button,button,Heading 1,button,False,True
+C-700,editor-reminders-panel,results button,button,Heading 2,button,False,True
+C-701,editor-reminders-panel,results button,button,Heading 3,button,False,True
+C-702,editor-reminders-panel,results button,button,Heading 4,button,False,True
+C-703,editor-reminders-panel,results button,button,Heading 5,button,False,True
+C-704,editor-reminders-panel,results button,button,Heading 6,button,False,True
+C-705,editor-reminders-panel,results button,button,Highlight #bbf7d0,button,False,True
+C-706,editor-reminders-panel,results button,button,Highlight #bfdbfe,button,False,True
+C-707,editor-reminders-panel,results button,button,Highlight #e9d5ff,button,False,True
+C-708,editor-reminders-panel,results button,button,Highlight #fecaca,button,False,True
+C-709,editor-reminders-panel,results button,button,Highlight #fef08a,button,False,True
+C-710,editor-reminders-panel,results button,button,Horizontal rule,button,False,True
+C-711,editor-reminders-panel,results textarea,textarea,HTML source view (sanitised),textarea,False,False
+C-712,editor-reminders-panel,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-713,editor-reminders-panel,results button,button,Import Markdown into this note,button,False,True
+C-714,editor-reminders-panel,results button,button,Indent list item,button,True,True
+C-715,editor-reminders-panel,results button,button,Inline code,button,False,True
+C-716,editor-reminders-panel,results button,button,Insert image with alt text,button,False,True
+C-717,editor-reminders-panel,results button,button,Insert or edit link,button,False,True
+C-718,editor-reminders-panel,results button,button,Insert table (2x2 with header),button,False,True
+C-719,editor-reminders-panel,results div,textbox,Inventory harvest body,div,False,True
+C-720,editor-reminders-panel,results button,button,Italic (Ctrl+I),button,False,True
+C-721,editor-reminders-panel,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-722,editor-reminders-panel,app button,radio,List,button,False,True
+C-723,editor-reminders-panel,results button,button,Move to trash…,button,False,True
+C-724,editor-reminders-panel,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-725,editor-reminders-panel,results button,button,Next,button,False,False
+C-726,editor-reminders-panel,app button,button,Next page,button,True,False
+C-727,editor-reminders-panel,results input,input,Note subtitle,text,False,True
+C-728,editor-reminders-panel,results input,input,Note title,text,False,True
+C-729,editor-reminders-panel,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-730,editor-reminders-panel,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-731,editor-reminders-panel,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-732,editor-reminders-panel,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-733,editor-reminders-panel,results button,button,Ordered list,button,False,True
+C-734,editor-reminders-panel,results button,button,Outdent list item,button,True,True
+C-735,editor-reminders-panel,app button,button,Overdue reminders,button,False,True
+C-736,editor-reminders-panel,results button,button,Paragraph,button,False,True
+C-737,editor-reminders-panel,results button,button,Pin,button,False,True
+C-738,editor-reminders-panel,app button,button,Pinned,button,False,True
+C-739,editor-reminders-panel,results button,button,Previous,button,False,False
+C-740,editor-reminders-panel,app button,button,Previous page,button,True,False
+C-741,editor-reminders-panel,app button,button,Recently edited,button,False,True
+C-742,editor-reminders-panel,results button,button,Redo (Ctrl+Y),button,True,True
+C-743,editor-reminders-panel,"button[aria-label=""""]",button,Refresh,button,True,False
+C-744,editor-reminders-panel,results button,button,Reminders,button,False,True
+C-745,editor-reminders-panel,results button,button,Remove highlight,button,False,True
+C-746,editor-reminders-panel,results button,button,Remove text colour,button,False,True
+C-747,editor-reminders-panel,results button,button,Replace,button,False,False
+C-748,editor-reminders-panel,results button,button,Replace all,button,False,False
+C-749,editor-reminders-panel,results input,input,Replace with,text,False,False
+C-750,editor-reminders-panel,"button[aria-label=""""]",button,Reset,button,True,False
+C-751,editor-reminders-panel,results button,button,Revision history,button,False,True
+C-752,editor-reminders-panel,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-753,editor-reminders-panel,filters-region button,button,Save as view…,button,False,False
+C-754,editor-reminders-panel,"button[aria-label=""""]",button,Save changes,button,True,False
+C-755,editor-reminders-panel,#select-all-page,input,Select all notes on this page,checkbox,True,False
+C-756,editor-reminders-panel,app a,a,Skip to notes list,,False,True
+C-757,editor-reminders-panel,results button,button,Snapshots,button,False,True
+C-758,editor-reminders-panel,#sort-direction-select,select,Sort direction,select-one,False,True
+C-759,editor-reminders-panel,results button,button,Strikethrough,button,False,True
+C-760,editor-reminders-panel,results button,button,Subscript,button,False,True
+C-761,editor-reminders-panel,results button,button,Superscript,button,False,True
+C-762,editor-reminders-panel,results button,button,Task list,button,False,True
+C-763,editor-reminders-panel,results button,button,Text colour #1c2333,button,False,True
+C-764,editor-reminders-panel,results button,button,Text colour #1c6b3c,button,False,True
+C-765,editor-reminders-panel,results button,button,Text colour #2e4fa3,button,False,True
+C-766,editor-reminders-panel,results button,button,Text colour #55607a,button,False,True
+C-767,editor-reminders-panel,results button,button,Text colour #8a5300,button,False,True
+C-768,editor-reminders-panel,results button,button,Text colour #a4262c,button,False,True
+C-769,editor-reminders-panel,results button,button,Toggle header cell,button,True,True
+C-770,editor-reminders-panel,results button,button,Toggle HTML source view (sanitised),button,False,True
+C-771,editor-reminders-panel,results button,button,Toolbar and document schema documentation,button,False,True
+C-772,editor-reminders-panel,app button,button,Trash,button,False,True
+C-773,editor-reminders-panel,results button,button,Underline (Ctrl+U),button,False,True
+C-774,editor-reminders-panel,results button,button,Undo (Ctrl+Z),button,False,True
+C-775,editor-snapshots-panel,#search-input,input,(unnamed),search,False,True
+C-776,editor-snapshots-panel,#filter-modifiedAfter,input,(unnamed),date,False,False
+C-777,editor-snapshots-panel,#filter-modifiedBefore,input,(unnamed),date,False,False
+C-778,editor-snapshots-panel,#filter-pinned,input,(unnamed),checkbox,False,False
+C-779,editor-snapshots-panel,#filter-favorite,input,(unnamed),checkbox,False,False
+C-780,editor-snapshots-panel,#filter-hasLink,input,(unnamed),checkbox,False,False
+C-781,editor-snapshots-panel,#filter-hasAttachment,input,(unnamed),checkbox,False,False
+C-782,editor-snapshots-panel,#filter-sourceDomain,input,(unnamed),text,False,False
+C-783,editor-snapshots-panel,#filter-capturedAfter,input,(unnamed),date,False,False
+C-784,editor-snapshots-panel,#filter-capturedBefore,input,(unnamed),date,False,False
+C-785,editor-snapshots-panel,#find-case,input,(unnamed),checkbox,False,False
+C-786,editor-snapshots-panel,#command-palette-input,combobox,(unnamed),text,False,False
+C-787,editor-snapshots-panel,results button,button,Add column after,button,True,True
+C-788,editor-snapshots-panel,results button,button,Add row below,button,True,True
+C-789,editor-snapshots-panel,results button,button,AI,button,False,True
+C-790,editor-snapshots-panel,results button,button,Align center,button,False,True
+C-791,editor-snapshots-panel,results button,button,Align justify,button,False,True
+C-792,editor-snapshots-panel,results button,button,Align left,button,False,True
+C-793,editor-snapshots-panel,results button,button,Align right,button,False,True
+C-794,editor-snapshots-panel,app button,button,All notes,button,False,True
+C-795,editor-snapshots-panel,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,False
+C-796,editor-snapshots-panel,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,False
+C-797,editor-snapshots-panel,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,False
+C-798,editor-snapshots-panel,filters-region button,button,Apply filters,button,False,False
+C-799,editor-snapshots-panel,app button,button,Archived,button,False,True
+C-800,editor-snapshots-panel,results button,button,Attachments,button,False,True
+C-801,editor-snapshots-panel,results button,button,Back to notes,button,False,True
+C-802,editor-snapshots-panel,results button,button,Blockquote,button,False,True
+C-803,editor-snapshots-panel,results button,button,Bold (Ctrl+B),button,False,True
+C-804,editor-snapshots-panel,results button,button,Bullet list,button,False,True
+C-805,editor-snapshots-panel,filters-region button,button,Clear all,button,False,False
+C-806,editor-snapshots-panel,results button,button,Clear formatting,button,False,True
+C-807,editor-snapshots-panel,results button,button,Close,button,False,False
+C-808,editor-snapshots-panel,"button[aria-label=""""]",button,Close,button,False,False
+C-809,editor-snapshots-panel,results button,button,Code block with language label,button,False,True
+C-810,editor-snapshots-panel,results button,button,Delete column,button,True,True
+C-811,editor-snapshots-panel,results button,button,Delete row,button,True,True
+C-812,editor-snapshots-panel,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-813,editor-snapshots-panel,results button,button,Export this note as Markdown,button,False,True
+C-814,editor-snapshots-panel,results button,button,Favorite,button,False,True
+C-815,editor-snapshots-panel,app button,button,Favorites,button,False,True
+C-816,editor-snapshots-panel,results button,button,File,button,False,True
+C-817,editor-snapshots-panel,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-818,editor-snapshots-panel,results input,input,Find in note,search,False,False
+C-819,editor-snapshots-panel,results button,button,Find in note (Ctrl+F),button,False,True
+C-820,editor-snapshots-panel,results select,select,Font size,select-one,False,True
+C-821,editor-snapshots-panel,"button[aria-label=""""]",button,Get started,button,True,False
+C-822,editor-snapshots-panel,app button,radio,Grid,button,False,True
+C-823,editor-snapshots-panel,results button,button,Heading 1,button,False,True
+C-824,editor-snapshots-panel,results button,button,Heading 2,button,False,True
+C-825,editor-snapshots-panel,results button,button,Heading 3,button,False,True
+C-826,editor-snapshots-panel,results button,button,Heading 4,button,False,True
+C-827,editor-snapshots-panel,results button,button,Heading 5,button,False,True
+C-828,editor-snapshots-panel,results button,button,Heading 6,button,False,True
+C-829,editor-snapshots-panel,results button,button,Highlight #bbf7d0,button,False,True
+C-830,editor-snapshots-panel,results button,button,Highlight #bfdbfe,button,False,True
+C-831,editor-snapshots-panel,results button,button,Highlight #e9d5ff,button,False,True
+C-832,editor-snapshots-panel,results button,button,Highlight #fecaca,button,False,True
+C-833,editor-snapshots-panel,results button,button,Highlight #fef08a,button,False,True
+C-834,editor-snapshots-panel,results button,button,Horizontal rule,button,False,True
+C-835,editor-snapshots-panel,results textarea,textarea,HTML source view (sanitised),textarea,False,False
+C-836,editor-snapshots-panel,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-837,editor-snapshots-panel,results button,button,Import Markdown into this note,button,False,True
+C-838,editor-snapshots-panel,results button,button,Indent list item,button,True,True
+C-839,editor-snapshots-panel,results button,button,Inline code,button,False,True
+C-840,editor-snapshots-panel,results button,button,Insert image with alt text,button,False,True
+C-841,editor-snapshots-panel,results button,button,Insert or edit link,button,False,True
+C-842,editor-snapshots-panel,results button,button,Insert table (2x2 with header),button,False,True
+C-843,editor-snapshots-panel,results div,textbox,Inventory harvest body,div,False,True
+C-844,editor-snapshots-panel,results button,button,Italic (Ctrl+I),button,False,True
+C-845,editor-snapshots-panel,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-846,editor-snapshots-panel,app button,radio,List,button,False,True
+C-847,editor-snapshots-panel,results button,button,Move to trash…,button,False,True
+C-848,editor-snapshots-panel,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-849,editor-snapshots-panel,results button,button,Next,button,False,False
+C-850,editor-snapshots-panel,app button,button,Next page,button,True,False
+C-851,editor-snapshots-panel,results input,input,Note subtitle,text,False,True
+C-852,editor-snapshots-panel,results input,input,Note title,text,False,True
+C-853,editor-snapshots-panel,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-854,editor-snapshots-panel,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-855,editor-snapshots-panel,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-856,editor-snapshots-panel,results-region button,button,Open T-072 Inventory Note for editing,button,False,False
+C-857,editor-snapshots-panel,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-858,editor-snapshots-panel,results button,button,Ordered list,button,False,True
+C-859,editor-snapshots-panel,results button,button,Outdent list item,button,True,True
+C-860,editor-snapshots-panel,app button,button,Overdue reminders,button,False,True
+C-861,editor-snapshots-panel,results button,button,Paragraph,button,False,True
+C-862,editor-snapshots-panel,results button,button,Pin,button,False,True
+C-863,editor-snapshots-panel,app button,button,Pinned,button,False,True
+C-864,editor-snapshots-panel,results button,button,Previous,button,False,False
+C-865,editor-snapshots-panel,app button,button,Previous page,button,True,False
+C-866,editor-snapshots-panel,app button,button,Recently edited,button,False,True
+C-867,editor-snapshots-panel,results button,button,Redo (Ctrl+Y),button,True,True
+C-868,editor-snapshots-panel,"button[aria-label=""""]",button,Refresh,button,True,False
+C-869,editor-snapshots-panel,results button,button,Reminders,button,False,True
+C-870,editor-snapshots-panel,results button,button,Remove highlight,button,False,True
+C-871,editor-snapshots-panel,results button,button,Remove text colour,button,False,True
+C-872,editor-snapshots-panel,results button,button,Replace,button,False,False
+C-873,editor-snapshots-panel,results button,button,Replace all,button,False,False
+C-874,editor-snapshots-panel,results input,input,Replace with,text,False,False
+C-875,editor-snapshots-panel,"button[aria-label=""""]",button,Reset,button,True,False
+C-876,editor-snapshots-panel,results button,button,Revision history,button,False,True
+C-877,editor-snapshots-panel,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-878,editor-snapshots-panel,filters-region button,button,Save as view…,button,False,False
+C-879,editor-snapshots-panel,"button[aria-label=""""]",button,Save changes,button,True,False
+C-880,editor-snapshots-panel,#select-all-page,input,Select all notes on this page,checkbox,False,False
+C-881,editor-snapshots-panel,results-region input,input,Select T-072 Inventory Note,checkbox,False,False
+C-882,editor-snapshots-panel,app a,a,Skip to notes list,,False,True
+C-883,editor-snapshots-panel,results button,button,Snapshots,button,False,True
+C-884,editor-snapshots-panel,#sort-direction-select,select,Sort direction,select-one,False,True
+C-885,editor-snapshots-panel,results button,button,Strikethrough,button,False,True
+C-886,editor-snapshots-panel,results button,button,Subscript,button,False,True
+C-887,editor-snapshots-panel,results button,button,Superscript,button,False,True
+C-888,editor-snapshots-panel,results button,button,Task list,button,False,True
+C-889,editor-snapshots-panel,results button,button,Text colour #1c2333,button,False,True
+C-890,editor-snapshots-panel,results button,button,Text colour #1c6b3c,button,False,True
+C-891,editor-snapshots-panel,results button,button,Text colour #2e4fa3,button,False,True
+C-892,editor-snapshots-panel,results button,button,Text colour #55607a,button,False,True
+C-893,editor-snapshots-panel,results button,button,Text colour #8a5300,button,False,True
+C-894,editor-snapshots-panel,results button,button,Text colour #a4262c,button,False,True
+C-895,editor-snapshots-panel,results button,button,Toggle header cell,button,True,True
+C-896,editor-snapshots-panel,results button,button,Toggle HTML source view (sanitised),button,False,True
+C-897,editor-snapshots-panel,results button,button,Toolbar and document schema documentation,button,False,True
+C-898,editor-snapshots-panel,app button,button,Trash,button,False,True
+C-899,editor-snapshots-panel,results button,button,Underline (Ctrl+U),button,False,True
+C-900,editor-snapshots-panel,results button,button,Undo (Ctrl+Z),button,False,True
+C-901,filters-panel,#search-input,input,(unnamed),search,False,True
+C-902,filters-panel,#filter-modifiedAfter,input,(unnamed),date,False,True
+C-903,filters-panel,#filter-modifiedBefore,input,(unnamed),date,False,True
+C-904,filters-panel,#filter-pinned,input,(unnamed),checkbox,False,True
+C-905,filters-panel,#filter-favorite,input,(unnamed),checkbox,False,True
+C-906,filters-panel,#filter-hasLink,input,(unnamed),checkbox,False,True
+C-907,filters-panel,#filter-hasAttachment,input,(unnamed),checkbox,False,True
+C-908,filters-panel,#filter-sourceDomain,input,(unnamed),text,False,True
+C-909,filters-panel,#filter-capturedAfter,input,(unnamed),date,False,True
+C-910,filters-panel,#filter-capturedBefore,input,(unnamed),date,False,True
+C-911,filters-panel,#command-palette-input,combobox,(unnamed),text,False,False
+C-912,filters-panel,app button,button,All notes,button,False,True
+C-913,filters-panel,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,True
+C-914,filters-panel,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,True
+C-915,filters-panel,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,True
+C-916,filters-panel,filters-region button,button,Apply filters,button,False,True
+C-917,filters-panel,app button,button,Archived,button,False,True
+C-918,filters-panel,filters-region button,button,Clear all,button,False,True
+C-919,filters-panel,"button[aria-label=""""]",button,Close,button,False,False
+C-920,filters-panel,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-921,filters-panel,app button,button,Favorites,button,False,True
+C-922,filters-panel,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-923,filters-panel,"button[aria-label=""""]",button,Get started,button,True,False
+C-924,filters-panel,app button,radio,Grid,button,False,True
+C-925,filters-panel,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-926,filters-panel,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-927,filters-panel,app button,radio,List,button,False,True
+C-928,filters-panel,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-929,filters-panel,app button,button,Next page,button,True,True
+C-930,filters-panel,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-931,filters-panel,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-932,filters-panel,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-933,filters-panel,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-934,filters-panel,app button,button,Overdue reminders,button,False,True
+C-935,filters-panel,app button,button,Pinned,button,False,True
+C-936,filters-panel,app button,button,Previous page,button,True,True
+C-937,filters-panel,app button,button,Recently edited,button,False,True
+C-938,filters-panel,"button[aria-label=""""]",button,Refresh,button,True,False
+C-939,filters-panel,"button[aria-label=""""]",button,Reset,button,True,False
+C-940,filters-panel,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-941,filters-panel,filters-region button,button,Save as view…,button,False,True
+C-942,filters-panel,"button[aria-label=""""]",button,Save changes,button,True,False
+C-943,filters-panel,#select-all-page,input,Select all notes on this page,checkbox,True,True
+C-944,filters-panel,app a,a,Skip to notes list,,False,True
+C-945,filters-panel,#sort-direction-select,select,Sort direction,select-one,False,True
+C-946,filters-panel,app button,button,Trash,button,False,True
+C-947,onboarding,#search-input,input,(unnamed),search,False,True
+C-948,onboarding,#filter-modifiedAfter,input,(unnamed),date,False,False
+C-949,onboarding,#filter-modifiedBefore,input,(unnamed),date,False,False
+C-950,onboarding,#filter-pinned,input,(unnamed),checkbox,False,False
+C-951,onboarding,#filter-favorite,input,(unnamed),checkbox,False,False
+C-952,onboarding,#filter-hasLink,input,(unnamed),checkbox,False,False
+C-953,onboarding,#filter-hasAttachment,input,(unnamed),checkbox,False,False
+C-954,onboarding,#filter-sourceDomain,input,(unnamed),text,False,False
+C-955,onboarding,#filter-capturedAfter,input,(unnamed),date,False,False
+C-956,onboarding,#filter-capturedBefore,input,(unnamed),date,False,False
+C-957,onboarding,#command-palette-input,combobox,(unnamed),text,False,False
+C-958,onboarding,app button,button,All notes,button,False,True
+C-959,onboarding,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,False
+C-960,onboarding,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,False
+C-961,onboarding,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,False
+C-962,onboarding,filters-region button,button,Apply filters,button,False,False
+C-963,onboarding,app button,button,Archived,button,False,True
+C-964,onboarding,filters-region button,button,Clear all,button,False,False
+C-965,onboarding,"button[aria-label=""""]",button,Close,button,False,False
+C-966,onboarding,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-967,onboarding,app button,button,Favorites,button,False,True
+C-968,onboarding,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-969,onboarding,"button[aria-label=""""]",button,Get started,button,False,True
+C-970,onboarding,app button,radio,Grid,button,False,True
+C-971,onboarding,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-972,onboarding,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-973,onboarding,app button,radio,List,button,False,True
+C-974,onboarding,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-975,onboarding,app button,button,Next page,button,True,True
+C-976,onboarding,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-977,onboarding,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-978,onboarding,"button[aria-label=""""]",button,Open Settings first,button,False,True
+C-979,onboarding,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-980,onboarding,app button,button,Overdue reminders,button,False,True
+C-981,onboarding,app button,button,Pinned,button,False,True
+C-982,onboarding,app button,button,Previous page,button,True,True
+C-983,onboarding,app button,button,Recently edited,button,False,True
+C-984,onboarding,"button[aria-label=""""]",button,Refresh,button,True,False
+C-985,onboarding,"button[aria-label=""""]",button,Reset,button,True,False
+C-986,onboarding,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-987,onboarding,filters-region button,button,Save as view…,button,False,False
+C-988,onboarding,"button[aria-label=""""]",button,Save changes,button,True,False
+C-989,onboarding,#select-all-page,input,Select all notes on this page,checkbox,True,True
+C-990,onboarding,app a,a,Skip to notes list,,False,True
+C-991,onboarding,#sort-direction-select,select,Sort direction,select-one,False,True
+C-992,onboarding,app button,button,Trash,button,False,True
+C-993,settings-panel,#search-input,input,(unnamed),search,False,True
+C-994,settings-panel,#filter-modifiedAfter,input,(unnamed),date,False,True
+C-995,settings-panel,#filter-modifiedBefore,input,(unnamed),date,False,True
+C-996,settings-panel,#filter-pinned,input,(unnamed),checkbox,False,True
+C-997,settings-panel,#filter-favorite,input,(unnamed),checkbox,False,True
+C-998,settings-panel,#filter-hasLink,input,(unnamed),checkbox,False,True
+C-999,settings-panel,#filter-hasAttachment,input,(unnamed),checkbox,False,True
+C-1000,settings-panel,#filter-sourceDomain,input,(unnamed),text,False,True
+C-1001,settings-panel,#filter-capturedAfter,input,(unnamed),date,False,True
+C-1002,settings-panel,#filter-capturedBefore,input,(unnamed),date,False,True
+C-1003,settings-panel,"input[aria-label=""""]",input,(unnamed),radio,False,True
+C-1004,settings-panel,#command-palette-input,combobox,(unnamed),text,False,False
+C-1005,settings-panel,app button,button,All notes,button,False,True
+C-1006,settings-panel,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,True
+C-1007,settings-panel,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,True
+C-1008,settings-panel,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,True
+C-1009,settings-panel,filters-region button,button,Apply filters,button,False,True
+C-1010,settings-panel,app button,button,Archived,button,False,True
+C-1011,settings-panel,filters-region button,button,Clear all,button,False,True
+C-1012,settings-panel,"button[aria-label=""""]",button,Close,button,False,False
+C-1013,settings-panel,#command-palette-option-theme-dark,option,Dark theme,,False,False
+C-1014,settings-panel,"select[aria-label=""""]",select,DescendingAscending,select-one,False,True
+C-1015,settings-panel,"button[aria-label=""""]",button,Export backup now,button,False,True
+C-1016,settings-panel,"button[aria-label=""""]",button,Export diagnostics…,button,True,False
+C-1017,settings-panel,app button,button,Favorites,button,False,True
+C-1018,settings-panel,"select[aria-label=""""]",select,February 28 (default)March 1Skip the year,select-one,False,True
+C-1019,settings-panel,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-1020,settings-panel,#command-palette-option-focus-search,option,Focus search/,,False,False
+C-1021,settings-panel,#command-palette-option-theme-system,option,Follow system themeActive,,False,False
+C-1022,settings-panel,"button[aria-label=""""]",button,Get started,button,True,False
+C-1023,settings-panel,#command-palette-option-go-all,option,Go to All notes,,False,False
+C-1024,settings-panel,#command-palette-option-go-archived,option,Go to Archived,,False,False
+C-1025,settings-panel,#command-palette-option-go-favorites,option,Go to Favorites,,False,False
+C-1026,settings-panel,#command-palette-option-go-overdue,option,Go to Overdue reminders,,False,False
+C-1027,settings-panel,#command-palette-option-go-pinned,option,Go to Pinned,,False,False
+C-1028,settings-panel,#command-palette-option-go-recent,option,Go to Recently edited,,False,False
+C-1029,settings-panel,#command-palette-option-go-trashed,option,Go to Trash,,False,False
+C-1030,settings-panel,app button,radio,Grid,button,False,True
+C-1031,settings-panel,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-1032,settings-panel,#command-palette-option-import-note,option,Import note…,,False,False
+C-1033,settings-panel,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-1034,settings-panel,"select[aria-label=""""]",select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-1035,settings-panel,#command-palette-option-theme-light,option,Light theme,,False,False
+C-1036,settings-panel,app button,radio,List,button,False,True
+C-1037,settings-panel,"button[aria-label=""""]",button,Load models,button,False,True
+C-1038,settings-panel,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-1039,settings-panel,#command-palette-option-new-note,option,New noteAlt+Shift+C,,False,False
+C-1040,settings-panel,app button,button,Next page,button,True,True
+C-1041,settings-panel,"select[aria-label=""""]",select,not selected,select-one,False,True
+C-1042,settings-panel,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-1043,settings-panel,#command-palette-option-open-diagnostics,option,Open diagnostics,,False,False
+C-1044,settings-panel,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-1045,settings-panel,#command-palette-option-open-settings,option,Open settings,,False,False
+C-1046,settings-panel,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-1047,settings-panel,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-1048,settings-panel,app button,button,Overdue reminders,button,False,True
+C-1049,settings-panel,app button,button,Pinned,button,False,True
+C-1050,settings-panel,app button,button,Previous page,button,True,True
+C-1051,settings-panel,app button,button,Recently edited,button,False,True
+C-1052,settings-panel,"button[aria-label=""""]",button,Refresh,button,True,False
+C-1053,settings-panel,"button[aria-label=""""]",button,Reset,button,False,True
+C-1054,settings-panel,"button[aria-label=""""]",button,Restore backup…,button,False,True
+C-1055,settings-panel,"button[aria-label=""""]",button,Run network privacy self-test,button,True,False
+C-1056,settings-panel,filters-region button,button,Save as view…,button,False,True
+C-1057,settings-panel,"button[aria-label=""""]",button,Save changes,button,True,True
+C-1058,settings-panel,#select-all-page,input,Select all notes on this page,checkbox,True,True
+C-1059,settings-panel,"button[aria-label=""""]",button,Show the introduction again,button,False,True
+C-1060,settings-panel,app a,a,Skip to notes list,,False,True
+C-1061,settings-panel,#sort-direction-select,select,Sort direction,select-one,False,True
+C-1062,settings-panel,"button[aria-label=""""]",button,Test connection,button,False,True
+C-1063,settings-panel,app button,button,Trash,button,False,True
+C-1064,view-all-notes,#search-input,input,(unnamed),search,False,True
+C-1065,view-all-notes,#filter-modifiedAfter,input,(unnamed),date,False,True
+C-1066,view-all-notes,#filter-modifiedBefore,input,(unnamed),date,False,True
+C-1067,view-all-notes,#filter-pinned,input,(unnamed),checkbox,False,True
+C-1068,view-all-notes,#filter-favorite,input,(unnamed),checkbox,False,True
+C-1069,view-all-notes,#filter-hasLink,input,(unnamed),checkbox,False,True
+C-1070,view-all-notes,#filter-hasAttachment,input,(unnamed),checkbox,False,True
+C-1071,view-all-notes,#filter-sourceDomain,input,(unnamed),text,False,True
+C-1072,view-all-notes,#filter-capturedAfter,input,(unnamed),date,False,True
+C-1073,view-all-notes,#filter-capturedBefore,input,(unnamed),date,False,True
+C-1074,view-all-notes,"input[aria-label=""""]",input,(unnamed),radio,False,False
+C-1075,view-all-notes,#command-palette-input,combobox,(unnamed),text,False,False
+C-1076,view-all-notes,app button,button,All notes,button,False,True
+C-1077,view-all-notes,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,True
+C-1078,view-all-notes,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,True
+C-1079,view-all-notes,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,True
+C-1080,view-all-notes,filters-region button,button,Apply filters,button,False,True
+C-1081,view-all-notes,app button,button,Archived,button,False,True
+C-1082,view-all-notes,filters-region button,button,Clear all,button,False,True
+C-1083,view-all-notes,"button[aria-label=""""]",button,Close,button,False,False
+C-1084,view-all-notes,#command-palette-option-theme-dark,option,Dark theme,,False,False
+C-1085,view-all-notes,"select[aria-label=""""]",select,DescendingAscending,select-one,False,False
+C-1086,view-all-notes,"button[aria-label=""""]",button,Export backup now,button,False,False
+C-1087,view-all-notes,"button[aria-label=""""]",button,Export diagnostics…,button,False,False
+C-1088,view-all-notes,app button,button,Favorites,button,False,True
+C-1089,view-all-notes,"select[aria-label=""""]",select,February 28 (default)March 1Skip the year,select-one,False,False
+C-1090,view-all-notes,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-1091,view-all-notes,#command-palette-option-focus-search,option,Focus search/,,False,False
+C-1092,view-all-notes,#command-palette-option-theme-system,option,Follow system themeActive,,False,False
+C-1093,view-all-notes,"button[aria-label=""""]",button,Get started,button,True,False
+C-1094,view-all-notes,#command-palette-option-go-all,option,Go to All notes,,False,False
+C-1095,view-all-notes,#command-palette-option-go-archived,option,Go to Archived,,False,False
+C-1096,view-all-notes,#command-palette-option-go-favorites,option,Go to Favorites,,False,False
+C-1097,view-all-notes,#command-palette-option-go-overdue,option,Go to Overdue reminders,,False,False
+C-1098,view-all-notes,#command-palette-option-go-pinned,option,Go to Pinned,,False,False
+C-1099,view-all-notes,#command-palette-option-go-recent,option,Go to Recently edited,,False,False
+C-1100,view-all-notes,#command-palette-option-go-trashed,option,Go to Trash,,False,False
+C-1101,view-all-notes,app button,radio,Grid,button,False,True
+C-1102,view-all-notes,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-1103,view-all-notes,#command-palette-option-import-note,option,Import note…,,False,False
+C-1104,view-all-notes,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-1105,view-all-notes,"select[aria-label=""""]",select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,False
+C-1106,view-all-notes,#command-palette-option-theme-light,option,Light theme,,False,False
+C-1107,view-all-notes,app button,radio,List,button,False,True
+C-1108,view-all-notes,"button[aria-label=""""]",button,Load models,button,False,False
+C-1109,view-all-notes,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-1110,view-all-notes,#command-palette-option-new-note,option,New noteAlt+Shift+C,,False,False
+C-1111,view-all-notes,app button,button,Next page,button,True,True
+C-1112,view-all-notes,"select[aria-label=""""]",select,not selected,select-one,False,False
+C-1113,view-all-notes,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-1114,view-all-notes,#command-palette-option-open-diagnostics,option,Open diagnostics,,False,False
+C-1115,view-all-notes,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-1116,view-all-notes,#command-palette-option-open-settings,option,Open settings,,False,False
+C-1117,view-all-notes,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-1118,view-all-notes,results-region button,button,Open T-072 Inventory Note for editing,button,False,True
+C-1119,view-all-notes,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-1120,view-all-notes,app button,button,Overdue reminders,button,False,True
+C-1121,view-all-notes,app button,button,Pinned,button,False,True
+C-1122,view-all-notes,app button,button,Previous page,button,True,True
+C-1123,view-all-notes,"button[aria-label=""""]",button,Rebuild search index,button,False,False
+C-1124,view-all-notes,app button,button,Recently edited,button,False,True
+C-1125,view-all-notes,"button[aria-label=""""]",button,Refresh,button,False,False
+C-1126,view-all-notes,"button[aria-label=""""]",button,Reset,button,False,False
+C-1127,view-all-notes,"button[aria-label=""""]",button,Restore backup…,button,False,False
+C-1128,view-all-notes,"button[aria-label=""""]",button,Run network privacy self-test,button,False,False
+C-1129,view-all-notes,filters-region button,button,Save as view…,button,False,True
+C-1130,view-all-notes,"button[aria-label=""""]",button,Save changes,button,True,False
+C-1131,view-all-notes,#select-all-page,input,Select all notes on this page,checkbox,False,True
+C-1132,view-all-notes,results-region input,input,Select T-072 Inventory Note,checkbox,False,True
+C-1133,view-all-notes,"button[aria-label=""""]",button,Show the introduction again,button,False,False
+C-1134,view-all-notes,app a,a,Skip to notes list,,False,True
+C-1135,view-all-notes,#sort-direction-select,select,Sort direction,select-one,False,True
+C-1136,view-all-notes,"button[aria-label=""""]",button,Test connection,button,False,False
+C-1137,view-all-notes,"button[aria-label=""""]",button,Test LM Studio connection,button,False,False
+C-1138,view-all-notes,app button,button,Trash,button,False,True
+C-1139,view-favorites,#search-input,input,(unnamed),search,False,True
+C-1140,view-favorites,#filter-modifiedAfter,input,(unnamed),date,False,True
+C-1141,view-favorites,#filter-modifiedBefore,input,(unnamed),date,False,True
+C-1142,view-favorites,#filter-pinned,input,(unnamed),checkbox,False,True
+C-1143,view-favorites,#filter-favorite,input,(unnamed),checkbox,False,True
+C-1144,view-favorites,#filter-hasLink,input,(unnamed),checkbox,False,True
+C-1145,view-favorites,#filter-hasAttachment,input,(unnamed),checkbox,False,True
+C-1146,view-favorites,#filter-sourceDomain,input,(unnamed),text,False,True
+C-1147,view-favorites,#filter-capturedAfter,input,(unnamed),date,False,True
+C-1148,view-favorites,#filter-capturedBefore,input,(unnamed),date,False,True
+C-1149,view-favorites,"input[aria-label=""""]",input,(unnamed),radio,False,False
+C-1150,view-favorites,#command-palette-input,combobox,(unnamed),text,False,False
+C-1151,view-favorites,app button,button,All notes,button,False,True
+C-1152,view-favorites,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,True
+C-1153,view-favorites,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,True
+C-1154,view-favorites,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,True
+C-1155,view-favorites,filters-region button,button,Apply filters,button,False,True
+C-1156,view-favorites,app button,button,Archived,button,False,True
+C-1157,view-favorites,filters-region button,button,Clear all,button,False,True
+C-1158,view-favorites,"button[aria-label=""""]",button,Close,button,False,False
+C-1159,view-favorites,#command-palette-option-theme-dark,option,Dark theme,,False,False
+C-1160,view-favorites,"select[aria-label=""""]",select,DescendingAscending,select-one,False,False
+C-1161,view-favorites,"button[aria-label=""""]",button,Export backup now,button,False,False
+C-1162,view-favorites,"button[aria-label=""""]",button,Export diagnostics…,button,False,False
+C-1163,view-favorites,app button,button,Favorites,button,False,True
+C-1164,view-favorites,"select[aria-label=""""]",select,February 28 (default)March 1Skip the year,select-one,False,False
+C-1165,view-favorites,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-1166,view-favorites,#command-palette-option-focus-search,option,Focus search/,,False,False
+C-1167,view-favorites,#command-palette-option-theme-system,option,Follow system themeActive,,False,False
+C-1168,view-favorites,"button[aria-label=""""]",button,Get started,button,True,False
+C-1169,view-favorites,#command-palette-option-go-all,option,Go to All notes,,False,False
+C-1170,view-favorites,#command-palette-option-go-archived,option,Go to Archived,,False,False
+C-1171,view-favorites,#command-palette-option-go-favorites,option,Go to Favorites,,False,False
+C-1172,view-favorites,#command-palette-option-go-overdue,option,Go to Overdue reminders,,False,False
+C-1173,view-favorites,#command-palette-option-go-pinned,option,Go to Pinned,,False,False
+C-1174,view-favorites,#command-palette-option-go-recent,option,Go to Recently edited,,False,False
+C-1175,view-favorites,#command-palette-option-go-trashed,option,Go to Trash,,False,False
+C-1176,view-favorites,app button,radio,Grid,button,False,True
+C-1177,view-favorites,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-1178,view-favorites,#command-palette-option-import-note,option,Import note…,,False,False
+C-1179,view-favorites,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-1180,view-favorites,"select[aria-label=""""]",select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,False
+C-1181,view-favorites,#command-palette-option-theme-light,option,Light theme,,False,False
+C-1182,view-favorites,app button,radio,List,button,False,True
+C-1183,view-favorites,"button[aria-label=""""]",button,Load models,button,False,False
+C-1184,view-favorites,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-1185,view-favorites,#command-palette-option-new-note,option,New noteAlt+Shift+C,,False,False
+C-1186,view-favorites,app button,button,Next page,button,True,True
+C-1187,view-favorites,"select[aria-label=""""]",select,not selected,select-one,False,False
+C-1188,view-favorites,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-1189,view-favorites,#command-palette-option-open-diagnostics,option,Open diagnostics,,False,False
+C-1190,view-favorites,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-1191,view-favorites,#command-palette-option-open-settings,option,Open settings,,False,False
+C-1192,view-favorites,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-1193,view-favorites,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-1194,view-favorites,app button,button,Overdue reminders,button,False,True
+C-1195,view-favorites,app button,button,Pinned,button,False,True
+C-1196,view-favorites,app button,button,Previous page,button,True,True
+C-1197,view-favorites,"button[aria-label=""""]",button,Rebuild search index,button,False,False
+C-1198,view-favorites,app button,button,Recently edited,button,False,True
+C-1199,view-favorites,"button[aria-label=""""]",button,Refresh,button,False,False
+C-1200,view-favorites,"button[aria-label=""""]",button,Reset,button,False,False
+C-1201,view-favorites,"button[aria-label=""""]",button,Restore backup…,button,False,False
+C-1202,view-favorites,"button[aria-label=""""]",button,Run network privacy self-test,button,False,False
+C-1203,view-favorites,filters-region button,button,Save as view…,button,False,True
+C-1204,view-favorites,"button[aria-label=""""]",button,Save changes,button,True,False
+C-1205,view-favorites,#select-all-page,input,Select all notes on this page,checkbox,True,True
+C-1206,view-favorites,"button[aria-label=""""]",button,Show the introduction again,button,False,False
+C-1207,view-favorites,app a,a,Skip to notes list,,False,True
+C-1208,view-favorites,#sort-direction-select,select,Sort direction,select-one,False,True
+C-1209,view-favorites,"button[aria-label=""""]",button,Test connection,button,False,False
+C-1210,view-favorites,"button[aria-label=""""]",button,Test LM Studio connection,button,False,False
+C-1211,view-favorites,app button,button,Trash,button,False,True
+C-1212,view-pinned,#search-input,input,(unnamed),search,False,True
+C-1213,view-pinned,#filter-modifiedAfter,input,(unnamed),date,False,True
+C-1214,view-pinned,#filter-modifiedBefore,input,(unnamed),date,False,True
+C-1215,view-pinned,#filter-pinned,input,(unnamed),checkbox,False,True
+C-1216,view-pinned,#filter-favorite,input,(unnamed),checkbox,False,True
+C-1217,view-pinned,#filter-hasLink,input,(unnamed),checkbox,False,True
+C-1218,view-pinned,#filter-hasAttachment,input,(unnamed),checkbox,False,True
+C-1219,view-pinned,#filter-sourceDomain,input,(unnamed),text,False,True
+C-1220,view-pinned,#filter-capturedAfter,input,(unnamed),date,False,True
+C-1221,view-pinned,#filter-capturedBefore,input,(unnamed),date,False,True
+C-1222,view-pinned,"input[aria-label=""""]",input,(unnamed),radio,False,False
+C-1223,view-pinned,#command-palette-input,combobox,(unnamed),text,False,False
+C-1224,view-pinned,app button,button,All notes,button,False,True
+C-1225,view-pinned,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,True
+C-1226,view-pinned,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,True
+C-1227,view-pinned,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,True
+C-1228,view-pinned,filters-region button,button,Apply filters,button,False,True
+C-1229,view-pinned,app button,button,Archived,button,False,True
+C-1230,view-pinned,filters-region button,button,Clear all,button,False,True
+C-1231,view-pinned,"button[aria-label=""""]",button,Close,button,False,False
+C-1232,view-pinned,#command-palette-option-theme-dark,option,Dark theme,,False,False
+C-1233,view-pinned,"select[aria-label=""""]",select,DescendingAscending,select-one,False,False
+C-1234,view-pinned,"button[aria-label=""""]",button,Export backup now,button,False,False
+C-1235,view-pinned,"button[aria-label=""""]",button,Export diagnostics…,button,False,False
+C-1236,view-pinned,app button,button,Favorites,button,False,True
+C-1237,view-pinned,"select[aria-label=""""]",select,February 28 (default)March 1Skip the year,select-one,False,False
+C-1238,view-pinned,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-1239,view-pinned,#command-palette-option-focus-search,option,Focus search/,,False,False
+C-1240,view-pinned,#command-palette-option-theme-system,option,Follow system themeActive,,False,False
+C-1241,view-pinned,"button[aria-label=""""]",button,Get started,button,True,False
+C-1242,view-pinned,#command-palette-option-go-all,option,Go to All notes,,False,False
+C-1243,view-pinned,#command-palette-option-go-archived,option,Go to Archived,,False,False
+C-1244,view-pinned,#command-palette-option-go-favorites,option,Go to Favorites,,False,False
+C-1245,view-pinned,#command-palette-option-go-overdue,option,Go to Overdue reminders,,False,False
+C-1246,view-pinned,#command-palette-option-go-pinned,option,Go to Pinned,,False,False
+C-1247,view-pinned,#command-palette-option-go-recent,option,Go to Recently edited,,False,False
+C-1248,view-pinned,#command-palette-option-go-trashed,option,Go to Trash,,False,False
+C-1249,view-pinned,app button,radio,Grid,button,False,True
+C-1250,view-pinned,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-1251,view-pinned,#command-palette-option-import-note,option,Import note…,,False,False
+C-1252,view-pinned,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-1253,view-pinned,"select[aria-label=""""]",select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,False
+C-1254,view-pinned,#command-palette-option-theme-light,option,Light theme,,False,False
+C-1255,view-pinned,app button,radio,List,button,False,True
+C-1256,view-pinned,"button[aria-label=""""]",button,Load models,button,False,False
+C-1257,view-pinned,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-1258,view-pinned,#command-palette-option-new-note,option,New noteAlt+Shift+C,,False,False
+C-1259,view-pinned,app button,button,Next page,button,True,True
+C-1260,view-pinned,"select[aria-label=""""]",select,not selected,select-one,False,False
+C-1261,view-pinned,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-1262,view-pinned,#command-palette-option-open-diagnostics,option,Open diagnostics,,False,False
+C-1263,view-pinned,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-1264,view-pinned,#command-palette-option-open-settings,option,Open settings,,False,False
+C-1265,view-pinned,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-1266,view-pinned,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-1267,view-pinned,app button,button,Overdue reminders,button,False,True
+C-1268,view-pinned,app button,button,Pinned,button,False,True
+C-1269,view-pinned,app button,button,Previous page,button,True,True
+C-1270,view-pinned,"button[aria-label=""""]",button,Rebuild search index,button,False,False
+C-1271,view-pinned,app button,button,Recently edited,button,False,True
+C-1272,view-pinned,"button[aria-label=""""]",button,Refresh,button,False,False
+C-1273,view-pinned,"button[aria-label=""""]",button,Reset,button,False,False
+C-1274,view-pinned,"button[aria-label=""""]",button,Restore backup…,button,False,False
+C-1275,view-pinned,"button[aria-label=""""]",button,Run network privacy self-test,button,False,False
+C-1276,view-pinned,filters-region button,button,Save as view…,button,False,True
+C-1277,view-pinned,"button[aria-label=""""]",button,Save changes,button,True,False
+C-1278,view-pinned,#select-all-page,input,Select all notes on this page,checkbox,True,True
+C-1279,view-pinned,"button[aria-label=""""]",button,Show the introduction again,button,False,False
+C-1280,view-pinned,app a,a,Skip to notes list,,False,True
+C-1281,view-pinned,#sort-direction-select,select,Sort direction,select-one,False,True
+C-1282,view-pinned,"button[aria-label=""""]",button,Test connection,button,False,False
+C-1283,view-pinned,"button[aria-label=""""]",button,Test LM Studio connection,button,False,False
+C-1284,view-pinned,app button,button,Trash,button,False,True
+C-1285,view-trash,#search-input,input,(unnamed),search,False,True
+C-1286,view-trash,#filter-modifiedAfter,input,(unnamed),date,False,True
+C-1287,view-trash,#filter-modifiedBefore,input,(unnamed),date,False,True
+C-1288,view-trash,#filter-pinned,input,(unnamed),checkbox,False,True
+C-1289,view-trash,#filter-favorite,input,(unnamed),checkbox,False,True
+C-1290,view-trash,#filter-hasLink,input,(unnamed),checkbox,False,True
+C-1291,view-trash,#filter-hasAttachment,input,(unnamed),checkbox,False,True
+C-1292,view-trash,#filter-sourceDomain,input,(unnamed),text,False,True
+C-1293,view-trash,#filter-capturedAfter,input,(unnamed),date,False,True
+C-1294,view-trash,#filter-capturedBefore,input,(unnamed),date,False,True
+C-1295,view-trash,"input[aria-label=""""]",input,(unnamed),radio,False,False
+C-1296,view-trash,#command-palette-input,combobox,(unnamed),text,False,False
+C-1297,view-trash,app button,button,All notes,button,False,True
+C-1298,view-trash,#filter-state,select,Any stateActiveArchivedTrashed,select-one,False,True
+C-1299,view-trash,#filter-reminder,select,AnyHas remindersDue upcomingOverdue onlyCompleted,select-one,False,True
+C-1300,view-trash,#filter-snapshot,select,AnyHas snapshotsNo snapshotsFailed captures,select-one,False,True
+C-1301,view-trash,filters-region button,button,Apply filters,button,False,True
+C-1302,view-trash,app button,button,Archived,button,False,True
+C-1303,view-trash,filters-region button,button,Clear all,button,False,True
+C-1304,view-trash,"button[aria-label=""""]",button,Close,button,False,False
+C-1305,view-trash,#command-palette-option-theme-dark,option,Dark theme,,False,False
+C-1306,view-trash,"select[aria-label=""""]",select,DescendingAscending,select-one,False,False
+C-1307,view-trash,"button[aria-label=""""]",button,Export backup now,button,False,False
+C-1308,view-trash,"button[aria-label=""""]",button,Export diagnostics…,button,False,False
+C-1309,view-trash,app button,button,Favorites,button,False,True
+C-1310,view-trash,"select[aria-label=""""]",select,February 28 (default)March 1Skip the year,select-one,False,False
+C-1311,view-trash,"app button[data-action=""toggle-filters""]",button,Filters,button,False,True
+C-1312,view-trash,#command-palette-option-focus-search,option,Focus search/,,False,False
+C-1313,view-trash,#command-palette-option-theme-system,option,Follow system themeActive,,False,False
+C-1314,view-trash,"button[aria-label=""""]",button,Get started,button,True,False
+C-1315,view-trash,#command-palette-option-go-all,option,Go to All notes,,False,False
+C-1316,view-trash,#command-palette-option-go-archived,option,Go to Archived,,False,False
+C-1317,view-trash,#command-palette-option-go-favorites,option,Go to Favorites,,False,False
+C-1318,view-trash,#command-palette-option-go-overdue,option,Go to Overdue reminders,,False,False
+C-1319,view-trash,#command-palette-option-go-pinned,option,Go to Pinned,,False,False
+C-1320,view-trash,#command-palette-option-go-recent,option,Go to Recently edited,,False,False
+C-1321,view-trash,#command-palette-option-go-trashed,option,Go to Trash,,False,False
+C-1322,view-trash,app button,radio,Grid,button,False,True
+C-1323,view-trash,"app button[data-action=""import-note""]",button,"Import a note file (JSON, Markdown or HTML)",button,False,True
+C-1324,view-trash,#command-palette-option-import-note,option,Import note…,,False,False
+C-1325,view-trash,#sort-select,select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,True
+C-1326,view-trash,"select[aria-label=""""]",select,Last modifiedDate createdTitleReminder dueCapture dateReleva,select-one,False,False
+C-1327,view-trash,#command-palette-option-theme-light,option,Light theme,,False,False
+C-1328,view-trash,app button,radio,List,button,False,True
+C-1329,view-trash,"button[aria-label=""""]",button,Load models,button,False,False
+C-1330,view-trash,"app button[data-action=""new-note""]",button,New Note,button,False,True
+C-1331,view-trash,#command-palette-option-new-note,option,New noteAlt+Shift+C,,False,False
+C-1332,view-trash,app button,button,Next page,button,True,True
+C-1333,view-trash,"select[aria-label=""""]",select,not selected,select-one,False,False
+C-1334,view-trash,"app button[data-action=""open-command-palette""]",button,Open command palette (Ctrl+K),button,False,True
+C-1335,view-trash,#command-palette-option-open-diagnostics,option,Open diagnostics,,False,False
+C-1336,view-trash,"app button[data-action=""open-settings""]",button,Open settings,button,False,True
+C-1337,view-trash,#command-palette-option-open-settings,option,Open settings,,False,False
+C-1338,view-trash,"button[aria-label=""""]",button,Open Settings first,button,False,False
+C-1339,view-trash,"app button[data-action=""open-diagnostics""]",button,Open the diagnostics page,button,False,True
+C-1340,view-trash,app button,button,Overdue reminders,button,False,True
+C-1341,view-trash,app button,button,Pinned,button,False,True
+C-1342,view-trash,app button,button,Previous page,button,True,True
+C-1343,view-trash,"button[aria-label=""""]",button,Rebuild search index,button,False,False
+C-1344,view-trash,app button,button,Recently edited,button,False,True
+C-1345,view-trash,"button[aria-label=""""]",button,Refresh,button,False,False
+C-1346,view-trash,"button[aria-label=""""]",button,Reset,button,False,False
+C-1347,view-trash,"button[aria-label=""""]",button,Restore backup…,button,False,False
+C-1348,view-trash,"button[aria-label=""""]",button,Run network privacy self-test,button,False,False
+C-1349,view-trash,filters-region button,button,Save as view…,button,False,True
+C-1350,view-trash,"button[aria-label=""""]",button,Save changes,button,True,False
+C-1351,view-trash,#select-all-page,input,Select all notes on this page,checkbox,True,True
+C-1352,view-trash,"button[aria-label=""""]",button,Show the introduction again,button,False,False
+C-1353,view-trash,app a,a,Skip to notes list,,False,True
+C-1354,view-trash,#sort-direction-select,select,Sort direction,select-one,False,True
+C-1355,view-trash,"button[aria-label=""""]",button,Test connection,button,False,False
+C-1356,view-trash,"button[aria-label=""""]",button,Test LM Studio connection,button,False,False
+C-1357,view-trash,app button,button,Trash,button,False,True

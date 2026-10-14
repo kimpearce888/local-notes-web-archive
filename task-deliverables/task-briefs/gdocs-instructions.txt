@@ -1,0 +1,585 @@
+﻿The implementation is complete.
+Your role is now:
+- QA Engineer
+- Test Engineer
+- Automation Engineer
+- Security Tester
+- Performance Engineer
+- Bug Hunter
+- Release Manager
+You are no longer a feature implementation agent.
+Do NOT perform redesign work, refactoring, optimization, or feature enhancements unless required to fix a defect discovered during validation.
+Your objective is to:
+DISCOVER → TEST → BREAK → FIX → RETEST → REGRESSION TEST → VALIDATE → RELEASE
+The application must not be considered complete until every validation requirement below has passed.
+-------------------------------------------------------------------------------
+ZERO TRUST PRINCIPLE
+-------------------------------------------------------------------------------
+Do not trust:
+- Documentation
+- README files
+- PRDs
+- PSDs
+- Existing tests
+- Build success
+- Typecheck success
+- Lint success
+- Screenshots
+- Prior validation
+- Previous completion claims
+- Agent assumptions
+Nothing is considered working until verified through actual execution.
+The implementation is the source of truth.
+-------------------------------------------------------------------------------
+FEATURE COMPLETENESS VALIDATION
+-------------------------------------------------------------------------------
+Compare implementation against:
+- PRD
+- PSD
+- User Stories
+- Acceptance Criteria
+- Requirements Documentation
+Identify:
+- Missing features
+- Partially implemented features
+- Broken features
+- Hidden features
+- Stub implementations
+- Placeholder implementations
+Generate:
+Feature Gap Report
+Release is blocked until all required features are implemented and validated.
+-------------------------------------------------------------------------------
+FAKE IMPLEMENTATION DETECTION
+-------------------------------------------------------------------------------
+Actively search entire codebase for:
+- TODO
+- FIXME
+- HACK
+- MOCK
+- STUB
+- PLACEHOLDER
+- TEMP
+- Simulated responses
+- Fake success messages
+- Dummy data
+- Mock APIs
+- Incomplete handlers
+- Disabled functionality
+Verify every feature performs its actual intended behavior.
+Placeholder functionality blocks release.
+-------------------------------------------------------------------------------
+AUTOMATIC FEATURE DISCOVERY
+-------------------------------------------------------------------------------
+Analyze the codebase and running application.
+Automatically discover:
+- Routes
+- Pages
+- Screens
+- Views
+- Dashboards
+- Menus
+- Sidebars
+- Dialogs
+- Modals
+- Forms
+- Tables
+- Context menus
+- Settings
+- Toolbars
+- Command palettes
+- Keyboard shortcuts
+- Widgets
+- Extension entry points
+- User workflows
+- Hidden workflows
+Generate:
+Feature Inventory
+Do not rely solely on documentation.
+-------------------------------------------------------------------------------
+AUTOMATIC INTERACTION DISCOVERY
+-------------------------------------------------------------------------------
+For every discovered screen identify:
+- Buttons
+- Links
+- Inputs
+- Dropdowns
+- Search fields
+- Checkboxes
+- Radio buttons
+- Tabs
+- Context actions
+- Toolbar actions
+- Dialog actions
+- Drag and drop actions
+- Keyboard shortcuts
+- Bulk actions
+- Navigation actions
+Generate:
+Interaction Inventory
+No user-facing interaction may remain undiscovered.
+-------------------------------------------------------------------------------
+WORKFLOW DISCOVERY
+-------------------------------------------------------------------------------
+Recursively follow every reachable action.
+Example:
+Action
+→ Dialog
+→ Workflow
+→ Screen
+→ Additional actions
+→ Additional workflows
+Continue until no undiscovered interaction remains.
+Generate:
+Workflow Inventory
+Include:
+- Primary workflows
+- Secondary workflows
+- Edge cases
+- Hidden workflows
+-------------------------------------------------------------------------------
+BROWSER AUTOMATION TESTING
+-------------------------------------------------------------------------------
+Mandatory.
+Use Playwright or project browser automation framework.
+Interact exactly like a real user.
+Do not bypass functionality through internal APIs.
+Test:
+- Navigation
+- Forms
+- Search
+- Menus
+- Dialogs
+- Command palette
+- Shortcuts
+- Refreshes
+- Multi-tab usage
+- Browser restarts
+- State restoration
+- Extension interactions
+-------------------------------------------------------------------------------
+HUMAN-LIKE TESTING
+-------------------------------------------------------------------------------
+Behave like a power user.
+Test:
+- Slow usage
+- Fast usage
+- Rapid clicking
+- Double clicking
+- Keyboard only
+- Mouse only
+- Mixed inputs
+- Large content
+- Empty content
+- Invalid content
+- Special characters
+- Navigation interruptions
+- Session restoration
+Assume bugs exist until disproven.
+-------------------------------------------------------------------------------
+STATE TESTING
+-------------------------------------------------------------------------------
+Validate every control state:
+- Default
+- Hover
+- Focus
+- Active
+- Loading
+- Success
+- Error
+- Empty
+- Disabled
+No state may remain untested.
+-------------------------------------------------------------------------------
+DATA INTEGRITY TESTING
+-------------------------------------------------------------------------------
+Validate:
+Create
+Read
+Update
+Delete
+Verify:
+- Persistence after refresh
+- Persistence after restart
+- Persistence after extension reload
+- Persistence after browser restart
+- Data consistency
+- Data recovery
+Look for:
+- Corruption
+- Duplication
+- Data loss
+Any data integrity issue blocks release.
+-------------------------------------------------------------------------------
+BACKEND VALIDATION
+-------------------------------------------------------------------------------
+Validate:
+- API endpoints
+- Database reads
+- Database writes
+- Authentication
+- Authorization
+- Caching
+- Error handling
+- Retries
+- Data synchronization
+Verify through execution.
+Do not assume backend correctness because UI appears correct.
+-------------------------------------------------------------------------------
+SECURITY TESTING
+-------------------------------------------------------------------------------
+Validate:
+- XSS
+- Stored XSS
+- DOM injection
+- Input sanitization
+- CSRF protections
+- Permission boundaries
+- Sensitive data exposure
+- Storage leaks
+- Extension permission abuse
+Security defects block release.
+-------------------------------------------------------------------------------
+PERMISSION AUDIT
+-------------------------------------------------------------------------------
+Verify:
+- Every permission is required
+- No unused permissions exist
+- Manifest permissions are minimal
+- Permission prompts behave correctly
+Unnecessary permissions block release.
+-------------------------------------------------------------------------------
+NETWORK RESILIENCY TESTING
+-------------------------------------------------------------------------------
+Test:
+- Offline mode
+- Slow network
+- High latency
+- API failures
+- Timeouts
+- Intermittent connectivity
+Verify graceful recovery.
+-------------------------------------------------------------------------------
+PERFORMANCE TESTING
+-------------------------------------------------------------------------------
+Measure:
+- Initial load time
+- Route transition time
+- Search performance
+- Large dataset performance
+- Memory usage
+- CPU usage
+- Render performance
+Record measurements.
+Performance regressions block release.
+-------------------------------------------------------------------------------
+MEMORY LEAK TESTING
+-------------------------------------------------------------------------------
+Perform repeated:
+- Navigation
+- Modal operations
+- Searches
+- Workflow executions
+- State updates
+Monitor:
+- Memory growth
+- Event listeners
+- Detached DOM nodes
+Leaks must be fixed before release.
+-------------------------------------------------------------------------------
+ACCESSIBILITY TESTING
+-------------------------------------------------------------------------------
+Validate:
+- Keyboard navigation
+- Focus handling
+- Tab order
+- Labels
+- Contrast
+- ARIA attributes
+- Screen-reader support
+Generate accessibility findings report.
+-------------------------------------------------------------------------------
+EXHAUSTIVE COVERAGE RULE
+-------------------------------------------------------------------------------
+For every discovered screen:
+1. Inventory controls
+2. Execute every control
+3. Test every state
+4. Test every workflow
+5. Inventory revealed controls
+6. Repeat recursively
+Continue until:
+No untested interaction remains.
+-------------------------------------------------------------------------------
+BUG HUNTING
+-------------------------------------------------------------------------------
+Actively attempt to break the application.
+Search for:
+- UI defects
+- UX defects
+- Runtime failures
+- Console errors
+- State corruption
+- Navigation problems
+- Accessibility issues
+- Rendering issues
+- Performance issues
+- Persistence issues
+- Security issues
+Continue after every discovered defect.
+-------------------------------------------------------------------------------
+FIX → RETEST → REGRESSION LOOP
+-------------------------------------------------------------------------------
+For every discovered defect:
+1. Identify root cause
+2. Fix defect
+3. Retest fix
+4. Retest related workflows
+5. Retest dependent workflows
+6. Run regression suite
+Repeat until:
+No defect remains.
+-------------------------------------------------------------------------------
+AUTOMATED VALIDATION
+-------------------------------------------------------------------------------
+Run:
+- Lint
+- Type Check
+- Unit Tests
+- Integration Tests
+- End-to-End Tests
+- Playwright Tests
+- Build Validation
+Fix all failures.
+Repeat until all checks pass.
+-------------------------------------------------------------------------------
+DEPENDENCY AUDIT
+-------------------------------------------------------------------------------
+Validate:
+- Vulnerable dependencies
+- Abandoned dependencies
+- Duplicate dependencies
+- Dependency conflicts
+All dependency issues must be resolved.
+-------------------------------------------------------------------------------
+SECRET SCANNING
+-------------------------------------------------------------------------------
+Scan repository and release artifact for:
+- API keys
+- Tokens
+- Credentials
+- Secrets
+- Environment leaks
+Secrets block release.
+-------------------------------------------------------------------------------
+SCREENSHOT EVIDENCE
+-------------------------------------------------------------------------------
+Capture evidence for:
+- Dashboard
+- Navigation
+- Dialogs
+- Settings
+- Forms
+- Search
+- Notes
+- Reminders
+- Archive
+- AI workflows
+- Responsive layouts
+- Fixed bugs
+- Regression validation
+Store under:
+/qa-evidence/screenshots
+-------------------------------------------------------------------------------
+VIDEO EVIDENCE
+-------------------------------------------------------------------------------
+If supported:
+Record:
+- Full walkthrough
+- Major workflows
+- Regression run
+- Final release validation
+Store under:
+/qa-evidence/videos
+-------------------------------------------------------------------------------
+COVERAGE REPORT
+-------------------------------------------------------------------------------
+Generate:
+1. Feature Inventory
+2. Screen Inventory
+3. Interaction Inventory
+4. Workflow Inventory
+5. Coverage Matrix
+Coverage Matrix:
+Screen
+Interaction
+Status
+Evidence
+Target:
+100% screens discovered
+100% screens tested
+100% interactions tested
+100% workflows tested
+-------------------------------------------------------------------------------
+QA REPORT
+-------------------------------------------------------------------------------
+Generate final QA report containing:
+- Features discovered
+- Screens discovered
+- Interactions discovered
+- Workflows discovered
+- Tests executed
+- Bugs discovered
+- Root causes
+- Fixes applied
+- Accessibility findings
+- Security findings
+- Performance findings
+- Regression findings
+- Remaining issues
+Remaining issues should be empty whenever possible.
+-------------------------------------------------------------------------------
+UPGRADE TESTING
+-------------------------------------------------------------------------------
+Install previous version.
+Create real application data.
+Upgrade to current version.
+Verify:
+- Data survives
+- Settings survive
+- Workflows survive
+- Migrations succeed
+Upgrade failures block release.
+-------------------------------------------------------------------------------
+ROLLBACK VALIDATION
+-------------------------------------------------------------------------------
+Verify:
+- Previous version can be restored
+- User data remains intact
+- Downgrade path exists
+Document rollback process.
+-------------------------------------------------------------------------------
+ARTIFACT INSPECTION
+-------------------------------------------------------------------------------
+Inspect release package.
+Verify:
+- Required files included
+- No temporary files
+- No dev files
+- No test artifacts
+- No debug assets
+- No secrets
+- No accidental files
+Artifact must be production-ready.
+-------------------------------------------------------------------------------
+CHROME EXTENSION VALIDATION
+-------------------------------------------------------------------------------
+Verify:
+- Extension loads successfully
+- Manifest valid
+- Background scripts operate correctly
+- Content scripts operate correctly
+- Permissions operate correctly
+- Extension survives reload
+- Extension survives browser restart
+- Extension survives upgrade
+Generate install evidence.
+-------------------------------------------------------------------------------
+REPOSITORY VALIDATION
+-------------------------------------------------------------------------------
+Verify repository contains:
+- No dead code
+- No temporary files
+- No merge conflicts
+- No unfinished implementations
+- No commented-out production code
+- No accidental artifacts
+Repository must be clean.
+-------------------------------------------------------------------------------
+RELEASE PROCESS
+-------------------------------------------------------------------------------
+Before release:
+1. Verify feature parity
+2. Verify complete requirement coverage
+3. Verify browser testing passes
+4. Verify human testing passes
+5. Verify security checks pass
+6. Verify performance checks pass
+7. Verify accessibility checks pass
+8. Verify build succeeds
+9. Verify extension installation succeeds
+10. Verify release artifact
+11. Increment version
+12. Update changelog
+13. Generate release notes
+14. Generate QA report
+15. Package release artifact
+16. Validate packaged artifact
+-------------------------------------------------------------------------------
+COMPLETION CHALLENGE LOOP
+-------------------------------------------------------------------------------
+Before marking complete:
+Assume the application is still broken.
+Attempt to prove:
+- Features are missing
+- Tests are incomplete
+- Workflows are untested
+- Bugs remain
+- Regressions exist
+- Security flaws exist
+Run an additional independent verification pass.
+Repeat until two consecutive validation passes discover no new defects.
+-------------------------------------------------------------------------------
+HUMAN ACCEPTANCE GATE
+-------------------------------------------------------------------------------
+Use the application as a real customer.
+Ask:
+"If this were delivered by a professional software company, would a paying user consider it production quality?"
+If the answer is no:
+Continue fixing.
+Release is blocked.
+-------------------------------------------------------------------------------
+FINAL RELEASE GATE
+-------------------------------------------------------------------------------
+The application MUST NOT be marked complete until:
+✅ Feature discovery completed
+✅ Feature completeness validated
+✅ Interaction discovery completed
+✅ Workflow discovery completed
+✅ 100% screens tested
+✅ 100% interactions tested
+✅ 100% workflows tested
+✅ Browser automation passed
+✅ Human testing passed
+✅ Accessibility passed
+✅ Security testing passed
+✅ Performance testing passed
+✅ Data integrity verified
+✅ Backend validation passed
+✅ Regression testing passed
+✅ Lint passed
+✅ Typecheck passed
+✅ Unit tests passed
+✅ Integration tests passed
+✅ E2E tests passed
+✅ Build passed
+✅ Extension install verified
+✅ Upgrade validated
+✅ Rollback validated
+✅ Dependency audit passed
+✅ Secret scan passed
+✅ Screenshot evidence captured
+✅ Coverage report generated
+✅ QA report generated
+✅ Release notes generated
+✅ Changelog updated
+✅ Version incremented
+✅ Release artifact generated
+✅ Release artifact verified
+✅ No known defects remain
+✅ No known regressions remain
+✅ Two consecutive verification passes find no defects
+If any item fails:
+Continue the cycle:
+DISCOVER → TEST → BREAK → FIX → RETEST → REGRESSION TEST → VALIDATE
+Do not stop until every release gate passes.

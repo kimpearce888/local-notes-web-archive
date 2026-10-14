@@ -1,0 +1,22 @@
+{
+  "spec": "pass-b-panels2",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [
+    "R1-reminder-cleared-date-error.png",
+    "R2-reminder-listed.png",
+    "R6-feb30-error.png"
+  ],
+  "notes": [
+    "screenshot R1-reminder-cleared-date-error at 2026-10-13T21:37:51.550Z",
+    "reminder preview: Next occurrence: 15 Oct 2026, 21:37 (UTC). at 2026-10-13T21:37:52.317Z",
+    "screenshot R2-reminder-listed at 2026-10-13T21:37:52.972Z",
+    "valid one-time reminder created through the real dialog at 2026-10-13T21:37:53.072Z",
+    "reminder deleted after cancel-then-confirm at 2026-10-13T21:37:54.320Z",
+    "Feb-30 yearly dialog contains error: true at 2026-10-13T21:37:54.882Z",
+    "screenshot R6-feb30-error at 2026-10-13T21:37:54.882Z"
+  ]
+}

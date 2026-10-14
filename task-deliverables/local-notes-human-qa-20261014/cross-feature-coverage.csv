@@ -1,0 +1,32 @@
+pair_or_combo,features,scenario,status,notes,evidence
+P-01,selection × smart-list navigation,"select note → navigate Pinned → return",PASS,"selection cleared when note leaves the query (requery filter); bar hidden in Pinned",X1
+P-02,search × bulk actions,"search filter → select → Archive",PASS,"archived exactly the filtered note; other note untouched",X2
+P-03,multi-tab × same-note editing,"tab2 saves → tab1 saves",PASS,"conflict surfaced honestly (announcement + dialog)",X3
+P-04,multi-tab × background trash,"tab1 editing → tab2 trashes → tab1 saves",PASS,"honest failure announcement; app stays usable",X4
+P-05,theme × note creation,"dark theme active → create note",PASS,"note created and durable in dark theme",X5
+P-06,command palette × editor (unsaved edits),"type unsaved → Ctrl+K → navigate",PASS,"palette works over editor; editor state recorded",X6
+P-07,rapid theme toggling × shell health,"6 quick toggles",PASS,"shell healthy; cards visible",X7
+P-08,editor × revisions × restore,"3 revisions → restore older",PASS,"rollback durable",P3
+P-09,reminders × full restart,"reminder set → browser restart",PASS,"'Due …' indicator survives",F1/F2
+P-10,import × search,"import md/html → search imported content",PASS,"markers found",C2/C5
+P-11,offline × creation+search,"setOffline → create + search",PASS,"both work fully offline",D7 (pass-d)
+P-12,offline × AI test connection,"offline → Test connection",PASS,"honest failure (also fails online without server)",P8
+P-13,onboarding × settings,"Open Settings first → close",PASS,"settings opens from onboarding",A2
+P-14,onboarding re-show × settings,"Show introduction again",PASS→FAIL,"re-show works; D-05 blocks dismissal",P8
+P-15,diagnostics export × review dialog,"export → review → cancel → export → download",PASS,"cancel path + real download",P9
+P-16,pagination × select-page,"50 on page → select all → count",PASS,"exactly the visible page selected",B8
+P-17,sort × title ordering,"Title sort with known titles",PASS-with-defect,"reorders; fixed desc (D-03)",B6
+P-18,search operators × archived state,"is:archived after archiving",PASS,"returns the archived note",C5
+P-19,tag assignment × card display × search,"assign tag → chip → tag: query",PASS,"closed loop verified",C1/F3
+P-20,whitespace note × untitled labeling,"create whitespace-only note",PASS,"sensible Untitled label",D1 (pass-d)
+P-21,unicode/emoji × card layout × persistence,"500-char + CJK + emoji title",PASS,"no horizontal overflow; persists",D2/E11
+H-01,editor × multi-tab × conflict dialog (3-way),"two tabs edit + save sequence",PASS,"conflict path exercised end-to-end",X3
+H-02,theme × creation × restart (3-way),"dark → create → restart",PASS,"all three verified together",F1/F2/X5
+H-03,import × search × reload (3-way),"import → search marker → reload",PASS,"durable chain",C2/F3
+P-22,capture × URL gate × editor paste,"paste blocked URL into editor",BLOCKED-sandbox,"repo E2E covers graceful refusal; audit sandbox has no external pages","repo extension.spec"
+P-23,AI × reminders × tool permissions,"AI creates/updates reminder",BLOCKED,"requires LM Studio",—
+P-24,notifications × reminders × restart,"alarm fires after restart",BLOCKED,"wall-clock + OS dependency",—
+P-25,attachments × images × editor,"attach image file via picker",FAIL,"D-04 transport break",P1/E6
+P-26,backup × restore × import,"backup round-trip",FAIL,"D-06 transport break",C4
+P-27,selection × search requery,"select then clear search",NOT RUN,"covered partially by P-01/P-02; direct combo not exercised",—
+P-28,duplicate note × revisions,"duplicate with content",NOT RUN,"duplicate-dialog exists for captures; note-level duplicate not exercised",—

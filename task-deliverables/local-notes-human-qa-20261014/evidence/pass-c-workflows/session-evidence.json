@@ -1,0 +1,30 @@
+{
+  "spec": "pass-c-workflows",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "externalRequests": [],
+  "windowDialogs": [],
+  "screenshots": [
+    "C1-archived-state.png",
+    "C2-imported-notes.png",
+    "C3-import-failed-honest.png",
+    "C4-DEFECT-backup-export-fails.png",
+    "C4-DEFECT-backup-restore-fails.png"
+  ],
+  "notes": [
+    "screenshot C1-archived-state at 2026-10-13T21:38:26.084Z",
+    "full lifecycle completed with verified transitions at every step at 2026-10-13T21:38:27.309Z",
+    "md import contains marker: true at 2026-10-13T21:38:28.650Z",
+    "import announcement not observed in live region at 2026-10-13T21:38:38.662Z",
+    "html import contains marker: true at 2026-10-13T21:38:40.003Z",
+    "screenshot C2-imported-notes at 2026-10-13T21:38:40.067Z",
+    "screenshot C3-import-failed-honest at 2026-10-13T21:38:41.522Z",
+    "DEFECT D-06a: backup export fails: Backup failed: Failed to execute 'createObjectURL' on 'URL': Overload resolution failed. at 2026-10-13T21:38:41.779Z",
+    "screenshot C4-DEFECT-backup-export-fails at 2026-10-13T21:38:41.790Z",
+    "DEFECT D-06b: restore attempt outcome: archive: expected the backup file (a Blob)Local AI (LM Studio)Optional. at 2026-10-13T21:38:44.085Z",
+    "screenshot C4-DEFECT-backup-restore-fails at 2026-10-13T21:38:44.085Z",
+    "after both backup failures the library is intact and the app usable at 2026-10-13T21:38:44.346Z",
+    "is:archived result count: 0 at 2026-10-13T21:38:45.242Z"
+  ]
+}

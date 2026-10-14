@@ -1,0 +1,5 @@
+release v1.0.5 id=412195283
+zip 1555953 bytes sha256 ead1a27de5ee06bc332efadeea92efd87fc77bd618b9c5fc9fe79a88527c54f8
+digest cross-check MATCH, download-back BYTE-IDENTICAL
+tag == HEAD == 6a1ac2faa561d14d8e76dafb7a76cd94b25ac8b5
+ALL CHECKS PASS

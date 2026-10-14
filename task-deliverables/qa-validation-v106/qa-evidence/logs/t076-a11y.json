@@ -1,0 +1,85 @@
+{
+  "startedAt": "2026-10-14T03:04:03.432Z",
+  "checks": [
+    {
+      "id": "A3 onboarding focus inside on open",
+      "status": "PASS",
+      "detail": "activeElement inside dialog: true",
+      "at": "2026-10-14T03:04:04.490Z"
+    },
+    {
+      "id": "A3 Escape closes onboarding",
+      "status": "PASS",
+      "detail": "Escape dismissed the first-run dialog",
+      "at": "2026-10-14T03:04:04.516Z"
+    },
+    {
+      "id": "A1 onboarding completable keyboard-only",
+      "status": "PASS",
+      "detail": "Get started activated via Tab+Enter: true",
+      "at": "2026-10-14T03:04:04.597Z"
+    },
+    {
+      "id": "A1 Tab reaches the search input",
+      "status": "PASS",
+      "detail": "13 tab stops: a#[Skip to notes list] → button#[New Note] → button#[All notes] → button#[Pinned] → button#[Favorites] → button#[Recently edited] → button#[Overdue reminders] → button#[Archived]",
+      "at": "2026-10-14T03:04:04.834Z"
+    },
+    {
+      "id": "A1 New Note via keyboard-only (Tab+Enter)",
+      "status": "PASS",
+      "detail": "focus on New Note: true; Enter created 1 card(s). (chrome.commands Alt+Shift+C is browser-level and cannot be synthesized by Playwright — harness limitation, recorded honestly)",
+      "at": "2026-10-14T03:04:06.534Z"
+    },
+    {
+      "id": "A2 visible focus styles (keyboard-driven)",
+      "status": "PASS",
+      "detail": "[{\"label\":\"focused:skip-link\",\"outline\":\"solid\",\"boxShadow\":\"rgba(23, 24, 29, 0.1) 0px 4px 16px 0px\"},{\"label\":\"focused:btn\",\"outline\":\"solid\",\"boxShadow\":\"none\"},{\"label\":\"focused:smart-nav__button\",\"outline\":\"solid\",\"boxShadow\":\"none\"}]",
+      "at": "2026-10-14T03:04:08.712Z"
+    },
+    {
+      "id": "A3 settings focus inside on open",
+      "status": "PASS",
+      "detail": "focus contained: true",
+      "at": "2026-10-14T03:04:08.800Z"
+    },
+    {
+      "id": "A3 Escape closes settings",
+      "status": "PASS",
+      "detail": "Escape closed the settings dialog",
+      "at": "2026-10-14T03:04:08.817Z"
+    },
+    {
+      "id": "A4 WCAG AA contrast spot-checks",
+      "status": "PASS",
+      "detail": "6 probes: card title=17.72, card meta=5.71, sidebar heading=15.73, results heading=16.42, primary button=4.81, search placeholder region=17.72",
+      "at": "2026-10-14T03:04:09.131Z"
+    },
+    {
+      "id": "A5 narrow viewport 375px",
+      "status": "PASS",
+      "detail": "horizontal overflow: 0px, New Note reachable: true",
+      "at": "2026-10-14T03:04:09.789Z"
+    },
+    {
+      "id": "A6 special-chars/emoji title durable",
+      "status": "PASS",
+      "detail": "1 card(s) with unicode+emoji title after reload",
+      "at": "2026-10-14T03:05:04.754Z"
+    },
+    {
+      "id": "A7 double-click New Note bounded",
+      "status": "PASS",
+      "detail": "before=2, after dblclick=4, page-1 invariant: true",
+      "at": "2026-10-14T03:05:06.340Z"
+    },
+    {
+      "id": "A8 navigation interruption autosave",
+      "status": "PASS",
+      "detail": "content preserved across immediate navigation: true",
+      "at": "2026-10-14T03:05:07.807Z"
+    }
+  ],
+  "finishedAt": "2026-10-14T03:05:07.807Z",
+  "verdict": "PASS"
+}

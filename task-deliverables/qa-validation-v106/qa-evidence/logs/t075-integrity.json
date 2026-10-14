@@ -1,0 +1,62 @@
+{
+  "startedAt": "2026-10-14T03:05:10.624Z",
+  "checks": [
+    {
+      "id": "I1 create durable across reload",
+      "status": "PASS",
+      "detail": "1 card(s) after reload",
+      "at": "2026-10-14T03:05:15.146Z"
+    },
+    {
+      "id": "I1 update durable across reload",
+      "status": "PASS",
+      "detail": "1 updated card(s)",
+      "at": "2026-10-14T03:05:18.210Z"
+    },
+    {
+      "id": "I1 trash durable across reload",
+      "status": "PASS",
+      "detail": "1 card(s) in trash view",
+      "at": "2026-10-14T03:05:21.018Z"
+    },
+    {
+      "id": "I1 restore durable",
+      "status": "PASS",
+      "detail": "trash=0, active=1",
+      "at": "2026-10-14T03:05:24.538Z"
+    },
+    {
+      "id": "I1 purge durable (gone forever)",
+      "status": "PASS",
+      "detail": "0 card(s) remain in trash",
+      "at": "2026-10-14T03:05:29.905Z"
+    },
+    {
+      "id": "I4 offline CRUD works (local-first)",
+      "status": "PASS",
+      "detail": "offline create+search: 1 hit(s)",
+      "at": "2026-10-14T03:05:32.889Z"
+    },
+    {
+      "id": "N1 dead LM Studio endpoint fails honestly",
+      "status": "PASS",
+      "detail": "honest failure surfaced",
+      "at": "2026-10-14T03:05:36.763Z"
+    },
+    {
+      "id": "I2 extension reload persistence",
+      "status": "BLOCKED",
+      "detail": "chrome.runtime.reload() orphans the unpacked extension in the Playwright persistent-context harness (SW never re-registers; probe: workers=0 for 8s+). Durability across extension unload/reload is verified through the full browser-restart path (I3) with the same profile.",
+      "at": "2026-10-14T03:05:37.199Z"
+    },
+    {
+      "id": "I3 browser restart persistence",
+      "status": "PASS",
+      "detail": "1 card(s) after full browser restart, onboarding re-shown: false",
+      "at": "2026-10-14T03:05:40.304Z"
+    }
+  ],
+  "finishedAt": "2026-10-14T03:05:40.420Z",
+  "verdict": "PASS",
+  "blockedCount": 1
+}

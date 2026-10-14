@@ -1,0 +1,49 @@
+{
+  "startedAt": "2026-10-14T03:06:24.238Z",
+  "checks": [
+    {
+      "id": "S1/S2/S6 stored XSS inert across reload (title, body, tag, iframe, svg, clipboard HTML)",
+      "status": "PASS",
+      "detail": "all window.__xss* flags undefined after reload",
+      "at": "2026-10-14T03:06:28.655Z"
+    },
+    {
+      "id": "S2 card/tag rendering inert",
+      "status": "PASS",
+      "detail": "no flags, 0 dangerous card nodes",
+      "at": "2026-10-14T03:06:29.920Z"
+    },
+    {
+      "id": "S5 search/filter echo inert",
+      "status": "PASS",
+      "detail": "no execution from echoed query",
+      "at": "2026-10-14T03:06:30.943Z"
+    },
+    {
+      "id": "S3 imported HTML sanitized",
+      "status": "PASS",
+      "detail": "import payload inert (list + editor render)",
+      "at": "2026-10-14T03:06:53.862Z"
+    },
+    {
+      "id": "S4 imported Markdown inert",
+      "status": "PASS",
+      "detail": "md import payload never executes",
+      "at": "2026-10-14T03:07:17.781Z"
+    },
+    {
+      "id": "S7 zero external requests",
+      "status": "PASS",
+      "detail": "no remote-origin request during the entire security battery",
+      "at": "2026-10-14T03:07:18.287Z"
+    },
+    {
+      "id": "S7 zero uncaught page errors",
+      "status": "PASS",
+      "detail": "clean console across the battery",
+      "at": "2026-10-14T03:07:18.288Z"
+    }
+  ],
+  "finishedAt": "2026-10-14T03:07:18.288Z",
+  "verdict": "PASS"
+}

@@ -1,0 +1,31 @@
+{
+  "startedAt": "2026-10-14T03:03:25.312Z",
+  "checks": [
+    {
+      "id": "U1 v1.0.4 seeds data",
+      "status": "PASS",
+      "detail": "note=1, pinnedBadge=1, theme=dark, searchHits=1",
+      "at": "2026-10-14T03:03:35.618Z"
+    },
+    {
+      "id": "U2 upgrade preserves data + settings + workflows",
+      "status": "PASS",
+      "detail": "note=1, search=1, theme=dark, new-note-after-upgrade=1",
+      "at": "2026-10-14T03:03:43.848Z"
+    },
+    {
+      "id": "R1 rollback to v1.0.4 keeps data readable",
+      "status": "PASS",
+      "detail": "notes=2 (pre-upgrade + created-by-newer-build), search=2, theme=dark (downgrade path: data written by the newer build remains readable by the older build — no schema bump between these versions; honest semantics documented)",
+      "at": "2026-10-14T03:03:49.558Z"
+    },
+    {
+      "id": "U3 v1.0.5 -> current build upgrade",
+      "status": "PASS",
+      "detail": "note=1, search=1, theme=dark",
+      "at": "2026-10-14T03:04:02.239Z"
+    }
+  ],
+  "finishedAt": "2026-10-14T03:04:02.434Z",
+  "verdict": "PASS"
+}

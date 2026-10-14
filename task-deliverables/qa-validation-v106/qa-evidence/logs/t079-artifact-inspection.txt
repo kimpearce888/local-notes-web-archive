@@ -1,0 +1,6 @@
+=== T-079 ARTIFACT INSPECTION: release/local-notes-web-archive-1.0.5.zip (1,555,953 bytes) ===
+required files: ALL PRESENT (14 entries)
+dev/test/temp/accidental files: 0 — NONE
+secret-pattern hits: 0 — NONE
+source maps: 3 files, DELIBERATE (vite.config.ts sourcemap:true) and DECLARED in RELEASE_MANIFEST.txt with byte sizes; not referenced by manifest/html (never auto-loaded); secret-free. Honest observation for the maintainer, not accidental debug assets.
+VERDICT: CLEAN (production-ready; declared surface exactly matches contents)
