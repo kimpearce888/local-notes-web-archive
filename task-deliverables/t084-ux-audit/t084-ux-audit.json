@@ -1,0 +1,365 @@
+{
+  "generatedAt": "2026-10-14T05:49:21.078Z",
+  "findings": [
+    {
+      "id": "C-ATT",
+      "area": "editor-attachments-panel",
+      "dimension": "closability",
+      "severity": "S",
+      "summary": "Attachments panel opens with no close button inside the panel itself",
+      "detail": "The Attachments bar pops out below the editor header when its toggle is clicked, but the popped-out surface contains no ×/Close control. A user looking at the bar has no visible way to dismiss it; the only exits are re-clicking the small toggle button above (undiscoverable) — Escape does NOT close it.",
+      "repro": "open a note → click the Attachments button in the editor header"
+    },
+    {
+      "id": "C-SNA",
+      "area": "editor-snapshots-panel",
+      "dimension": "closability",
+      "severity": "S",
+      "summary": "Snapshots panel opens with no close button inside the panel itself",
+      "detail": "The Snapshots bar pops out below the editor header when its toggle is clicked, but the popped-out surface contains no ×/Close control. A user looking at the bar has no visible way to dismiss it; the only exits are re-clicking the small toggle button above (undiscoverable) — Escape does NOT close it.",
+      "repro": "open a note → click the Snapshots button in the editor header"
+    },
+    {
+      "id": "C-REM",
+      "area": "editor-reminders-panel",
+      "dimension": "closability",
+      "severity": "S",
+      "summary": "Reminders panel opens with no close button inside the panel itself",
+      "detail": "The Reminders bar pops out below the editor header when its toggle is clicked, but the popped-out surface contains no ×/Close control. A user looking at the bar has no visible way to dismiss it; the only exits are re-clicking the small toggle button above (undiscoverable) — Escape does NOT close it.",
+      "repro": "open a note → click the Reminders button in the editor header"
+    },
+    {
+      "id": "C-REV",
+      "area": "editor-revisions-panel",
+      "dimension": "closability",
+      "severity": "S",
+      "summary": "Revisions panel opens with no close button inside the panel itself",
+      "detail": "The Revisions bar pops out below the editor header when its toggle is clicked, but the popped-out surface contains no ×/Close control. A user looking at the bar has no visible way to dismiss it; the only exits are re-clicking the small toggle button above (undiscoverable) — Escape does NOT close it.",
+      "repro": "open a note → click the Revisions button in the editor header"
+    },
+    {
+      "id": "C-AI ",
+      "area": "editor-ai-assistant-panel",
+      "dimension": "closability",
+      "severity": "S",
+      "summary": "AI assistant panel opens with no close button inside the panel itself",
+      "detail": "The AI assistant bar pops out below the editor header when its toggle is clicked, but the popped-out surface contains no ×/Close control. A user looking at the bar has no visible way to dismiss it; the only exits are re-clicking the small toggle button above (undiscoverable) — Escape does NOT close it.",
+      "repro": "open a note → click the AI assistant button in the editor header"
+    },
+    {
+      "id": "F-IMG-01",
+      "area": "editor-insert-image-dialog",
+      "dimension": "jargon",
+      "severity": "S",
+      "summary": "Insert-image dialog asks the user to \"paste a data:image URL\" with a base64 placeholder",
+      "detail": "The second field literally says \"…or paste a data:image URL\" with placeholder \"data:image/png;base64,…\". A normal user reads this as the app asking them for blobs/encoded data. Dialog text captured: Insert image Choose a local image file …or paste a data:image URL Alt text (describe the image) Caption (optional — editable under the image) Cancel Insert",
+      "repro": "open a note → toolbar Image button"
+    },
+    {
+      "id": "F-IMG-02",
+      "area": "editor-insert-image-dialog",
+      "dimension": "file-flow",
+      "severity": "S",
+      "summary": "Image file picker excludes HEIC/HEIF photos (iPhone default camera format)",
+      "detail": "The file input accept filter is \"image/png,image/jpeg,image/gif,image/webp,image/bmp,image/svg+xml\" — HEIC/HEIF photos are greyed out in the OS picker, so \"it does not take pictures from the PC\" for anyone whose photos are in the modern default format.",
+      "repro": "open Insert image → click Choose a local image file → try to select an .heic photo"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"B (Bold (Ctrl+B))\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"I (Italic (Ctrl+I))\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"U (Underline (Ctrl+U))\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"S (Strikethrough)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"</> (Inline code)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"x² (Superscript)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"x₂ (Subscript)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"Clear formatting (Clear formatting)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"H2 (Heading 2)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"H3 (Heading 3)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"H4 (Heading 4)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"H5 (Heading 5)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"H6 (Heading 6)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"❝ (Blockquote)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"• List (Bullet list)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"Align left (Align left)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"Align center (Align center)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"Align right (Align right)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"Justify (Align justify)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \" (Text colour #1c2333)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \" (Text colour #2e4fa3)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \" (Text colour #a4262c)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \" (Text colour #1c6b3c)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \" (Text colour #8a5300)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \" (Text colour #55607a)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"No colour (Remove text colour)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \" (Highlight #fef08a)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \" (Highlight #bbf7d0)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \" (Highlight #bfdbfe)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \" (Highlight #fecaca)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \" (Highlight #e9d5ff)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "D-01",
+      "area": "editor-toolbar",
+      "dimension": "dead-end",
+      "severity": "M",
+      "summary": "Toolbar button \"No highlight (Remove highlight)\" produces no visible change in an empty note",
+      "detail": "clicked with no observable effect (no state change, no dialog, no feedback)",
+      "repro": "open empty note → click the button"
+    },
+    {
+      "id": "G-05",
+      "area": "reminders-panel",
+      "dimension": "guidance",
+      "severity": "M",
+      "summary": "Reminders panel empty state does not guide the user",
+      "detail": "(not found)",
+      "repro": "open Reminders on a note without reminders"
+    }
+  ]
+}

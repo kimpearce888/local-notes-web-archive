@@ -5,12 +5,6 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
-### T-084 comprehensive UX cluelessness audit — find every lost-user area
-Five-dimension discovery (closability, file-picker flows, jargon,
-guidance, dead ends): static sweep of all user-facing strings and
-surfaces + live Playwright walk of every screen/control; complete
-problem register; fixes queued after presentation. (plan.md §O)
-
 
 
 
