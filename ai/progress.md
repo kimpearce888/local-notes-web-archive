@@ -5,7 +5,6 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 
 ## Queue
 
-- [ ] T-082 — Release v1.0.6 (version bump, changelog, release notes, package, validate, publish, API verify)
 
 
 
