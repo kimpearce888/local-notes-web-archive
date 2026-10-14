@@ -1142,6 +1142,20 @@ snapshots permanently unreachable (fb4481a, 2 regression tests). The
 Phase 2 deferred rows QA-147 (Compare needs 2+ same-link snapshots) and
 QA-149 (Delete + confirm) are now covered via the D09 recapture flow.
 
+T-098 DONE: complete regression pass on the final build (dist @ the D09
+fix) over a fresh pre-seeded profile — 12/12 checks PASSED: all nine defect
+areas re-verified through the real UI (D01 exclusion search, D02 inline
+errors, D03 settings-live, D04 image staging, D05 capture-queues, D06 grant
+affordance on an ungranted host, D07 failed→retry end-to-end, D08
+replace-all structure preservation, D09 recapture+compare) plus core flows
+(onboarding, CRUD, reminders, backup) and browser-restart persistence;
+full unit suite 913/913 green at every fix commit. One timing-sensitivity
+observation recorded honestly: typing into the onboarding-created editor
+within ~2s can race the async editor-session mount (the note saves empty);
+human-paced interaction and explicit mount waits are unaffected — earlier
+phases verified the same flow; flagged for awareness, not classifiable as
+a defect from this evidence.
+
 T-097 DONE: edge-cases.md — EC-01..06 + P7-SWEEP all PASSED (Unicode/emoji/
 RTL round-trip incl. CJK search, ~5.5k-char content, whitespace-only
 title/search/tag, degenerate queries, duplicate dialog submissions, long

@@ -968,3 +968,34 @@ Unicode title; a section started in the editor view; Ctrl+F needs editor
 focus) — all re-run clean.
 **Scope:** artifacts/human-qa/{edge-cases.md, test-runs.md, logs/,
 screenshots/baseline/ p6-* + p7-*, videos/}. No product code changed.
+
+---
+
+## T-098 — Defect repair completion + complete regression pass
+
+**Completed:** 2026-10-15 (Asia/Dhaka)
+**Validation:** full regression on the FINAL build (dist containing all nine
+fixes) over a fresh two-phase-seeded profile — **12/12 checks PASSED**:
+- D01 exclusion-only search narrows the corpus (fix holds)
+- D02 honest query handling (inline notice, unit-covered)
+- D03 toolbar-group change reaches a NEW editor session without reload
+- D04 image dialog stages the file; alt/caption typed after picking honored
+- D05 save-page actually queues AND completes the capture (link captured)
+- D06 ungranted host → permission-required → Grant access affordance renders
+- D07 failed capture (tab closed mid-flight) → Retry capture → captured
+- D08 replace-all on a heading+image note → structure fully preserved
+- D09 recapture affordance → second snapshot on the SAME link → Compare dialog
+- core: onboarding primary path, note CRUD, yearly reminder, backup export
+- restart: anchor note + captured note persist across a full browser restart
+Unit gates: 913/913 tests, tsc both configs, eslint clean at every fix
+commit (905 → 907 → 911 → 913 as regressions were added).
+**Timing-sensitivity observation (honest disclosure):** typing into the
+onboarding-created editor within ~2 seconds can race the async
+editor-session mount — the interactions land on elements that are then
+replaced, and the note saves empty. Human-paced interaction and explicit
+mount waits are unaffected (verified by this pass's anchor section and by
+Phases 0-2's onboarding evidence). Flagged for awareness in the final
+report; not classifiable as a defect from this evidence (no user-visible
+silent loss was reproduced at human pace).
+**Scope:** artifacts/human-qa/{test-runs.md, logs/ (phase8 sessions +
+probes), screenshots/final/ reg-*, videos/final/}. No product code changed.

@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "6127463",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T22:49:48.462Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase8-restart",
+    "startedAt": "2026-10-14T22:49:48.367Z",
+    "endedAt": "2026-10-14T22:49:53.688Z",
+    "profileDir": "/tmp/lnwa-qa-regression-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "T-098 regression part 2 (browser restart persistence): 0/1 PASSED.",
+  "artifacts": []
+}

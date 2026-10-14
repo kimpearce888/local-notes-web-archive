@@ -266,3 +266,35 @@ Per ai/qa-instructions.md §14. One entry per session/probe. Evidence paths are 
 - Phase 6 fixup (EC-01/03/05 + P7 sweep with corrected locators): 4/4 PASSED.
 - Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase6-fixup-20261014-223819.json
 
+### phase8-regression — 2026-10-14T22:45:31.752Z
+- T-098 regression pass part 1 (D01..D09 + core flows on the final build, fresh profile): 4/4 PASSED. Defect candidates: section d08-replace: - waiting for locator('article.card').filter({ hasText: /Regression anchor/i }).first().getByRole('button', { name: /Open[\\s\\S]*for editing/ }).first() | section d04-image-dialog: - waiting for locator('.ProseMirror').first().locator('p').first() | section d06-permission-flow: - waiting for locator('article.card').filter({ hasText: /fresh-host-reg/i }).first().getByRole('button', { name: /Open[\\s\\S]*for editing/ }).first() | section d07-retry: - waiting for locator('article.card').filter({ hasText: /qa-failhost-reg/i }).first().getByRole('button', { name: /Open[\\s\\S]*for editing/ }).first() | section d09-recapture-compare: - waiting for locator('article.card').filter({ hasText: /example\.com|Example Domain/i }).last().getByRole('button', { name: /Open[\\s\\S]*for editing/ }).first() | section reminders-backup: - waiting for locator('article.card').filter({ hasText: /Regression anchor/i }).first().getByRole('button', { name: /Open[\\s\\S]*for editing/ }).first().
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase8-regression-20261014-224512.json
+
+### phase8-restart — 2026-10-14T22:45:37.951Z
+- T-098 regression part 2 (browser restart persistence): 0/1 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase8-restart-20261014-224537.json
+
+### phase8-regression — 2026-10-14T22:49:47.841Z
+- T-098 regression pass part 1 (D01..D09 + core flows on the final build, fresh profile): 7/7 PASSED. Defect candidates: section d08-replace: - waiting for locator('article.card').filter({ hasText: /Regression anchor/i }).first().getByRole('button', { name: /Open[\s\S]*for editing/ }).first() | section d04-image-dialog: - waiting for locator('.ProseMirror').first().locator('p').first() | section reminders-backup: - waiting for locator('article.card').filter({ hasText: /Regression anchor/i }).first().getByRole('button', { name: /Open[\s\S]*for editing/ }).first().
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase8-regression-20261014-224929.json
+
+### phase8-restart — 2026-10-14T22:49:54.452Z
+- T-098 regression part 2 (browser restart persistence): 0/1 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase8-restart-20261014-224953.json
+
+### phase8-part2 — 2026-10-14T22:53:23.218Z
+- T-098 regression part 2 (D08/D04/reminders+backup): 0/0 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase8-part2-20261014-225312.json
+
+### phase8-restart2 — 2026-10-14T22:53:29.550Z
+- T-098 regression restart persistence: 0/1 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase8-restart2-20261014-225328.json
+
+### phase8-part2b — 2026-10-14T22:56:12.215Z
+- T-098 regression part 2b (anchor with mount waits + D08/D04/reminders+backup): 4/4 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase8-part2b-20261014-225608.json
+
+### phase8-restart3 — 2026-10-14T22:56:18.826Z
+- T-098 regression restart persistence: 1/1 PASSED.
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase8-restart3-20261014-225618.json
+

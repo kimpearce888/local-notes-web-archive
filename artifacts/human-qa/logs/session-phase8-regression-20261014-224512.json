@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "6127463",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T22:40:50.215Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase8-regression",
+    "startedAt": "2026-10-14T22:40:50.123Z",
+    "endedAt": "2026-10-14T22:45:12.747Z",
+    "profileDir": "/tmp/lnwa-qa-regression-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "T-098 regression pass part 1 (D01..D09 + core flows on the final build, fresh profile): 4/4 PASSED. Defect candidates: section d08-replace: - waiting for locator('article.card').filter({ hasText: /Regression anchor/i }).first().getByRole('button', { name: /Open[\\\\s\\\\S]*for editing/ }).first() | section d04-image-dialog: - waiting for locator('.ProseMirror').first().locator('p').first() | section d06-permission-flow: - waiting for locator('article.card').filter({ hasText: /fresh-host-reg/i }).first().getByRole('button', { name: /Open[\\\\s\\\\S]*for editing/ }).first() | section d07-retry: - waiting for locator('article.card').filter({ hasText: /qa-failhost-reg/i }).first().getByRole('button', { name: /Open[\\\\s\\\\S]*for editing/ }).first() | section d09-recapture-compare: - waiting for locator('article.card').filter({ hasText: /example\\.com|Example Domain/i }).last().getByRole('button', { name: /Open[\\\\s\\\\S]*for editing/ }).first() | section reminders-backup: - waiting for locator('article.card').filter({ hasText: /Regression anchor/i }).first().getByRole('button', { name: /Open[\\\\s\\\\S]*for editing/ }).first().",
+  "artifacts": []
+}

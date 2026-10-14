@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "6127463",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T22:45:59.311Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase8-regression",
+    "startedAt": "2026-10-14T22:45:59.211Z",
+    "endedAt": "2026-10-14T22:49:29.453Z",
+    "profileDir": "/tmp/lnwa-qa-regression-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "T-098 regression pass part 1 (D01..D09 + core flows on the final build, fresh profile): 7/7 PASSED. Defect candidates: section d08-replace: - waiting for locator('article.card').filter({ hasText: /Regression anchor/i }).first().getByRole('button', { name: /Open[\\s\\S]*for editing/ }).first() | section d04-image-dialog: - waiting for locator('.ProseMirror').first().locator('p').first() | section reminders-backup: - waiting for locator('article.card').filter({ hasText: /Regression anchor/i }).first().getByRole('button', { name: /Open[\\s\\S]*for editing/ }).first().",
+  "artifacts": []
+}
