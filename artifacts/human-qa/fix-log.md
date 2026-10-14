@@ -109,3 +109,19 @@ e2e-capture-snapshots-panel.png + d06-grant-affordance.png, final video).
   Retry capture visible → click → re-queued → link `failed → captured` with
   snapshot; affordance gone. Screenshots `d07-retry-affordance.png`,
   `d07-after-retry.png`.
+
+## Fix QA-D08 — structure-preserving find/replace (Phase 3 discovery)
+
+**Committed:** pending (this entry) · **Verification:** real UI + 4 regression tests
+
+- `src/dashboard/editor/find-replace.ts`: new `replaceInDocument()` —
+  per-text-node replacement preserving structure/marks/images; reverse-order
+  single transaction; honest docstrings.
+- `src/dashboard/editor/editor-panel.ts`: Replace/Replace all wired to it;
+  destructive `setContent('<p>'+escapeHtml+'</p>')` path + helper removed.
+- `tests/unit/editor/editor.test.ts`: +4 regression tests (rich-doc survival,
+  Nth-occurrence targeting, case/empty semantics, HTML round-trip).
+- Gates: 911/911 tests (was 907), tsc both configs, eslint clean, dist rebuilt.
+- Real-UI verification (verify-d08): rich note → Replace all → structure
+  counts identical, no leftovers, autosave+reopen preserves everything.
+  Baseline damage: d08-flattened-document-after-replace-all.png.

@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "c239fe2",
+  "distDirty": true,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T21:27:53.153Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "verify-d08",
+    "startedAt": "2026-10-14T21:27:53.031Z",
+    "endedAt": "2026-10-14T21:28:11.454Z",
+    "profileDir": "/tmp/lnwa-qa-phase3-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "QA-D08 verification: before replace: {\"h2\":1,\"li\":2,\"tr\":2,\"pre\":1,\"img\":1} | after replace: {\"h2\":1,\"li\":2,\"tr\":2,\"pre\":1,\"img\":1,\"redacted\":true,\"leftover\":false} | after reopen: {\"h2\":1,\"li\":2,\"tr\":2,\"pre\":1,\"img\":1,\"redacted\":true,\"leftoverText\":false} | VERDICT: STRUCTURE PRESERVED (fixed)",
+  "artifacts": []
+}

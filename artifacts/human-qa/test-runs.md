@@ -186,3 +186,19 @@ Per ai/qa-instructions.md §14. One entry per session/probe. Evidence paths are 
 - QA-D07 verification: failed-capture card found: true | Retry capture affordance visible: true | row text: Capture failed for https://qa-fail-host2.invalid.Retry capture | panel status after retry: Capture of https://qa-fail-host2.invalid re-queued — the archived copy appears here when i | affordance gone after successful re-queue: true | link state after retry: [{"state":"captured","snapshotId":"3e24ce88-0461-4f2d-acbc-3101e4c03a34"}]
 - Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-d07-20261014-210439.json
 
+### phase3a-workflows — 2026-10-14T21:12:00.700Z
+- Phase 3 part A (WF-01..WF-07 create/modify families): rich-note authoring end-to-end, web-capture journey with exports, note JSON export→import round-trip, reminder lifecycle (Due→Snooze→Complete), restructure+persist, bulk organize (tag/favorite/archive/restore), trash lifecycle incl. permanent delete. 3/3 PASSED. Defect candidates: section wf01-rich-note: - waiting for getByRole('button', { name: '• List' }) | section wf04-reminder-lifecycle: - waiting for locator('article.card').filter({ hasText: 'Rich journey note' }).first().getByRole('button', { name: /Open Rich journey note for editing/ }).first() | section wf05-restructure: - waiting for locator('article.card').filter({ hasText: 'Rich journey note' }).first().getByRole('button', { name: /Open Rich journey note for editing/ }).first() | section wf06-bulk-organize: - waiting for getByLabel('New tags (comma-separated)').
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase3a-workflows-20261014-211137.json
+
+### phase3a-fixup — 2026-10-14T21:14:45.638Z
+- Phase 3 part A fixup (WF-01/04/05/06 with corrected locators): rich-note authoring end-to-end, reminder lifecycle, restructure+persist, bulk organize. 1/3 PASSED. Defect candidates: section wf06-bulk-organize: - waiting for getByRole('button', { name: 'Favorite', exact: true }).
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase3a-fixup-20261014-211433.json
+
+### phase3a-fixup2 — 2026-10-14T21:17:25.977Z
+- Phase 3 part A fixup2 (WF-01 anchor / WF-05 align / WF-06 bulk with design-aware selection handling): 1/2 PASSED. Defect candidates: section wf05-align: - waiting for locator('article.card').filter({ hasText: 'Rich journey note' }).first().getByRole('button', { name: /Open Rich journey note for editing/ }).first().
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-phase3a-fixup2-20261014-211719.json
+
+### verify-d08 — 2026-10-14T21:28:13.829Z
+- QA-D08 verification: before replace: {"h2":1,"li":2,"tr":2,"pre":1,"img":1} | after replace: {"h2":1,"li":2,"tr":2,"pre":1,"img":1,"redacted":true,"leftover":false} | after reopen: {"h2":1,"li":2,"tr":2,"pre":1,"img":1,"redacted":true,"leftoverText":false} | VERDICT: STRUCTURE PRESERVED (fixed)
+- Evidence: /home/z/my-project/repo-local-notes/artifacts/human-qa/logs/session-verify-d08-20261014-212811.json
+

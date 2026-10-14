@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "c239fe2",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T21:16:23.901Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase3a-fixup2",
+    "startedAt": "2026-10-14T21:16:23.842Z",
+    "endedAt": "2026-10-14T21:17:19.442Z",
+    "profileDir": "/tmp/lnwa-qa-phase3-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 3 part A fixup2 (WF-01 anchor / WF-05 align / WF-06 bulk with design-aware selection handling): 1/2 PASSED. Defect candidates: section wf05-align: - waiting for locator('article.card').filter({ hasText: 'Rich journey note' }).first().getByRole('button', { name: /Open Rich journey note for editing/ }).first().",
+  "artifacts": []
+}

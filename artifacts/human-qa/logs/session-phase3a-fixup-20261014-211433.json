@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "c239fe2",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T21:13:10.505Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase3a-fixup",
+    "startedAt": "2026-10-14T21:13:10.344Z",
+    "endedAt": "2026-10-14T21:14:33.888Z",
+    "profileDir": "/tmp/lnwa-qa-phase3-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 3 part A fixup (WF-01/04/05/06 with corrected locators): rich-note authoring end-to-end, reminder lifecycle, restructure+persist, bulk organize. 1/3 PASSED. Defect candidates: section wf06-bulk-organize: - waiting for getByRole('button', { name: 'Favorite', exact: true }).",
+  "artifacts": []
+}

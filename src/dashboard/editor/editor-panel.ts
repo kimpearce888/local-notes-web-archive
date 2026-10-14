@@ -12,7 +12,7 @@ import { createEditorExtensions, PLACEHOLDER_TEXT } from './extensions';
 import { createEditorToolbar, type EditorToolbar } from './toolbar';
 import { sanitizeEditorHtml, isSafeLinkHref } from './sanitize';
 import { markdownToEditorHtml, editorHtmlToMarkdown } from './markdown';
-import { findMatches, nextMatch, previousMatch, replaceAllInText, type FindState } from './find-replace';
+import { findMatches, nextMatch, previousMatch, replaceInDocument, type FindState } from './find-replace';
 import { EDITOR_DOCUMENTATION } from './documentation';
 import { detectHttpUrlsInText } from '../../core/util/urls';
 import { IMAGE_ACCEPT_LIST, looksLikeHeic } from './heic-image';
@@ -349,25 +349,16 @@ export function createEditorPanel(
     highlightActive();
   });
   replaceOne.addEventListener('click', () => {
-    const match = findState.matches[findState.activeIndex];
-    if (!match) return;
-    // Replace through the text projection, then reload as sanitised HTML
-    // (small, correct, and schema-gated).
-    const text = editor.getText();
-    const updated =
-      text.slice(0, match.from) + replaceInput.value + text.slice(match.to);
-    editor.commands.setContent(`<p>${escapeHtml(updated)}</p>`, { emitUpdate: true });
+    if (findInput.value.length === 0 || findState.activeIndex < 0) return;
+    // QA-D08: replace INSIDE the text node so structure, marks, tables, code
+    // blocks and images survive (the old implementation rebuilt the whole
+    // document as one escaped plain-text paragraph — silent data loss).
+    replaceInDocument(editor, findInput.value, replaceInput.value, caseBox.checked, findState.activeIndex);
     refreshFind();
   });
   replaceAllButton.addEventListener('click', () => {
     if (findInput.value.length === 0) return;
-    const updated = replaceAllInText(
-      editor.getText(),
-      findInput.value,
-      replaceInput.value,
-      caseBox.checked,
-    );
-    editor.commands.setContent(`<p>${escapeHtml(updated)}</p>`, { emitUpdate: true });
+    replaceInDocument(editor, findInput.value, replaceInput.value, caseBox.checked, 'all');
     refreshFind();
   });
   closeButton.addEventListener('click', () => {
@@ -709,15 +700,6 @@ export function createEditorPanel(
       element.remove();
     },
   };
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .split('\n')
-    .map((line) =>
-      line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
-    )
-    .join('</p><p>');
 }
 
 export { PLACEHOLDER_TEXT };

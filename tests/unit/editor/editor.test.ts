@@ -4,7 +4,14 @@ import { Editor } from '@tiptap/core';
 import { createEditorExtensions, SCHEMA_MARKS, SCHEMA_NODES } from '../../../src/dashboard/editor/extensions';
 import { sanitizeEditorHtml, isSafeLinkHref } from '../../../src/dashboard/editor/sanitize';
 import { markdownToEditorHtml, editorHtmlToMarkdown } from '../../../src/dashboard/editor/markdown';
-import { findMatches, nextMatch, previousMatch, replaceAllInText, type FindState } from '../../../src/dashboard/editor/find-replace';
+import {
+  findMatches,
+  nextMatch,
+  previousMatch,
+  replaceAllInText,
+  replaceInDocument,
+  type FindState,
+} from '../../../src/dashboard/editor/find-replace';
 
 /**
  * T-017 validation: the schema is exactly the PRD §4.4 matrix, documents
@@ -279,3 +286,85 @@ describe('find and replace', () => {
     expect(replaceAllInText('a.c a.c', 'a.c', 'x', false)).toBe('x x');
   });
 });
+
+/** Loose JSON accessor: tiptap's getJSON union types don't expose .text directly. */
+function textOf(node: unknown): string | undefined {
+  return (node as { text?: string } | undefined)?.text;
+}
+
+describe('replace preserves document structure (QA-D08)', () => {
+  function richEditor(): Editor {
+    return newEditor({
+      type: 'doc',
+      content: [
+        { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Needle heading' }] },
+        { type: 'bulletList', content: [
+          { type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'needle item one' }] }] },
+          { type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'plain item' }] }] },
+        ] },
+        { type: 'paragraph', content: [
+          { type: 'text', text: 'A needle with ' },
+          { type: 'text', marks: [{ type: 'bold' }], text: 'bold needle' },
+          { type: 'text', text: ' after.' },
+        ] },
+        { type: 'codeBlock', content: [{ type: 'text', text: 'const needle = 1;' }] },
+        { type: 'image', attrs: { src: 'attachment:test-img', alt: 'needle art' } },
+      ],
+    });
+  }
+
+  it('replace-all keeps headings, lists, marks, code blocks and images (structure is never flattened)', () => {
+    const editor = richEditor();
+    const replaced = replaceInDocument(editor, 'needle', 'NEEDLE', false, 'all');
+    expect(replaced).toBe(5); // heading + list item + plain + bold + code block texts
+    const doc = editor.getJSON();
+    expect(doc.content?.[0]?.type).toBe('heading');
+    expect(textOf(doc.content?.[0]?.content?.[0])).toBe('NEEDLE heading');
+    expect(doc.content?.[1]?.type).toBe('bulletList');
+    expect(textOf(doc.content?.[1]?.content?.[1]?.content?.[0]?.content?.[0])).toBe('plain item');
+    expect(doc.content?.[2]?.content?.[1]?.marks?.[0]?.type).toBe('bold');
+    expect(textOf(doc.content?.[2]?.content?.[1])).toBe('bold NEEDLE');
+    expect(doc.content?.[3]?.type).toBe('codeBlock');
+    expect(textOf(doc.content?.[3]?.content?.[0])).toBe('const NEEDLE = 1;');
+    expect(doc.content?.[4]?.type).toBe('image');
+    expect(doc.content?.[4]?.attrs?.alt).toBe('needle art'); // untouched attrs
+    editor.destroy();
+  });
+
+  it('replace-one targets only the Nth occurrence in document order', () => {
+    const editor = richEditor();
+    const replaced = replaceInDocument(editor, 'needle', 'PIN', false, 2); // 3rd occurrence = the unbolded 'A needle'
+    expect(replaced).toBe(1);
+    const doc = editor.getJSON();
+    expect(textOf(doc.content?.[0]?.content?.[0])).toBe('Needle heading'); // 0th untouched
+    expect(textOf(doc.content?.[2]?.content?.[0])).toBe('A PIN with ');
+    expect(textOf(doc.content?.[3]?.content?.[0])).toBe('const needle = 1;'); // later ones untouched
+    editor.destroy();
+  });
+
+  it('case-sensitive replace-all honours case and empty queries replace nothing', () => {
+    const editor = richEditor();
+    expect(replaceInDocument(editor, 'Needle', 'X', true, 'all')).toBe(1); // only the heading's capital-N
+    expect(replaceInDocument(editor, '', 'X', false, 'all')).toBe(0);
+    const doc = editor.getJSON();
+    expect(textOf(doc.content?.[0]?.content?.[0])).toBe('X heading');
+    editor.destroy();
+  });
+
+  it('survives autosave-style round-trips: getHTML keeps structure after replace-all', () => {
+    const editor = richEditor();
+    replaceInDocument(editor, 'needle', 'REDACTED', false, 'all');
+    const html = editor.getHTML();
+    expect(html).toContain('<h2>');
+    expect(html).toContain('<ul>');
+    expect(html).toContain('<pre>');
+    expect(html).toContain('<img');
+    expect(html).toContain('REDACTED');
+    // Text replacement must not rewrite attributes: the image's alt stays
+    // 'needle art' (asserted above); the TEXT projection has no 'needle' left.
+    expect(editor.getText()).not.toContain('needle');
+    expect(html).toContain('alt="needle art"');
+    editor.destroy();
+  });
+});
+

@@ -1,0 +1,25 @@
+{
+  "os": "Debian GNU/Linux 13 (trixie)",
+  "chrome": "156.0.8078.4",
+  "extensionVersion": "1.0.7",
+  "commit": "c239fe2",
+  "distDirty": false,
+  "node": "v24.21.0",
+  "playwright": "1.64.0",
+  "viewport": "1440x900 @2x",
+  "recordedAt": "2026-10-14T21:08:04.417Z",
+  "extensionId": "pieeojhacbmcmkfakahpapgpmejgnaij",
+  "session": {
+    "tag": "phase3a-workflows",
+    "startedAt": "2026-10-14T21:08:04.313Z",
+    "endedAt": "2026-10-14T21:11:37.767Z",
+    "profileDir": "/tmp/lnwa-qa-phase3-profile"
+  },
+  "consoleErrorCount": 0,
+  "consoleErrors": [],
+  "pageErrorCount": 0,
+  "pageErrors": [],
+  "nativeDialogs": [],
+  "summary": "Phase 3 part A (WF-01..WF-07 create/modify families): rich-note authoring end-to-end, web-capture journey with exports, note JSON export→import round-trip, reminder lifecycle (Due→Snooze→Complete), restructure+persist, bulk organize (tag/favorite/archive/restore), trash lifecycle incl. permanent delete. 3/3 PASSED. Defect candidates: section wf01-rich-note: - waiting for getByRole('button', { name: '• List' }) | section wf04-reminder-lifecycle: - waiting for locator('article.card').filter({ hasText: 'Rich journey note' }).first().getByRole('button', { name: /Open Rich journey note for editing/ }).first() | section wf05-restructure: - waiting for locator('article.card').filter({ hasText: 'Rich journey note' }).first().getByRole('button', { name: /Open Rich journey note for editing/ }).first() | section wf06-bulk-organize: - waiting for getByLabel('New tags (comma-separated)').",
+  "artifacts": []
+}

@@ -331,6 +331,60 @@ Every entry links evidence and the regression tests that pin the fix.
 
 ---
 
+## QA-D08 — Find/Replace flattens rich documents (silent structure + data loss)
+
+- **Status:** FIXED (regression-verified + real-UI verified end-to-end).
+- **Affected feature/action:** Replace and Replace all in the editor find bar;
+  PRD §4.4; every rich note (headings, lists, tables, code blocks, images,
+  inline marks) — the damage is AUTOSAVED silently.
+- **Discovered:** Phase 3 workflow WF-05 (restructure an existing note) on the
+  phase3 profile: after Replace all, the reopened note had every structural
+  element flattened into plain paragraphs with the image deleted. Forensics
+  (probe-p3-forensics): the note's plainText kept the words but
+  headings/lists/table/code/image were gone; the current editor HTML showed
+  only <p> runs with trailing breaks.
+- **Reproduction steps:**
+  1. Author a rich note (heading + list + table + code + image + bold).
+  2. Ctrl+F → type a query present in several blocks → Replace all.
+  3. Autosave persists; reopening shows a wall of plain paragraphs — the
+     image is gone entirely, formatting destroyed. No warning at any point.
+- **Expected:** Only the matched text changes; structure, marks, tables, code
+  blocks and images are untouched.
+- **Actual:** `editor.commands.setContent('<p>' + escapeHtml(plainText) + '</p>')`
+  rebuilt the whole document from a single escaped paragraph (editor-panel.ts
+  replaceOne/replaceAll) — a wholesale reconstruction that cannot represent
+  any structure. The find-replace.ts docstring claimed "the editor layer maps
+  these offsets back into the document" — that mapping never existed.
+- **Reproducible:** Deterministic (any rich note).
+- **Root cause (confirmed):** the replacement took the plain-text projection
+  route and rebuilt the document via setContent instead of applying edits
+  inside text nodes. Phase 2's per-action tests never caught it because the
+  find-bar rows were exercised on plain-paragraph notes only — exactly the
+  "controls passing individually ≠ workflow passing" gap Phase 3 exists for.
+- **Files changed:**
+  - `src/dashboard/editor/find-replace.ts` — new `replaceInDocument()`:
+    per-text-node replacement (queries are single-line so no match can span a
+    block separator), marks preserved via `schema.text(next, node.marks)`,
+    edits applied in reverse document order in one transaction; honest
+    docstrings (the old one described a mapping that never existed).
+  - `src/dashboard/editor/editor-panel.ts` — Replace / Replace all now call
+    `replaceInDocument` (occurrence-index and 'all'); the escapeHtml helper
+    used only by the destructive path was removed.
+- **Regression tests:** `tests/unit/editor/editor.test.ts` — 4 tests: rich
+  document (heading/list/bold/code/image) survives replace-all with marks and
+  image attrs intact; replace-one targets only the Nth occurrence in document
+  order; case-sensitive + empty-query behaviour; getHTML round-trip keeps
+  <h2>/<ul>/<pre>/<img> with no 'needle' left in the text projection.
+- **Final verification (real UI, repaired build):** verify-d08 session — rich
+  note (h2, 2-item list, 2-row table, code block, image with alt) → Replace
+  all 'needle'→'REDACTED' → structure counts identical before/after, no
+  leftover text, autosave + reopen preserves everything
+  (`screenshots/final/d08-structure-preserved-after-replace-all.png`).
+  Baseline damage evidence (pre-fix):
+  `screenshots/baseline/d08-flattened-document-after-replace-all.png`.
+
+---
+
 ## Environmental limitations (honest disclosure)
 
 - **L04 — Chrome's native permission prompt cannot be answered by automation.**
