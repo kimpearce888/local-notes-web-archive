@@ -35,6 +35,8 @@ const SMART_LIST_ICONS: Readonly<Record<SmartListId, IconName>> = {
 export interface ShellEvents {
   /** New Note action activated (button click or ui-intent). */
   newNote: () => void;
+  /** Save-a-web-page action activated (T-089, register UX-13). */
+  savePage: () => void;
   /** Import a note file (JSON/Markdown/HTML) as a new note (FR-DATA-05). */
   importNote: (file: File) => void;
   /** Diagnostics view requested (FR-LOG-05). */
@@ -70,6 +72,7 @@ export interface ShellElements {
   readonly root: HTMLElement;
   readonly skipLink: HTMLAnchorElement;
   readonly newNoteButton: HTMLButtonElement;
+  readonly savePageButton: HTMLButtonElement;
   readonly importNoteButton: HTMLButtonElement;
   readonly settingsButton: HTMLButtonElement;
   readonly diagnosticsButton: HTMLButtonElement;
@@ -161,6 +164,17 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   newNoteLabel.textContent = 'New Note';
   newNoteButton.append(newNoteIcon, newNoteLabel);
 
+  // T-089 (register UX-13): the web-archive feature finally has a visible
+  // entry point — right under New Note, same weight, discoverable.
+  const savePageButton = document.createElement('button');
+  savePageButton.type = 'button';
+  savePageButton.className = 'btn btn--block sidebar__save-page';
+  savePageButton.dataset['action'] = 'save-page';
+  const savePageIcon = icon('archive');
+  const savePageLabel = document.createElement('span');
+  savePageLabel.textContent = 'Save a web page…';
+  savePageButton.append(savePageIcon, savePageLabel);
+
   /* ---------------------- Smart list navigation -------------------- */
 
   const smartNav = document.createElement('nav');
@@ -235,7 +249,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   const sidebarSpacer = document.createElement('div');
   sidebarSpacer.className = 'sidebar__spacer';
 
-  sidebar.append(brand, newNoteButton, smartNav, sidebarSpacer, sidebarFooter);
+  sidebar.append(brand, newNoteButton, savePageButton, smartNav, sidebarSpacer, sidebarFooter);
 
   /* -------------------------- Search row ---------------------------- */
 
@@ -496,6 +510,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   type EventKey = keyof ShellEvents;
   const listeners: { [K in EventKey]: Array<ShellEvents[K]> } = {
     newNote: [],
+    savePage: [],
     importNote: [],
     diagnosticsOpen: [],
     settingsOpen: [],
@@ -521,6 +536,10 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
   const onNewNoteClick = (): void => emit('newNote');
   newNoteButton.addEventListener('click', onNewNoteClick);
   disposers.push(() => newNoteButton.removeEventListener('click', onNewNoteClick));
+
+  const onSavePageClick = (): void => emit('savePage');
+  savePageButton.addEventListener('click', onSavePageClick);
+  disposers.push(() => savePageButton.removeEventListener('click', onSavePageClick));
 
   const onDiagnosticsClick = (): void => emit('diagnosticsOpen');
   diagnosticsButton.addEventListener('click', onDiagnosticsClick);
@@ -669,6 +688,7 @@ export function mountDashboardShell(root: HTMLElement): DashboardShell {
     root,
     skipLink,
     newNoteButton,
+    savePageButton,
     importNoteButton,
     settingsButton,
     diagnosticsButton,

@@ -119,7 +119,7 @@ test('first run: onboarding dismissed', async () => {
   await expect(page.locator('#results-region')).not.toContainText('Loading', { timeout: 15_000 });
   const onboarding = page.locator('dialog.dialog--onboarding');
   await expect(onboarding).toBeVisible({ timeout: 15_000 });
-  await onboarding.getByRole('button', { name: 'Get started' }).click();
+  await onboarding.getByRole('button', { name: 'Skip for now' }).click();
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
 });
 

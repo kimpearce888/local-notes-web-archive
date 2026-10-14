@@ -21,8 +21,9 @@ import { appendAuditEvent } from '../../core/repo/audit';
 import { repo } from '../db';
 import { redactUrlForLog } from '../../core/util/urls';
 import { getLink, setLinkCaptureState } from '../../core/repo/links';
+import { saveCurrentPageAsNote } from '../quick-capture';
 import type { EntityId } from '../../core/types';
-import { asEnum, asId, asObject } from './validate';
+import { asEnum, asId, asObject, asString } from './validate';
 
 /** Audit metadata only; URLs stay redacted (FR-LOG-03). */
 async function auditCaptureControl(
@@ -51,6 +52,41 @@ async function auditCaptureControl(
 export function registerCaptureApi(router: MessageRouter): void {
   router.register('capture/status', async () => {
     return { status: getCaptureQueue().status() };
+  });
+
+  /* T-089 (register UX-13): the visible "Save a web page…" entry point.
+   * Same pipeline the context menu and paste-into-note use: a note titled
+   * after the URL's host whose body links the page, plus a link record
+   * queued for capture (the per-origin permission ask happens in the
+   * capture pipeline, FR-CAP-04). The link gate can reject the URL — the
+   * note survives and the response says so honestly. */
+  router.register('capture/save-url', async (payload, ctx) => {
+    const p = asObject(payload, 'capture/save-url');
+    const url = asString(p['url'], 'url', { maxLength: 2048 }).trim();
+    if (!/^https?:\/\/.+/i.test(url)) {
+      throw new Error('capture/save-url: url must be an http(s) link');
+    }
+    let host: string;
+    try {
+      host = new URL(url).hostname;
+    } catch {
+      host = ''; // the gate below stays honest even for odd inputs
+    }
+    const result = await saveCurrentPageAsNote({ pageUrl: url, pageTitle: host });
+    await auditCaptureControl(
+      ctx,
+      'capture/save-url',
+      (result.linkId as EntityId | null) ?? null,
+      'succeeded',
+      result.linkId
+        ? `page saved as note; capture queued (${redactUrlForLog(url)})`
+        : `page saved as note; URL rejected by the link gate (${redactUrlForLog(url)})`,
+    );
+    return {
+      noteId: result.noteId,
+      linkId: result.linkId,
+      queued: result.linkId !== null,
+    };
   });
 
   router.register('capture/cancel', async (payload, ctx) => {

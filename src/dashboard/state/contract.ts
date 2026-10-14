@@ -204,6 +204,11 @@ export interface ApiContract {
     payload: Record<string, never>;
     result: { status: CaptureQueueStatus };
   };
+  /* T-089 (register UX-13): the visible save-a-web-page entry point. */
+  'capture/save-url': {
+    payload: { url: string };
+    result: { noteId: EntityId; linkId: EntityId | null; queued: boolean };
+  };
   'capture/cancel': {
     payload: { linkId: EntityId };
     result: { canceled: boolean };

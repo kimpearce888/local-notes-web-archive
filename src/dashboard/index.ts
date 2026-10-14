@@ -14,6 +14,7 @@ import { createDiagnosticsPanel, type DiagnosticsPanel } from './views/diagnosti
 import { createSettingsPanel, type SettingsPanel } from './views/settings-panel';
 import { createOnboardingOverlay, type OnboardingOverlay } from './views/onboarding';
 import { createCommandPalette, type PaletteEntry } from './views/command-palette';
+import { createSavePageDialog } from './views/save-page-dialog';
 import { SMART_LISTS, type SmartListId } from './views/smart-lists';
 import { createDuplicateDecisionMonitor, type DuplicateDecisionMonitor } from './views/duplicate-dialog';
 import type { CaptureProgressEvent, CaptureProgressPhase } from '../background/capture/queue';
@@ -121,6 +122,13 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
         run: () => shell.elements.newNoteButton.click(),
       },
       {
+        id: 'save-page',
+        label: 'Save a web page…',
+        group: 'Actions',
+        icon: 'archive',
+        run: () => shell.elements.savePageButton.click(),
+      },
+      {
         id: 'import-note',
         label: 'Import note…',
         group: 'Actions',
@@ -180,12 +188,31 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
   });
   shell.on('commandPaletteOpen', () => commandPalette.open());
 
+  /* Save-a-web-page dialog (T-089, register UX-13): the visible capture
+   * entry point. Saving creates the note + link through capture/save-url
+   * (the same pipeline the context menu uses) and refreshes the list so
+   * the new note appears immediately. */
+  const savePageDialog = createSavePageDialog({
+    saveUrl: async (url) => {
+      const result = await client.request('capture/save-url', { url });
+      void controller.refresh().catch(() => undefined);
+      return { queued: result.queued };
+    },
+    announce: (message) => shell.announce(message),
+  });
+  shell.on('savePage', () => savePageDialog.open());
+
   // First-run onboarding (FR-SET-02): informative, never blocking.
   const onboarding: OnboardingOverlay = createOnboardingOverlay({
     complete: async () => {
       await client.request('settings/set-onboarding-complete', { complete: true });
     },
     openSettings: () => settings.open(),
+    // T-089 (UX-14): the primary action is a CONCRETE first step.
+    createFirstNote: () => {
+      shell.elements.newNoteButton.focus();
+      void controller.createNote();
+    },
     announce: (message) => shell.announce(message),
   });
   void (async () => {
@@ -268,6 +295,7 @@ export function bootDashboard(root: HTMLElement): DashboardApp {
         chrome.runtime.onMessage.removeListener(onRuntimeMessage);
       }
       commandPalette.dispose();
+      savePageDialog.dispose();
       duplicates.dispose();
       diagnostics.dispose();
       settings.dispose();

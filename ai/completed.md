@@ -686,3 +686,37 @@ snapshots-panel (summary, buttons, tooltips), attachments meta assertion
 now checks BOTH the humanized text and the raw type in title, and the
 E2E HEIC flow asserts "JPEG photo" + title "image/jpeg". Gates: tsc
 strict, eslint, vitest 888/888, Playwright 72/72.
+
+### T-089 — capture entry points, product-first onboarding, empty-state create
+Fixed T-084 register UX-13, UX-14 and UX-16. UX-13: the web-archive feature
+finally has a visible entry point — a "Save a web page…" button in the
+sidebar right under New Note (plus a matching command-palette entry) opens
+a new save-page dialog: paste an http(s) link, honest client-side
+validation, and the save runs through the NEW capture/save-url RPC which
+reuses quick-capture's saveCurrentPageAsNote — the EXACT pipeline the
+context menu uses (a note titled after the URL's host, body linking the
+page, link record queued; the per-origin permission ask stays in the
+capture pipeline, FR-CAP-04; the link gate can reject honestly and the
+note still exists). The snapshots empty state now explains HOW captures
+happen ("Save a web page… button on the left, or right-click a page in
+Chrome"). UX-14: onboarding is product-first — three concrete first
+actions (write your first note / save any web page / organize with tags)
+lead, the privacy promise and the backup advice condense behind them,
+and the PRIMARY action is "Create my first note" (completes AND creates);
+"Skip for now" keeps the plain dismiss path; "Open Settings first" keeps
+its T-067 non-completing behavior; every re-show resets all three
+buttons. UX-16: the empty notes list offers "Create your first note"
+inline (same semantics as New Note — the card appears; entering the
+editor stays the card's own action). Wiring: shell savePage event +
+button; typed contract entry capture/save-url; index.ts dialog + refresh;
+controller empty-state action. Tests: +6 save-page-dialog units
+(validation, queued/rejected announcements, failure honesty, Enter
+parity, reset-on-close) + 7 restructured onboarding units (product-first
+content, create-vs-skip paths, failure honesty, D-05 re-show with all
+buttons) + E2E: first-run test now pins the product-first onboarding copy
+AND the inline empty-state create; new UX-13 test proves the whole flow
+against the built extension (button → dialog → validation → real save →
+note card titled example.com → editor body carries the link) with the
+session-hygiene guards still green; all 8 spec files' onboarding
+selectors updated to the new buttons. Gates: tsc strict, eslint, vitest
+896/896, Playwright 73/73.

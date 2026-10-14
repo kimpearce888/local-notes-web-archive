@@ -102,15 +102,42 @@ test.afterAll(async () => {
   expect(externalRequests, 'zero external requests').toEqual([]);
 });
 
-test('first run: onboarding dismissed', async () => {
+test('first run: onboarding teaches the product (UX-14) and the empty state creates inline (UX-16)', async () => {
   await expect(
     page.getByRole('heading', { level: 1, name: 'Local Notes & Web Archive' }),
   ).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('#results-region')).not.toContainText('Loading', { timeout: 15_000 });
   const onboarding = page.locator('dialog.dialog--onboarding');
   await expect(onboarding).toBeVisible({ timeout: 15_000 });
-  await onboarding.getByRole('button', { name: 'Get started' }).click();
+  // T-089 (UX-14): concrete first actions lead; the primary IS the first step.
+  await expect(onboarding).toContainText('Write your first note');
+  await expect(onboarding).toContainText('Save any web page for offline reading');
+  await expect(onboarding).toContainText('Organize with tags, find anything');
+  await expect(onboarding).toContainText('Everything stays on this device');
+  await expect(onboarding).toContainText('Back up before big changes');
+  await expect(
+    onboarding.getByRole('button', { name: 'Create my first note' }),
+  ).toBeVisible();
+  await onboarding.getByRole('button', { name: 'Skip for now' }).click();
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
+
+  // T-089 (UX-16): the empty library offers the obvious action inline.
+  const emptyState = page.locator('.state--empty');
+  await expect(emptyState).toBeVisible({ timeout: 15_000 });
+  await expect(emptyState).toContainText('No notes yet');
+  await emptyState.getByRole('button', { name: 'Create your first note' }).click();
+  // Same semantics as New Note: the note is created and the list shows it;
+  // entering the editor is the card's own action, exactly like a real user.
+  const firstCard = page.locator('.card', { hasText: 'Untitled' }).first();
+  await expect(firstCard).toBeVisible({ timeout: 15_000 });
+  await firstCard.getByRole('button', { name: /^Open Untitled for editing/ }).click();
+  const titleField = page.locator('.editor-panel__title');
+  await expect(titleField).toBeVisible({ timeout: 15_000 });
+  await titleField.fill('First inline note');
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+  await expect(page.locator('.card', { hasText: 'First inline note' })).toBeVisible({
+    timeout: 15_000,
+  });
 });
 
 async function openFreshNote(title: string): Promise<void> {
@@ -315,3 +342,40 @@ test('T-087 UX-08: a tag can be created and applied from the editor itself', asy
   ).toBeVisible({ timeout: 15_000 });
 });
 
+
+/* ---------------- T-089: capture entry point (UX-13) ---------------- */
+
+test('T-089 UX-13: "Save a web page…" creates a note for the link and queues the capture', async () => {
+  // The entry point is visible in the sidebar, next to New Note.
+  const savePageButton = page.getByRole('button', { name: 'Save a web page…' });
+  await expect(savePageButton).toBeVisible();
+  await savePageButton.click();
+
+  const dialog = page.locator('dialog.dialog--save-page');
+  await expect(dialog).toBeVisible({ timeout: 10_000 });
+  await expect(dialog).toContainText('a complete offline copy is captured');
+  // Honest client-side validation first.
+  const urlField = dialog.locator('#save-page-input');
+  await urlField.fill('not-a-link');
+  await dialog.getByRole('button', { name: 'Save page' }).click();
+  await expect(dialog).toContainText('Only http(s) links can be saved');
+
+  // The real save: note created + link queued through capture/save-url.
+  await urlField.fill('https://example.com/e2e-entry-point');
+  await dialog.getByRole('button', { name: 'Save page' }).click();
+  await expect(dialog).toBeHidden({ timeout: 15_000 });
+  await expect(page.locator('#live-region')).toContainText('example.com', {
+    timeout: 15_000,
+  });
+
+  // The note appears in the list immediately, titled after the site.
+  const card = page.locator('.card', { hasText: 'example.com' });
+  await expect(card).toBeVisible({ timeout: 15_000 });
+  // Its body links the page (the same note shape the context menu builds).
+  await card.getByRole('button', { name: /^Open .* for editing/ }).click();
+  const titleField = page.locator('.editor-panel__title');
+  await expect(titleField).toBeVisible({ timeout: 15_000 });
+  await expect(titleField).toHaveValue(/example\.com/);
+  await expect(page.locator('.editor-panel__host a[href="https://example.com/e2e-entry-point"]')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+});

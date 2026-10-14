@@ -1,17 +1,21 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createOnboardingOverlay } from '../../../src/dashboard/views/onboarding';
 
 /**
- * T-039 onboarding (FR-SET-02): the five honest sections render, completing
- * persists the flag and closes, and a failing completion keeps the dialog
- * with a truthful announcement. Nothing gates app usage.
+ * T-039 onboarding (FR-SET-02), restructured T-089 (T-084 register UX-14):
+ * the dialog teaches the PRODUCT first (three concrete first actions) with
+ * the privacy promise and backup advice condensed behind them; the primary
+ * action IS the first step ("Create my first note" completes AND creates),
+ * "Skip for now" keeps the plain dismiss path, and a failing completion
+ * keeps the dialog with a truthful announcement. Nothing gates app usage.
  */
 
 interface Harness {
   overlay: ReturnType<typeof createOnboardingOverlay>;
   completions: number;
   settingsOpened: number;
+  firstNotesCreated: number;
   announced: string[];
   failComplete(value: boolean): void;
 }
@@ -19,6 +23,7 @@ interface Harness {
 function mountOverlay(): Harness {
   const completions = { count: 0 };
   const settingsOpened = { count: 0 };
+  const firstNotesCreated = { count: 0 };
   const announced: string[] = [];
   let fail = false;
   const overlay = createOnboardingOverlay({
@@ -29,6 +34,9 @@ function mountOverlay(): Harness {
     openSettings: () => {
       settingsOpened.count++;
     },
+    createFirstNote: () => {
+      firstNotesCreated.count++;
+    },
     announce: (message) => announced.push(message),
   });
   return {
@@ -38,6 +46,9 @@ function mountOverlay(): Harness {
     },
     get settingsOpened() {
       return settingsOpened.count;
+    },
+    get firstNotesCreated() {
+      return firstNotesCreated.count;
     },
     announced,
     failComplete(value) {
@@ -50,6 +61,14 @@ function dialogOf(): HTMLDialogElement {
   const dialog = document.querySelector('dialog.dialog--onboarding');
   if (!dialog) throw new Error('onboarding dialog not mounted');
   return dialog as HTMLDialogElement;
+}
+
+function button(label: string): HTMLButtonElement {
+  const found = [...dialogOf().querySelectorAll<HTMLButtonElement>('button')].find(
+    (button) => button.textContent === label,
+  );
+  if (!found) throw new Error(`button not found: ${label}`);
+  return found;
 }
 
 beforeEach(() => {
@@ -71,31 +90,45 @@ afterEach(() => {
 });
 
 describe('onboarding overlay', () => {
-  it('renders the five FR-SET-02 sections with honest content', () => {
+  it('teaches the product first, then the data promises (T-089, UX-14)', () => {
     const harness = mountOverlay();
     harness.overlay.open();
     const text = dialogOf().textContent ?? '';
+    // Three concrete first actions lead.
+    expect(text).toContain('Write your first note');
+    expect(text).toContain('New Note');
+    expect(text).toContain('Save any web page for offline reading');
+    expect(text).toContain('Save a web page…');
+    expect(text).toContain('Organize with tags, find anything');
+    // The data promises condense behind them and stay honest.
     expect(text).toContain('Everything stays on this device');
-    expect(text).toContain('Saving web pages asks first');
-    expect(text).toContain('Local AI is optional');
-    expect(text).toContain('Reminders have honest limits');
-    expect(text).toContain('Protect against data loss');
     expect(text).toContain('no account');
-    expect(text).toContain('127.0.0.1 or localhost');
+    expect(text).toContain('Back up before big changes');
     expect(text).toContain('Export a complete backup ZIP');
     harness.overlay.dispose();
   });
 
-  it('completes, announces and closes on Get started', async () => {
+  it('completes, creates the first note, announces and closes on the primary action', async () => {
     const harness = mountOverlay();
     harness.overlay.open();
     const dialog = dialogOf();
-    const start = [...dialog.querySelectorAll('button')].find(
-      (button) => button.textContent === 'Get started',
-    );
-    start?.click();
+    button('Create my first note').click();
     await new Promise((resolve) => setTimeout(resolve, 10));
     expect(harness.completions).toBe(1);
+    expect(harness.firstNotesCreated).toBe(1);
+    expect(harness.announced).toContain('Onboarding complete. Creating your first note.');
+    expect(dialog.open).toBe(false);
+    harness.overlay.dispose();
+  });
+
+  it('Skip for now completes without creating anything', async () => {
+    const harness = mountOverlay();
+    harness.overlay.open();
+    const dialog = dialogOf();
+    button('Skip for now').click();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(harness.completions).toBe(1);
+    expect(harness.firstNotesCreated).toBe(0);
     expect(harness.announced).toContain('Onboarding complete. Your notes stay on this device.');
     expect(dialog.open).toBe(false);
     harness.overlay.dispose();
@@ -106,10 +139,7 @@ describe('onboarding overlay', () => {
     harness.failComplete(true);
     harness.overlay.open();
     const dialog = dialogOf();
-    const start = [...dialog.querySelectorAll('button')].find(
-      (button) => button.textContent === 'Get started',
-    );
-    start?.click();
+    button('Create my first note').click();
     await new Promise((resolve) => setTimeout(resolve, 10));
     expect(harness.completions).toBe(0);
     expect(harness.announced[0]).toContain('will show again next time');
@@ -117,46 +147,53 @@ describe('onboarding overlay', () => {
     harness.overlay.dispose();
   });
 
-  it('re-enables Get started every time the overlay is re-shown (T-067, audit D-05)', async () => {
-    // The audit: Settings -> "Show the introduction again" presented a
-    // permanently disabled primary button (Escape-only exit) because the
-    // click handler only re-enabled it on FAILURE. Every open() resets it.
+  it('re-enables every action each time the overlay is re-shown (T-067, audit D-05)', async () => {
     const harness = mountOverlay();
     harness.overlay.open();
     const dialog = dialogOf();
-    const start = [...dialog.querySelectorAll<HTMLButtonElement>('button')].find(
-      (button) => button.textContent === 'Get started',
-    );
+    const create = button('Create my first note');
+    const skip = button('Skip for now');
 
-    // First completion disables the button and closes the dialog.
-    start?.click();
+    // First completion disables the buttons and closes the dialog.
+    create.click();
     await new Promise((resolve) => setTimeout(resolve, 10));
     expect(harness.completions).toBe(1);
     expect(dialog.open).toBe(false);
-    expect(start?.disabled).toBe(true);
+    expect(create.disabled).toBe(true);
 
-    // Re-show (the settings "Show the introduction again" path): the button
-    // is enabled again and completes a second time.
+    // Re-show (the settings "Show the introduction again" path): the
+    // buttons are enabled again and the dismiss path completes.
     harness.overlay.open();
     expect(dialog.open).toBe(true);
-    expect(start?.disabled).toBe(false);
-    start?.click();
+    expect(create.disabled).toBe(false);
+    expect(skip.disabled).toBe(false);
+    skip.click();
     await new Promise((resolve) => setTimeout(resolve, 10));
     expect(harness.completions).toBe(2);
     expect(dialog.open).toBe(false);
     harness.overlay.dispose();
   });
 
-  it('routes Open Settings first through the callback and closes', () => {
+  it('routes Open Settings first through the callback and closes without completing', () => {
     const harness = mountOverlay();
     harness.overlay.open();
     const dialog = dialogOf();
-    const settings = [...dialog.querySelectorAll('button')].find(
-      (button) => button.textContent === 'Open Settings first',
-    );
-    settings?.click();
+    button('Open Settings first').click();
     expect(harness.settingsOpened).toBe(1);
+    expect(harness.completions).toBe(0);
     expect(dialog.open).toBe(false);
+    harness.overlay.dispose();
+  });
+});
+
+describe('onboarding open() focuses the primary action', () => {
+  it('focuses Create my first note so Enter starts the product tour', () => {
+    const harness = mountOverlay();
+    harness.overlay.open();
+    const focused = document.activeElement;
+    expect(focused instanceof HTMLButtonElement).toBe(true);
+    expect((focused as HTMLButtonElement).textContent).toBe('Create my first note');
+    vi.restoreAllMocks();
     harness.overlay.dispose();
   });
 });

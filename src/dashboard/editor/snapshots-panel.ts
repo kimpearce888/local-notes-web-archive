@@ -90,7 +90,7 @@ export function createSnapshotsPanel(
   const empty = document.createElement('p');
   empty.className = 'snapshots-panel__empty';
   empty.textContent =
-    'No snapshots yet. Links captured from the web appear here with their archive, text and screenshot.';
+    'No snapshots yet. Save a web page — the "Save a web page…" button on the left, or right-click a page in Chrome and choose "Save page as note" — and its archived copy, text and screenshot appear here.';
 
   const status = document.createElement('p');
   status.className = 'snapshots-panel__status';

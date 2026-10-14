@@ -143,7 +143,7 @@ test('new user: first run shows onboarding and it is dismissible', async () => {
 
   const onboarding = page.locator('dialog.dialog--onboarding');
   await expect(onboarding).toBeVisible({ timeout: 15_000 });
-  await onboarding.getByRole('button', { name: 'Get started' }).click();
+  await onboarding.getByRole('button', { name: 'Skip for now' }).click();
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
 });
 

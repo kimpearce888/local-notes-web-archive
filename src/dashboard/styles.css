@@ -339,6 +339,18 @@ img {
   flex: none;
 }
 
+/* T-089 (UX-13): the web-archive entry point — visible weight just under
+   New Note without competing with the primary action. */
+.sidebar__save-page {
+  flex: none;
+  background: transparent;
+  color: var(--color-text);
+}
+
+.sidebar__save-page:hover {
+  background: var(--color-accent-soft);
+}
+
 .sidebar__spacer {
   flex: 1 1 auto;
 }
@@ -704,6 +716,11 @@ img {
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   color: var(--color-text-muted);
+}
+
+/* T-089 (UX-16): the inline create action on the empty library. */
+.state__action {
+  margin-top: var(--space-1);
 }
 
 .state__glyph {
@@ -3262,6 +3279,19 @@ surface, hairline border, heading row, consistent rows. */
 
 .onboarding__actions {
   justify-content: flex-end;
+}
+
+/* T-089: save-a-web-page dialog (UX-13) — the capture entry point. */
+.save-page__intro {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.save-page__status {
+  font-size: var(--text-sm);
+  margin: var(--space-2) 0 0 0;
+  color: var(--color-text);
 }
 
 /* ------------------------------------------------------------------ */

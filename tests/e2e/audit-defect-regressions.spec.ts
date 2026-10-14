@@ -71,7 +71,7 @@ test.beforeAll(async () => {
   // First run: dismiss the onboarding overlay so the suite can interact.
   const onboarding = page.locator('dialog.dialog--onboarding');
   await expect(onboarding).toBeVisible({ timeout: 15_000 });
-  await onboarding.getByRole('button', { name: 'Get started' }).click();
+  await onboarding.getByRole('button', { name: 'Skip for now' }).click();
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
 
   // One note to attach to and to carry through the backup round-trip.
@@ -352,7 +352,7 @@ test('D-03: sort direction control sorts ascending (FR-SEARCH-06)', async () => 
   await expect(direction).toBeVisible();
 });
 
-test('D-05: re-shown onboarding Get started is enabled and completes', async () => {
+test('D-05: re-shown onboarding Skip for now is enabled and completes', async () => {
   // The audit's exact repro: Settings -> "Show the introduction again"
   // re-opened the dialog with a PERMANENTLY disabled primary button — only
   // Escape could close it. The button now resets on every presentation.
@@ -364,11 +364,11 @@ test('D-05: re-shown onboarding Get started is enabled and completes', async () 
 
   const onboarding = page.locator('dialog.dialog--onboarding');
   await expect(onboarding).toBeVisible({ timeout: 10_000 });
-  const getStarted = onboarding.getByRole('button', { name: 'Get started' });
-  await expect(getStarted).toBeEnabled();
+  const skipNow = onboarding.getByRole('button', { name: 'Skip for now' });
+  await expect(skipNow).toBeEnabled();
 
   // The primary path completes the re-shown onboarding honestly.
-  await getStarted.click();
+  await skipNow.click();
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
 });
 

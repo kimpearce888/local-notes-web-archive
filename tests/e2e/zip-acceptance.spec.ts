@@ -177,7 +177,7 @@ test('the extracted folder installs and the full stack works with zero build ste
   // First-run onboarding over the extracted build, then dismiss it.
   const onboarding = page.locator('dialog.dialog--onboarding');
   await expect(onboarding).toBeVisible({ timeout: 15_000 });
-  await onboarding.getByRole('button', { name: 'Get started' }).click();
+  await onboarding.getByRole('button', { name: 'Skip for now' }).click();
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
 
   // Advertised feature: notes — create, edit, durable autosave.

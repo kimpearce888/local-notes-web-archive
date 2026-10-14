@@ -85,12 +85,12 @@ test('dashboard loads the full shell over the real RPC channel', async () => {
   await expect(page.locator('#results-region')).not.toContainText('Loading', { timeout: 15_000 });
 
   // First run: the FR-SET-02 onboarding overlay is showing — read it, then
-  // dismiss it with Get started so the rest of the suite can interact.
+  // dismiss it with Skip for now so the rest of the suite can interact.
   const onboarding = page.locator('dialog.dialog--onboarding');
   await expect(onboarding).toBeVisible({ timeout: 15_000 });
   await expect(onboarding).toContainText('Everything stays on this device');
-  await expect(onboarding).toContainText('Local AI is optional');
-  await onboarding.getByRole('button', { name: 'Get started' }).click();
+  await expect(onboarding).toContainText('Optional AI features run through LM Studio');
+  await onboarding.getByRole('button', { name: 'Skip for now' }).click();
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
 });
 

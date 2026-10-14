@@ -112,8 +112,8 @@ test('onboarding is keyboard-dismissable and traps focus while open', async () =
   await expect(onboarding).toBeVisible({ timeout: 15_000 });
   // Native showModal(): focus lives inside the dialog.
   expect(await page.evaluate(() => document.activeElement?.closest('dialog') !== null)).toBe(true);
-  const getStarted = onboarding.getByRole('button', { name: 'Get started' });
-  await getStarted.focus();
+  const skipNow = onboarding.getByRole('button', { name: 'Skip for now' });
+  await skipNow.focus();
   await page.keyboard.press('Enter');
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
 });

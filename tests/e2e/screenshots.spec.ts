@@ -269,7 +269,7 @@ test('seed a realistic library through the real UI', async () => {
   // First run: read the onboarding, dismiss it like a real user.
   const onboarding = page.locator('dialog.dialog--onboarding');
   await expect(onboarding).toBeVisible({ timeout: 15_000 });
-  await onboarding.getByRole('button', { name: 'Get started' }).click();
+  await onboarding.getByRole('button', { name: 'Skip for now' }).click();
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
 
   for (const note of SEED_NOTES) {

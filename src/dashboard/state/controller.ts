@@ -203,13 +203,24 @@ export function createDashboardController(options: {
     }
 
     if (state.notes.length === 0) {
-      showEmpty(
+      const searching = state.query.trim().length > 0;
+      const empty = showEmpty(
         region,
-        state.query.trim().length > 0 ? 'No matching notes' : 'No notes yet',
-        state.query.trim().length > 0
+        searching ? 'No matching notes' : 'No notes yet',
+        searching
           ? 'Try different search terms or clear the search.'
           : 'Notes you create and pages you save will appear here.',
       );
+      // T-089 (register UX-16): the empty library offers the obvious action
+      // inline — the create button no longer lives only in the sidebar.
+      if (!searching) {
+        const createButton = document.createElement('button');
+        createButton.type = 'button';
+        createButton.className = 'btn btn--primary state__action';
+        createButton.textContent = 'Create your first note';
+        createButton.addEventListener('click', () => void createNote());
+        empty.container.append(createButton);
+      }
       syncChrome(state);
       return;
     }

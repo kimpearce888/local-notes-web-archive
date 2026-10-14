@@ -9,5 +9,5 @@ Contains only incomplete tasks. On completion a task moves to completed.md
 - [x] T-086 — insert-image rework + HEIC photo support (UX-06, UX-07, UX-15): no more data:image ask; accept HEIC/HEIF; local decode to JPEG.
 - [x] T-087 — tags and categories reachable from the editor (UX-08): metadata chips bar + immediate RPC application.
 - [x] T-088 — plain-language copy pass (UX-10, UX-11, UX-12): AI disclosure, MIME humanization, MHTML humanization.
-- [ ] T-089 — capture entry points + product-first onboarding + empty-state create button (UX-13, UX-14, UX-16).
+- [x] T-089 — capture entry points + product-first onboarding + empty-state create button (UX-13, UX-14, UX-16).
 - [ ] T-090 — release v1.0.7 packaging the T-084 fixes.
