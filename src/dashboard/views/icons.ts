@@ -28,7 +28,8 @@ export type IconName =
   | 'monitor'
   | 'arrow-left'
   | 'arrow-right'
-  | 'check';
+  | 'check'
+  | 'palette';
 
 /** Compact stroke paths on a 16×16 grid (feather-style, 1.5px stroke). */
 const PATHS: Readonly<Record<IconName, string>> = {
@@ -78,6 +79,8 @@ const PATHS: Readonly<Record<IconName, string>> = {
   'arrow-right': 'M3 8h10 M9.6 4.2 13.2 8l-3.6 3.8',
   // Check mark.
   check: 'M3 8.4l3.2 3.2L13 4.6',
+  // Paint droplet (card color picker, T-107).
+  palette: 'M8 2.25c2.6 3 4 5 4 6.9a4 4 0 1 1-8 0c0-1.9 1.4-3.9 4-6.9z',
 };
 
 const cache = new Map<IconName, string>();

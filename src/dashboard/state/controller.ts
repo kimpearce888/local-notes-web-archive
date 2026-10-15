@@ -558,6 +558,8 @@ export function createDashboardController(options: {
         archivedAt: null,
         revisionId: null,
         duplicatedFrom: null,
+        cardBackgroundColor: null,
+        cardForegroundColor: null,
       };
       if (pageWasFull) {
         // Full page: no placeholder (the invariant holds), only the honest
@@ -802,6 +804,20 @@ export function createDashboardController(options: {
               return true;
             } catch {
               return false;
+            }
+          },
+          // Card colors from the editor (T-107): notes/set-appearance,
+          // resolving with the updated note (null on failure) so the
+          // panel syncs its swatch selection honestly.
+          setCardAppearance: async (noteId, appearance) => {
+            try {
+              const { note } = await client.request('notes/set-appearance', {
+                noteId,
+                ...appearance,
+              });
+              return note;
+            } catch {
+              return null;
             }
           },
           // Move to trash from the editor (T-054): the session flushes its

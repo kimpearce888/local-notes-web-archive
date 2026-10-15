@@ -25,6 +25,7 @@ import {
 import { createAttachmentsPanel, type AttachmentsPanel } from '../editor/attachments-panel';
 import { createSnapshotsPanel, type SnapshotsPanel } from '../editor/snapshots-panel';
 import { createRemindersPanel, type RemindersPanel } from '../editor/reminders-panel';
+import { createCardColorPanel, type CardColorPanel } from '../editor/card-color-panel';
 import { createAiPanel, type AiPanel } from '../ai/ai-panel';
 import { confirmDialog } from '../views/bulk-bar';
 import { icon } from '../views/icons';
@@ -190,6 +191,17 @@ export interface EditorSessionCallbacks {
    * notes/set-flags). Mirrors setPinned; optional for the same reason.
    */
   setFavorite?(noteId: EntityId, favorite: boolean): Promise<boolean>;
+  /**
+   * Set/clear the open note's card colors from the editor (T-107,
+   * notes/set-appearance). Resolves with the updated note (null on
+   * failure) so the panel can sync its selection state. Optional for the
+   * same reason as setPinned: isolated tests without a controller omit
+   * it and the session hides the Card color action.
+   */
+  setCardAppearance?(
+    noteId: EntityId,
+    appearance: { cardBackgroundColor?: string | null; cardForegroundColor?: string | null },
+  ): Promise<Note | null>;
   /**
    * Move the open note to trash from the editor (T-054, notes/trash).
    * Called after pending autosave edits are flushed; the session closes
@@ -1060,6 +1072,66 @@ export async function openEditorSession(options: {
   }
   pinButton.addEventListener('click', () => void togglePinned());
 
+  /* -------------------- Card color panel (T-107) -------------------- */
+
+  /**
+   * Pop-out Card color panel (the T-085 disclosure pattern: own Close
+   * control + Escape through registerPanelCloser + the header toggle).
+   * Every pick applies immediately through notes/set-appearance and
+   * syncs `current` so Back-to-notes renders the tinted card on requery.
+   */
+  let cardColorElement: HTMLElement | null = null;
+  let cardColorPanelInstance: CardColorPanel | null = null;
+  let unregisterCardColorCloser: (() => void) | null = null;
+
+  const cardColorButton = document.createElement('button');
+  cardColorButton.type = 'button';
+  cardColorButton.className = 'btn';
+  cardColorButton.setAttribute('aria-expanded', 'false');
+  cardColorButton.textContent = 'Card color';
+  if (!callbacks.setCardAppearance) cardColorButton.hidden = true;
+
+  function closeCardColor(): void {
+    if (!cardColorElement) return;
+    cardColorPanelInstance?.dispose();
+    cardColorElement.remove();
+    cardColorElement = null;
+    cardColorPanelInstance = null;
+    cardColorButton.setAttribute('aria-expanded', 'false');
+    unregisterCardColorCloser?.();
+    unregisterCardColorCloser = null;
+  }
+
+  function toggleCardColor(): void {
+    if (cardColorElement) {
+      closeCardColor();
+      return;
+    }
+    cardColorPanelInstance = createCardColorPanel({
+      noteId,
+      initial: {
+        cardBackgroundColor: current.cardBackgroundColor ?? null,
+        cardForegroundColor: current.cardForegroundColor ?? null,
+      },
+      api: {
+        setCardAppearance: (id, appearance) =>
+          callbacks.setCardAppearance
+            ? callbacks.setCardAppearance(id, appearance)
+            : Promise.resolve(null),
+      },
+      onNotify: (message, _kind) => callbacks.announce(message),
+      onApplied: (note) => {
+        current = note;
+      },
+      onClose: closeCardColor,
+    });
+    cardColorElement = cardColorPanelInstance.element;
+    unregisterCardColorCloser = registerPanelCloser(closeCardColor);
+    container.insertBefore(cardColorElement, header.nextSibling);
+    cardColorButton.setAttribute('aria-expanded', 'true');
+  }
+  cardColorButton.addEventListener('click', toggleCardColor);
+
   /**
    * Favorite/unfavorite the note being edited (T-064, audit D-01): the
    * same live-label + honest-failure pattern as the pin button above —
@@ -1161,6 +1233,7 @@ export async function openEditorSession(options: {
   giveIcon(fileButton, 'import');
   giveIcon(pinButton, 'pin');
   giveIcon(favoriteButton, 'star');
+  giveIcon(cardColorButton, 'palette');
   giveIcon(trashButton, 'trash');
 
   const header = document.createElement('div');
@@ -1176,7 +1249,7 @@ export async function openEditorSession(options: {
 
   const headerActions = document.createElement('div');
   headerActions.className = 'editor-session__header-group editor-session__header-group--actions';
-  headerActions.append(pinButton, favoriteButton, trashButton);
+  headerActions.append(pinButton, favoriteButton, cardColorButton, trashButton);
 
   header.append(headerPrimary, headerPanels, headerActions);
   container.prepend(header);
@@ -1202,6 +1275,9 @@ export async function openEditorSession(options: {
       remindersPanelInstance?.dispose();
       remindersElement = null;
       remindersPanelInstance = null;
+      cardColorPanelInstance?.dispose();
+      cardColorElement = null;
+      cardColorPanelInstance = null;
       aiPanelInstance?.dispose();
       aiElement = null;
       aiPanelInstance = null;

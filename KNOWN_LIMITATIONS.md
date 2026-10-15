@@ -106,3 +106,16 @@ mistaken for external connectivity (per the MCP disclosure requirements).
   thread never runs the decode). If decoding a specific file fails (corrupt
   or exotic HEVC variant), the file is kept as a regular attachment and
   the note tells you so instead of inserting a broken image.
+
+## Card colors on extreme mid-tone backgrounds (v1.0.12, T-107)
+
+- When you pick a custom background color, the card's text color is chosen
+  automatically for readability (WCAG contrast) unless you set an explicit
+  text color. The 12 curated palette colors all keep AA-level contrast
+  (>= 4.5:1) with their automatic text color. A FREE custom color picked
+  through the native color picker can be a mid-tone (for example a medium
+  gray) where NEITHER a dark nor a light text color reaches 4.5:1 — the
+  better of the two is used, and the card border and chip tints keep the
+  content readable, but pixel-perfect AA on every one of the 16.7 million
+  possible RGB values is physically impossible. Explicit text colors you
+  set yourself are honored exactly as chosen.

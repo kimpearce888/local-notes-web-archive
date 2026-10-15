@@ -19,6 +19,7 @@ import {
   restoreNote,
   restoreRevision,
   saveNote,
+  setAppearance,
   setFlags,
   trashNote,
 } from '../../core/repo/notes';
@@ -35,6 +36,7 @@ import {
   asIdArray,
   asObject,
   asOptionalBoolean,
+  asOptionalHexColor,
   asOptionalJsonObject,
   asOptionalId,
   asOptionalString,
@@ -247,6 +249,37 @@ export function registerNoteApi(router: MessageRouter): void {
       outcome: 'succeeded',
       changedFields: changed,
       detail: 'pin/favorite flags updated',
+    });
+    return { note };
+  });
+
+  /**
+   * Card colors (T-107): set or clear the note's card appearance.
+   * Values are strictly validated as lowercase `#rrggbb` hex — anything
+   * else (including CSS-injection attempts) is a PayloadValidationError
+   * before the store is ever touched; explicit null clears back to the
+   * default (present-condition) styling. Colors are not searchable
+   * content, so — exactly like set-flags — the search index is NOT
+   * re-projected after this write.
+   */
+  router.register('notes/set-appearance', async (payload, ctx) => {
+    const p = asObject(payload, 'notes/set-appearance');
+    const noteId = asId(p['noteId'], 'noteId');
+    const cardBackgroundColor = asOptionalHexColor(p['cardBackgroundColor'], 'cardBackgroundColor');
+    const cardForegroundColor = asOptionalHexColor(p['cardForegroundColor'], 'cardForegroundColor');
+    const changed: string[] = [];
+    if (cardBackgroundColor !== undefined) changed.push('cardBackgroundColor');
+    if (cardForegroundColor !== undefined) changed.push('cardForegroundColor');
+    const note = await setAppearance(await repo(), noteId, {
+      ...(cardBackgroundColor !== undefined ? { cardBackgroundColor } : {}),
+      ...(cardForegroundColor !== undefined ? { cardForegroundColor } : {}),
+    });
+    await auditUserAction(ctx, {
+      action: 'notes/set-appearance',
+      targetId: note.id,
+      outcome: 'succeeded',
+      changedFields: changed,
+      detail: 'card colors updated',
     });
     return { note };
   });

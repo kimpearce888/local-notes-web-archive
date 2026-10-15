@@ -81,6 +81,21 @@ export interface Note {
   revisionId: EntityId | null;
   /** Set once, never mutated (duplicates get their own copy history). */
   duplicatedFrom: EntityId | null;
+  /**
+   * Card background color (T-107): normalized lowercase `#rrggbb` hex or
+   * null. null = the default theme surface — the present condition is
+   * preserved exactly. Old records simply lack the field and normalize
+   * to null at read (IndexedDB object stores are schemaless; no
+   * migration).
+   */
+  cardBackgroundColor: string | null;
+  /**
+   * Card text color (T-107): normalized lowercase `#rrggbb` hex or null.
+   * null = AUTO: the foreground is derived from the background's WCAG
+   * contrast (dark vs light pick by the higher contrast ratio) whenever a
+   * background is set. Never persisted when derived.
+   */
+  cardForegroundColor: string | null;
 }
 
 /* ------------------------------------------------------------------ */

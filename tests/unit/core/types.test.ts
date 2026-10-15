@@ -53,6 +53,8 @@ function sampleNote(): Note {
     archivedAt: null,
     revisionId: null,
     duplicatedFrom: null,
+    cardBackgroundColor: null,
+    cardForegroundColor: null,
   };
 }
 

@@ -76,6 +76,8 @@ function makeNote(i: number): Note {
     archivedAt: state === 'archived' ? created : null,
     revisionId: null,
     duplicatedFrom: null,
+    cardBackgroundColor: null,
+    cardForegroundColor: null,
   };
 }
 

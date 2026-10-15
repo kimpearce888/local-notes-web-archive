@@ -6,6 +6,7 @@
  */
 
 import type { Category, EntityId, Link, Note, Reminder, Tag, UtcTimestamp } from '../../core/types';
+import { resolveCardColors, type ResolvedCardColors } from './card-colors';
 
 export interface RelatedInfo {
   readonly tags: readonly Tag[];
@@ -47,6 +48,11 @@ export interface CardViewModel {
   readonly pinned: boolean;
   readonly favorite: boolean;
   readonly state: Note['state'];
+  /** Stored card colors (T-107): null = default (present condition). */
+  readonly cardBackgroundColor: string | null;
+  readonly cardForegroundColor: string | null;
+  /** Resolved render colors (T-107): null = NOT tinted (default styling). */
+  readonly resolvedCardColors: ResolvedCardColors | null;
 }
 
 /** ISO timestamp → human date label (stable, locale-independent). */
@@ -114,6 +120,9 @@ export function cardViewModel(
     pinned: note.pinned,
     favorite: note.favorite,
     state: note.state,
+    cardBackgroundColor: note.cardBackgroundColor ?? null,
+    cardForegroundColor: note.cardForegroundColor ?? null,
+    resolvedCardColors: resolveCardColors(note.cardBackgroundColor, note.cardForegroundColor),
   };
 }
 
@@ -146,6 +155,19 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
   card.dataset['noteId'] = model.noteId;
   card.setAttribute('aria-label', `${model.title}. Modified ${model.modifiedLabel}.`);
 
+  // T-107 card colors: a tinted card carries its resolved colors as CSS
+  // custom properties + data-tinted. The background uses the safe
+  // setProperty API with an already-strict #rrggbb value — never string
+  // concatenation into style.cssText. No tint (colors null) keeps every
+  // default rule exactly (present condition preserved).
+  if (model.resolvedCardColors) {
+    card.dataset['tinted'] = 'true';
+    if (model.resolvedCardColors.bg !== null) {
+      card.style.setProperty('--card-bg', model.resolvedCardColors.bg);
+    }
+    card.style.setProperty('--card-fg', model.resolvedCardColors.fg);
+  }
+
   const select = document.createElement('input');
   select.type = 'checkbox';
   select.className = 'card__select';
@@ -156,10 +178,12 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
   const content = document.createElement('div');
   content.className = 'card__content';
 
-  /* T-060 reading order: title on top, then subtitle, then the body
-     preview, then tags and categories on SEPARATE rows (never inline
-     with each other), then link/reminder indicators, then the meta
-     line. Empty rows are omitted entirely. */
+  /* T-060 reading order + T-107 separated blocks: title on top, then
+     subtitle, then the body preview, then tags and categories on
+     SEPARATE rows (never inline with each other), then link indicators,
+     then the reminder ON ITS OWN row, then one meta row PER fact
+     (Created and Modified are never inline on one line). Empty rows are
+     omitted entirely. */
 
   const heading = document.createElement('h3');
   heading.className = 'card__title';
@@ -229,7 +253,7 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
 
   const indicatorsRow = document.createElement('ul');
   indicatorsRow.className = 'chips card__chips card__chips--indicators';
-  indicatorsRow.setAttribute('aria-label', 'Link and reminder indicators');
+  indicatorsRow.setAttribute('aria-label', 'Link indicators');
   if (model.hasLinks) {
     const item = document.createElement('li');
     item.append(
@@ -255,21 +279,37 @@ export function renderCard(model: CardViewModel, options: RenderCardOptions): HT
     item.title = 'A capture attempt failed — open the note to retry from its snapshots panel.';
     indicatorsRow.append(item);
   }
+
+  // T-107: the reminder chip renders on its OWN row — never inline with
+  // the link indicators, so a due/overdue reminder is instantly
+  // noticeable at a glance.
+  const remindersRow = document.createElement('ul');
+  remindersRow.className = 'chips card__chips card__chips--reminders';
+  remindersRow.setAttribute('aria-label', 'Reminder');
   if (model.reminderChip.kind !== 'none') {
     const item = document.createElement('li');
     const label = model.reminderChip.label;
     item.append(chip(label, model.reminderChip.kind === 'overdue' ? 'reminder-overdue' : 'reminder-ok'));
-    indicatorsRow.append(item);
+    remindersRow.append(item);
   }
 
   if (tagsRow.firstElementChild !== null) content.append(tagsRow);
   if (categoriesRow.firstElementChild !== null) content.append(categoriesRow);
   if (indicatorsRow.firstElementChild !== null) content.append(indicatorsRow);
+  if (remindersRow.firstElementChild !== null) content.append(remindersRow);
 
-  const meta = document.createElement('p');
-  meta.className = 'card__meta';
-  meta.textContent = `Created ${model.createdLabel} · Modified ${model.modifiedLabel}`;
-  content.append(meta);
+  // T-107: the meta line splits into ONE row per fact — Created and
+  // Modified each get their own block, nothing inline.
+  const metaRows = document.createElement('ul');
+  metaRows.className = 'card__meta-rows';
+  const createdRow = document.createElement('li');
+  createdRow.className = 'card__meta-row card__meta-row--created';
+  createdRow.textContent = `Created ${model.createdLabel}`;
+  const modifiedRow = document.createElement('li');
+  modifiedRow.className = 'card__meta-row card__meta-row--modified';
+  modifiedRow.textContent = `Modified ${model.modifiedLabel}`;
+  metaRows.append(createdRow, modifiedRow);
+  content.append(metaRows);
 
   card.append(select, content);
   return card;

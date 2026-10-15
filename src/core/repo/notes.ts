@@ -86,6 +86,8 @@ export async function createNote(ctx: RepoContext, input: CreateNoteInput): Prom
     archivedAt: null,
     revisionId: null,
     duplicatedFrom: null,
+    cardBackgroundColor: null,
+    cardForegroundColor: null,
   };
   await ctx.transaction([Store.Notes], 'readwrite', (stores) => {
     stores[Store.Notes]?.put(note);
@@ -249,6 +251,74 @@ export async function setFlags(
           ...note,
           pinned: flags.pinned ?? note.pinned,
           favorite: flags.favorite ?? note.favorite,
+          updatedAt: nowUtc(),
+        };
+        store.put(next);
+        result = next;
+        resolve();
+      };
+      req.onerror = () => reject(req.error ?? new Error('note read failed'));
+    });
+  });
+  if (!result) throw new NoteNotFoundError(id);
+  return result;
+}
+
+export interface SetAppearanceInput {
+  /** Undefined = keep the stored value; null = clear to the default. */
+  readonly cardBackgroundColor?: string | null;
+  readonly cardForegroundColor?: string | null;
+}
+
+/** Strict `#rrggbb` (lowercase hex) — the only accepted card color form. */
+const CARD_COLOR_PATTERN = /^#[0-9a-f]{6}$/;
+
+/** Validate one card color value (T-107): null/undefined pass through. */
+function checkCardColor(value: string | null | undefined, field: string): void {
+  if (value === null || value === undefined) return;
+  if (typeof value !== 'string' || !CARD_COLOR_PATTERN.test(value)) {
+    throw new Error(
+      `${field}: expected a #rrggbb hex color (lowercase), got "${typeof value === 'string' ? value : typeof value}"`,
+    );
+  }
+}
+
+/**
+ * Set or clear the note's card colors (T-107). Mirrors setFlags: a
+ * single-store transaction, updatedAt bumps after commit, and the
+ * colors are deliberately NOT re-indexed (they are not searchable
+ * content). Validation is enforced here too — the canonical record
+ * never stores a non-hex string even if a caller forgets to check.
+ */
+export async function setAppearance(
+  ctx: RepoContext,
+  id: EntityId,
+  appearance: SetAppearanceInput,
+): Promise<Note> {
+  checkCardColor(appearance.cardBackgroundColor, 'cardBackgroundColor');
+  checkCardColor(appearance.cardForegroundColor, 'cardForegroundColor');
+  let result: Note | null = null;
+  await ctx.transaction([Store.Notes], 'readwrite', (stores) => {
+    const store = stores[Store.Notes];
+    if (!store) throw new Error('notes store unavailable');
+    return new Promise<void>((resolve, reject) => {
+      const req = store.get(id);
+      req.onsuccess = () => {
+        const note = req.result as Note | undefined;
+        if (!note) {
+          reject(new NoteNotFoundError(id));
+          return;
+        }
+        const next: Note = {
+          ...note,
+          cardBackgroundColor:
+            appearance.cardBackgroundColor !== undefined
+              ? appearance.cardBackgroundColor
+              : note.cardBackgroundColor ?? null,
+          cardForegroundColor:
+            appearance.cardForegroundColor !== undefined
+              ? appearance.cardForegroundColor
+              : note.cardForegroundColor ?? null,
           updatedAt: nowUtc(),
         };
         store.put(next);

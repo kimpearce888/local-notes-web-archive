@@ -55,6 +55,25 @@ export function asOptionalBoolean(value: unknown, field: string): boolean | unde
   return asBoolean(value, field);
 }
 
+/**
+ * Card color (T-107): undefined = keep, null = clear, otherwise a strict
+ * lowercase `#rrggbb` hex string. The regex is the ONLY accepted form, so
+ * CSS injection payloads (`red; }`, `url(...)`, `expression(...)`) are
+ * rejected with a PayloadValidationError before any store write.
+ */
+const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/;
+
+export function asOptionalHexColor(value: unknown, field: string): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  if (typeof value !== 'string' || !HEX_COLOR_PATTERN.test(value)) {
+    throw new PayloadValidationError(
+      `${field}: expected null or a #rrggbb hex color (lowercase digits a-f)`,
+    );
+  }
+  return value;
+}
+
 export function asNumber(
   value: unknown,
   field: string,

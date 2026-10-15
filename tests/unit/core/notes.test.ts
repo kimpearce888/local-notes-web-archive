@@ -14,6 +14,7 @@ import {
   restoreNote,
   restoreRevision,
   saveNote,
+  setAppearance,
   setFlags,
   trashNote,
 } from '../../../src/core/repo/notes';
@@ -174,6 +175,79 @@ describe('notes repository', () => {
     expect(copy.plainText).toBe('body');
     const copyRevisions = await listRevisions(ctx, copy.id);
     expect(copyRevisions).toHaveLength(0);
+  });
+
+  it('setAppearance sets, keeps, and clears card colors (T-107)', async () => {
+    const note = await createNote(ctx, {});
+    // Defaults: null = present condition preserved.
+    expect(note.cardBackgroundColor).toBeNull();
+    expect(note.cardForegroundColor).toBeNull();
+
+    // Set background only — text stays null (auto at render time).
+    const tinted = await setAppearance(ctx, note.id, { cardBackgroundColor: '#1c6b3c' });
+    expect(tinted.cardBackgroundColor).toBe('#1c6b3c');
+    expect(tinted.cardForegroundColor).toBeNull();
+    expect(tinted.updatedAt >= note.updatedAt).toBe(true);
+
+    // An omitted field keeps the stored value; null clears it.
+    const kept = await setAppearance(ctx, note.id, { cardForegroundColor: '#f2f3f7' });
+    expect(kept.cardBackgroundColor).toBe('#1c6b3c');
+    expect(kept.cardForegroundColor).toBe('#f2f3f7');
+
+    const cleared = await setAppearance(ctx, note.id, {
+      cardBackgroundColor: null,
+      cardForegroundColor: null,
+    });
+    expect(cleared.cardBackgroundColor).toBeNull();
+    expect(cleared.cardForegroundColor).toBeNull();
+
+    // The persisted record round-trips through getNote.
+    const reread = await getNote(ctx, note.id);
+    expect(reread?.cardBackgroundColor).toBeNull();
+    expect(reread?.cardForegroundColor).toBeNull();
+  });
+
+  it('setAppearance rejects non-hex color values (T-107, injection guard)', async () => {
+    const note = await createNote(ctx, {});
+    const rejects = [
+      '#F2C94C',
+      'red',
+      'red; } body { display: none',
+      'rgb(1, 2, 3)',
+      '#12345',
+      '',
+    ];
+    for (const bad of rejects) {
+      await expect(
+        setAppearance(ctx, note.id, { cardBackgroundColor: bad }),
+        `must reject ${JSON.stringify(bad)}`,
+      ).rejects.toThrow(/#rrggbb/);
+      await expect(
+        setAppearance(ctx, note.id, { cardForegroundColor: bad }),
+        `must reject ${JSON.stringify(bad)}`,
+      ).rejects.toThrow(/#rrggbb/);
+    }
+    // Nothing was written by the rejected calls.
+    const reread = await getNote(ctx, note.id);
+    expect(reread?.cardBackgroundColor).toBeNull();
+    expect(reread?.cardForegroundColor).toBeNull();
+  });
+
+  it('setAppearance throws NoteNotFoundError for unknown ids (T-107)', async () => {
+    await expect(setAppearance(ctx, newId() as EntityId, { cardBackgroundColor: '#0e7490' })).rejects.toThrow(
+      NoteNotFoundError,
+    );
+  });
+
+  it('duplicates a note WITH its card colors (T-107)', async () => {
+    const note = await createNote(ctx, {});
+    await setAppearance(ctx, note.id, {
+      cardBackgroundColor: '#0e7490',
+      cardForegroundColor: '#f2f3f7',
+    });
+    const copy = await duplicateNote(ctx, note.id);
+    expect(copy.cardBackgroundColor).toBe('#0e7490');
+    expect(copy.cardForegroundColor).toBe('#f2f3f7');
   });
 
   it('bounds revision history to retention (>= 20)', async () => {

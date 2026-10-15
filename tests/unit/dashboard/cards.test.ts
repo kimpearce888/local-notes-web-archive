@@ -37,6 +37,8 @@ function makeNote(overrides: Partial<Note> = {}): Note {
     archivedAt: null,
     revisionId: null,
     duplicatedFrom: null,
+    cardBackgroundColor: null,
+    cardForegroundColor: null,
     ...overrides,
   };
 }
@@ -263,7 +265,9 @@ describe('renderCard', () => {
 
   it('stacks card content in the user-directed reading order (T-060)', () => {
     // Title on top, then subtitle, then body text, then tags and
-    // categories on separate rows, then indicators, then meta.
+    // categories on separate rows, then link indicators, then the
+    // reminder ON ITS OWN row (T-107), then one meta row PER fact
+    // (T-107: created and modified are separate blocks, never inline).
     const related = makeRelated({
       tags: [makeTag('work')],
       categories: [{ id: 'x' as never, name: 'Projects', parentId: null, order: 0, createdAt: NOW, updatedAt: NOW } as Category],
@@ -275,14 +279,15 @@ describe('renderCard', () => {
     const content = card.querySelector('.card__content');
     expect(content).not.toBeNull();
     const classes = [...(content as HTMLElement).children].map((el) => el.className);
-    expect(classes).toHaveLength(7);
+    expect(classes).toHaveLength(8);
     expect(classes[0]).toContain('card__title');
     expect(classes[1]).toContain('card__subtitle');
     expect(classes[2]).toContain('card__preview');
     expect(classes[3]).toContain('card__chips--tags');
     expect(classes[4]).toContain('card__chips--categories');
     expect(classes[5]).toContain('card__chips--indicators');
-    expect(classes[6]).toContain('card__meta');
+    expect(classes[6]).toContain('card__chips--reminders');
+    expect(classes[7]).toContain('card__meta-rows');
   });
 
   it('never renders tags and categories inline on one row (T-060)', () => {
@@ -298,9 +303,11 @@ describe('renderCard', () => {
     const tagsRow = card.querySelector('.card__chips--tags');
     const categoriesRow = card.querySelector('.card__chips--categories');
     const indicatorsRow = card.querySelector('.card__chips--indicators');
+    const remindersRow = card.querySelector('.card__chips--reminders');
     expect(tagsRow).not.toBeNull();
     expect(categoriesRow).not.toBeNull();
     expect(indicatorsRow).not.toBeNull();
+    expect(remindersRow, 'T-107: the reminder row exists (even when empty it is queried)').not.toBeNull();
 
     // Each row carries ONLY its own kind of chip.
     expect([...tagsRow!.querySelectorAll('.chip')].map((el) => el.textContent)).toEqual([
@@ -310,8 +317,10 @@ describe('renderCard', () => {
     expect([...categoriesRow!.querySelectorAll('.chip')].map((el) => el.textContent)).toEqual([
       'Category: Projects',
     ]);
-    expect([...indicatorsRow!.querySelectorAll('.chip')].map((el) => el.textContent)).toEqual([
-      'Link',
+    expect([...indicatorsRow!.querySelectorAll('.chip')].map((el) => el.textContent)).toEqual(['Link']);
+    // T-107: the reminder chip lives on its OWN row — never inline with
+    // the link indicators.
+    expect([...remindersRow!.querySelectorAll('.chip')].map((el) => el.textContent)).toEqual([
       'Due 2026-11-01',
     ]);
     expect(tagsRow!.querySelector('.chip--category')).toBeNull();
@@ -320,6 +329,9 @@ describe('renderCard', () => {
     expect(categoriesRow!.querySelector('.chip--indicator')).toBeNull();
     expect(indicatorsRow!.querySelector('.chip--tag')).toBeNull();
     expect(indicatorsRow!.querySelector('.chip--category')).toBeNull();
+    expect(indicatorsRow!.querySelector('.chip--reminder-ok'), 'the reminder chip must not sit in the indicators row').toBeNull();
+    expect(remindersRow!.querySelector('.chip--tag')).toBeNull();
+    expect(remindersRow!.querySelector('.chip--indicator')).toBeNull();
   });
 
   it('omits empty chip rows entirely (T-060)', () => {
@@ -332,11 +344,11 @@ describe('renderCard', () => {
     const classes = [...(card.querySelector('.card__content') as HTMLElement).children].map(
       (el) => el.className,
     );
-    expect(classes).toHaveLength(4); // title, subtitle, preview, meta
+    expect(classes).toHaveLength(4); // title, subtitle, preview, meta rows
     expect(classes[0]).toContain('card__title');
     expect(classes[1]).toContain('card__subtitle');
     expect(classes[2]).toContain('card__preview');
-    expect(classes[3]).toContain('card__meta');
+    expect(classes[3]).toContain('card__meta-rows');
   });
 });
 

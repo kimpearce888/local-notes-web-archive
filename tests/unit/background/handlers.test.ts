@@ -109,6 +109,42 @@ describe('notes API', () => {
     if (!response.ok) expect(response.error.code).toBe('not-found');
   });
 
+  it('notes/set-appearance sets, keeps and clears card colors (T-107)', async () => {
+    const created = (await ok('notes/create', { title: 'Color', plainText: 'x' }))['note'] as { id: string };
+    const tinted = (await ok('notes/set-appearance', {
+      noteId: created.id,
+      cardBackgroundColor: '#1c6b3c',
+    }))['note'] as { cardBackgroundColor: string | null; cardForegroundColor: string | null };
+    expect(tinted.cardBackgroundColor).toBe('#1c6b3c');
+    expect(tinted.cardForegroundColor).toBeNull();
+
+    const both = (await ok('notes/set-appearance', {
+      noteId: created.id,
+      cardForegroundColor: '#f2f3f7',
+    }))['note'] as { cardBackgroundColor: string | null; cardForegroundColor: string | null };
+    expect(both.cardBackgroundColor).toBe('#1c6b3c');
+    expect(both.cardForegroundColor).toBe('#f2f3f7');
+
+    const cleared = (await ok('notes/set-appearance', {
+      noteId: created.id,
+      cardBackgroundColor: null,
+      cardForegroundColor: null,
+    }))['note'] as { cardBackgroundColor: string | null; cardForegroundColor: string | null };
+    expect(cleared.cardBackgroundColor).toBeNull();
+    expect(cleared.cardForegroundColor).toBeNull();
+  });
+
+  it('notes/set-appearance rejects non-hex colors as invalid-request (T-107)', async () => {
+    const created = (await ok('notes/create', { title: 'Guard', plainText: 'x' }))['note'] as { id: string };
+    for (const bad of ['#F2C94C', 'red', 'red; } body { display: none', 'rgb(1,2,3)', '#12345', '']) {
+      const response = await fail('notes/set-appearance', { noteId: created.id, cardBackgroundColor: bad });
+      if (!response.ok) expect(response.error.code).toBe('invalid-request');
+    }
+    // Uppercase hex is rejected too — the strict lowercase form only.
+    const upper = await fail('notes/set-appearance', { noteId: created.id, cardForegroundColor: '#AABBCC' });
+    if (!upper.ok) expect(upper.error.code).toBe('invalid-request');
+  });
+
   it('walks the full lifecycle: flags → duplicate → trash → restore → permanent delete', async () => {
     const created = (await ok('notes/create', { title: 'L', plainText: 'x' }))['note'] as {
       id: string;

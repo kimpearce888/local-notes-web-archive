@@ -366,23 +366,37 @@ test('note card: title first, then subtitle, body, separate tags and categories 
     expect.stringContaining('card__preview'),
     expect.stringContaining('card__chips--tags'),
     expect.stringContaining('card__chips--categories'),
-    expect.stringContaining('card__meta'),
+    expect.stringContaining('card__meta-rows'),
   ]);
 
   const separation = await card.evaluate((el) => {
     const tags = el.querySelector('.card__chips--tags');
     const categories = el.querySelector('.card__chips--categories');
+    const metaRows = el.querySelector('.card__meta-rows');
     return {
       sameRow: tags !== null && tags === categories,
       tagChips: tags ? [...tags.querySelectorAll('.chip')].map((chip) => chip.textContent) : null,
       categoryChips: categories
         ? [...categories.querySelectorAll('.chip')].map((chip) => chip.textContent)
         : null,
+      metaRowCount: metaRows ? metaRows.children.length : 0,
+      metaRowTexts: metaRows ? [...metaRows.children].map((row) => row.textContent) : [],
+      metaRowsOwnBlocks: metaRows
+        ? [...metaRows.children].every((row) => row.tagName === 'LI')
+        : false,
     };
   });
   expect(separation.sameRow, 'tags and categories must live on separate rows').toBe(false);
   expect(separation.tagChips).toEqual(['Tag: orderproof']);
   expect(separation.categoryChips).toEqual(['Category: Proofs']);
+  // T-107: Created and Modified are SEPARATE blocks — one list item per
+  // fact, never one inline line.
+  expect(separation.metaRowCount).toBe(2);
+  expect(separation.metaRowTexts[0]).toMatch(/^Created \d{4}-\d{2}-\d{2}$/);
+  expect(separation.metaRowTexts[1]).toMatch(/^Modified \d{4}-\d{2}-\d{2}$/);
+  expect(separation.metaRowTexts[0]).not.toContain('Modified');
+  expect(separation.metaRowTexts[1]).not.toContain('Created');
+  expect(separation.metaRowsOwnBlocks).toBe(true);
 });
 
 test('sidebar: every action button reads flush-left like the smart lists (T-103)', async () => {
@@ -613,6 +627,182 @@ test('diagnostics dialog: exactly one scrollbar, the content box owns it (T-105)
 
   await diag.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(diag).not.toBeVisible({ timeout: 10_000 });
+});
+
+test('card colors: tint with auto-contrast, default preserved, reset (T-107)', async () => {
+  const title = 'Card color proof';
+  await page.getByRole('button', { name: 'New Note' }).click();
+  await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
+  await page.locator('.editor-panel__title').fill(title);
+  await page.locator('.ProseMirror').first().click();
+  await page.keyboard.type('Colored card body.');
+  await expect(page.locator('#save-state')).toHaveText('Saved', { timeout: 20_000 });
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+
+  // DEFAULT condition (the maintainer's first requirement): no tint, no
+  // inline color properties — the present look is preserved exactly.
+  const defaultCard = page.locator('.card', { hasText: title }).first();
+  await expect(defaultCard).toBeVisible({ timeout: 15_000 });
+  const before = await defaultCard.evaluate((el) => ({
+    tinted: el.dataset['tinted'] ?? null,
+    inlineBg: el.style.getPropertyValue('--card-bg'),
+    inlineFg: el.style.getPropertyValue('--card-fg'),
+  }));
+  expect(before.tinted).toBeNull();
+  expect(before.inlineBg).toBe('');
+  expect(before.inlineFg).toBe('');
+
+  // Tint through the editor's Card color panel: pick Teal.
+  await page.getByRole('button', { name: `Open ${title} for editing` }).click();
+  await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'Card color' }).click();
+  const panel = page.locator('.card-color-panel');
+  await expect(panel).toBeVisible({ timeout: 10_000 });
+  // The panel tells the user the text color adapts automatically.
+  await expect(panel.locator('.card-color-panel__hint')).toContainText('automatically');
+  await panel.getByRole('button', { name: 'Background: Teal' }).click();
+  await expect(page.locator('#live-region')).toContainText('Card background set to #0e7490.', {
+    timeout: 10_000,
+  });
+  await panel.getByRole('button', { name: 'Close card color' }).click();
+  await expect(panel).not.toBeVisible();
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+
+  // Tinted ground truth: data-tinted + the chosen background + the AUTO
+  // light text + in-page WCAG contrast >= 4.5 (user did not set colors).
+  const tintedCard = page.locator('.card', { hasText: title }).first();
+  await expect(tintedCard).toBeVisible({ timeout: 15_000 });
+  const tinted = await tintedCard.evaluate((el) => {
+    const parse = (value: string): number[] | null => {
+      const match = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(value);
+      return match ? [Number(match[1]), Number(match[2]), Number(match[3])] : null;
+    };
+    const channel = (value: number): number => {
+      const x = value / 255;
+      return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = (c: number[]): number =>
+      0.2126 * channel(c[0] ?? 0) + 0.7152 * channel(c[1] ?? 0) + 0.0722 * channel(c[2] ?? 0);
+    const bg = parse(getComputedStyle(el).backgroundColor);
+    const fg = parse(getComputedStyle(el).color);
+    let contrast = 0;
+    if (bg && fg) {
+      const l1 = Math.max(luminance(bg), luminance(fg));
+      const l2 = Math.min(luminance(bg), luminance(fg));
+      contrast = (l1 + 0.05) / (l2 + 0.05);
+    }
+    const titleEl = el.querySelector('.card__title') as HTMLElement | null;
+    const previewEl = el.querySelector('.card__preview') as HTMLElement | null;
+    const metaRow = el.querySelector('.card__meta-row') as HTMLElement | null;
+    const chip = el.querySelector('.chip--tag') as HTMLElement | null;
+    return {
+      tinted: el.dataset['tinted'] ?? null,
+      bg: getComputedStyle(el).backgroundColor,
+      fg: getComputedStyle(el).color,
+      titleColor: titleEl ? getComputedStyle(titleEl).color : null,
+      previewColor: previewEl ? getComputedStyle(previewEl).color : null,
+      metaColor: metaRow ? getComputedStyle(metaRow).color : null,
+      chipBg: chip ? getComputedStyle(chip).backgroundColor : null,
+      contrast,
+    };
+  });
+  expect(tinted.tinted).toBe('true');
+  expect(tinted.bg).toBe('rgb(14, 116, 144)');
+  // Auto fg for a dark teal background is the light token.
+  expect(tinted.fg).toBe('rgb(242, 243, 247)');
+  expect(tinted.titleColor).toBe('rgb(242, 243, 247)');
+  expect(tinted.previewColor).toBe('rgb(242, 243, 247)');
+  // The meta rows and chips re-derive from the fg/surface pair (color-mix
+  // resolves in computed style) — never the theme's default faint color.
+  expect(tinted.metaColor).not.toBe('rgb(99, 102, 115)');
+  expect(tinted.chipBg).not.toBe('rgb(237, 238, 252)');
+  expect(
+    tinted.contrast,
+    'the auto text color must reach WCAG AA on the chosen background',
+  ).toBeGreaterThanOrEqual(4.5);
+
+  // Colors are durable note data: they survive a reload.
+  await page.reload();
+  const reloadedCard = page.locator('.card', { hasText: title }).first();
+  await expect(reloadedCard).toBeVisible({ timeout: 20_000 });
+  expect(await reloadedCard.evaluate((el) => el.dataset['tinted'] ?? null)).toBe('true');
+
+  // Reset through the panel: the default look is restored honestly.
+  await page.getByRole('button', { name: `Open ${title} for editing` }).click();
+  await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'Card color' }).click();
+  const resetPanel = page.locator('.card-color-panel');
+  await expect(resetPanel).toBeVisible({ timeout: 10_000 });
+  await resetPanel.getByRole('button', { name: 'Default — keep the standard card look' }).click();
+  await expect(page.locator('#live-region')).toContainText('Card background reset', {
+    timeout: 10_000,
+  });
+  await resetPanel.getByRole('button', { name: 'Close card color' }).click();
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+  const resetCard = page.locator('.card', { hasText: title }).first();
+  await expect(resetCard).toBeVisible({ timeout: 15_000 });
+  expect(await resetCard.evaluate((el) => el.dataset['tinted'] ?? null)).toBeNull();
+});
+
+test('card meta: created/modified on their own blocks, the reminder chip on its own row (T-107)', async () => {
+  const title = 'Meta blocks proof';
+  await page.getByRole('button', { name: 'New Note' }).click();
+  await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
+  await page.locator('.editor-panel__title').fill(title);
+
+  // One future one-time reminder through the reminders panel (reads Due).
+  await page.getByRole('button', { name: 'Reminders', exact: true }).click();
+  const remindersPanel = page.locator('[aria-label="Note reminders"]');
+  await expect(remindersPanel).toBeVisible({ timeout: 10_000 });
+  await remindersPanel.getByRole('button', { name: 'Add reminder…' }).click();
+  const reminderDialog = page.locator('dialog.dialog--form', { hasText: 'Add reminder' });
+  await expect(reminderDialog).toBeVisible({ timeout: 10_000 });
+  await reminderDialog.locator('input[type="datetime-local"]').fill('2027-06-15T09:00');
+  await reminderDialog.getByRole('button', { name: 'Add reminder', exact: true }).click();
+  await expect(reminderDialog).not.toBeVisible({ timeout: 10_000 });
+  await expect(remindersPanel.locator('.reminders-panel__row')).toHaveCount(1, {
+    timeout: 10_000,
+  });
+  await remindersPanel.getByRole('button', { name: 'Close reminders' }).click();
+  await expect(remindersPanel).not.toBeVisible();
+
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+  const card = page.locator('.card', { hasText: title }).first();
+  await expect(card).toBeVisible({ timeout: 15_000 });
+  // Related info (reminders) lands asynchronously after the notes render —
+  // wait for the reminder chip itself before asserting the structure.
+  await expect(card.locator('.chip', { hasText: 'Due 2027-06-15' })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  const structure = await card.evaluate((el) => {
+    const metaRows = el.querySelector('.card__meta-rows');
+    const remindersRow = el.querySelector('.card__chips--reminders');
+    const indicatorsRow = el.querySelector('.card__chips--indicators');
+    return {
+      metaRowTexts: metaRows ? [...metaRows.children].map((row) => row.textContent ?? '') : [],
+      remindersRowExists: remindersRow !== null,
+      reminderChips: remindersRow
+        ? [...remindersRow.querySelectorAll('.chip')].map((chip) => chip.textContent ?? '')
+        : [],
+      reminderChipInIndicators:
+        indicatorsRow !== null && indicatorsRow.querySelector('.chip--reminder-ok') !== null,
+      // The reminders row is its OWN block directly under the card
+      // content (independent of whether a link-indicators row exists).
+      remindersRowIsOwnElement:
+        remindersRow !== null && remindersRow.parentElement === el.querySelector('.card__content'),
+    };
+  });
+  // Created and Modified are SEPARATE blocks — nothing inline.
+  expect(structure.metaRowTexts).toHaveLength(2);
+  expect(structure.metaRowTexts[0]).toMatch(/^Created \d{4}-\d{2}-\d{2}$/);
+  expect(structure.metaRowTexts[1]).toMatch(/^Modified \d{4}-\d{2}-\d{2}$/);
+  // The reminder chip renders on its OWN row, never with the link
+  // indicators.
+  expect(structure.remindersRowExists).toBe(true);
+  expect(structure.reminderChips[0]).toMatch(/^Due 2027-06-15$/);
+  expect(structure.reminderChipInIndicators).toBe(false);
+  expect(structure.remindersRowIsOwnElement).toBe(true);
 });
 
 test('session hygiene: zero page errors, console errors or external requests', async () => {

@@ -124,7 +124,7 @@ describe('card rendering with related data', () => {
     );
     expect(chips).toContain('Tag: visual');
     expect(chips).toContain('Link');
-    expect(root.querySelector(`[data-note-id="${noteId}"] .card__meta`)?.textContent).toContain(
+    expect(root.querySelector(`[data-note-id="${noteId}"] .card__meta-rows`)?.textContent).toContain(
       'Modified',
     );
   });

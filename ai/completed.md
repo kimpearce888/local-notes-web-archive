@@ -1294,3 +1294,58 @@ per-shape table, index rebuild ~118 s); REPOSITORY_AUDIT.md re-run
 413623181; docs pins moved to the 1.0.11 artifact. **Scope:** product
 code unchanged since T-105 (pure release + docs; the shipped CSS is
 the T-105 fix byte-identical); queue EMPTY.
+
+### T-107 — Card colors with auto-contrast + separated metadata blocks (plan §Y)
+
+**Completed:** 2026-10-15 11:05 UTC
+**Commits:** bccf040 (queue) · this fix commit
+**Validation:** tsc clean (both configs) · eslint clean · vitest 970/970 (+38: 18 card-colors math/injection, 4 repo setAppearance, 2 RPC validation, 9 card render realignment+new, 14 CSS guards — file counts: card-colors 18, notes 4, handlers 2, cards +5 net, card-color-css 14) · Playwright 86/86 (+2 T-107 ground-truth tests; regenerated screenshot gallery) · perf unaffected (no indexing change)
+
+Maintainer request (2026-10-15): every card should carry its own
+background/text color so special notes are easy to spot; default
+preserves the present condition; text auto-adapts to the background when
+the user sets no explicit color; created date, modified date, tags,
+categories and reminders each on its OWN block, nothing inline;
+everything visible/standout on colored cards.
+
+Implementation (audit decisions in plan §Y):
+- Data: `cardBackgroundColor`/`cardForegroundColor` on the Note record
+  (strict lowercase #rrggbb | null). IndexedDB object stores are
+  schemaless — old records normalize to null at read, SCHEMA_VERSION
+  stays 2, no migration. Duplicates copy colors via the record spread;
+  backup/restore round-trips them automatically; colors are unsearchable
+  so the update is setFlags-style with NO reindex.
+- RPC: new `notes/set-appearance` (server-side strict hex validation —
+  CSS-injection payloads are PayloadValidationError before any store
+  write; explicit null clears; audit event; typed in contract.ts).
+- Auto-contrast: new pure module card-colors.ts — WCAG relative
+  luminance + contrast ratio; auto fg picks dark #17181d vs light
+  #f2f3f7 by the HIGHER ratio (curated 12-swatch palette all >= 4.5:1
+  with their auto fg — Red #d9534f → #dd5a55 and Violet #9b6bb3 →
+  #a277bd were swapped to clear AA); muted/faint variants and chip tints
+  derive CSS-side via color-mix against the effective surface
+  (theme-aware for text-only tints); the OVERDUE reminder chip inverts
+  (solid fg bg + surface text) for maximum standout.
+- Rendering: renderCard sets data-tinted + --card-bg/--card-fg through
+  the safe setProperty API; default cards keep every existing rule
+  byte-identical (no data-tinted → present condition preserved). The
+  meta line split into .card__meta-rows with ONE li per fact (Created /
+  Modified never inline); the reminder chip moved to its OWN
+  .card__chips--reminders row (out of the link-indicators row).
+- Editor UI: "Card color" button in the header actions group opens a
+  pop-out panel (T-085 pattern: own Close + Escape via
+  registerPanelCloser): Default/Auto resets, 12 curated swatches, native
+  custom color inputs; every pick applies IMMEDIATELY through the RPC
+  (pin/favorite pattern, never deferred to autosave) with honest
+  announce on failure.
+- Docs: KNOWN_LIMITATIONS.md gained the extreme mid-tone custom color
+  note (AA impossible on every possible RGB value; best-of-two used).
+
+E2E ground truth (user-report-regressions.spec.ts): tint via the real
+panel (data-tinted + computed rgb(14,116,144) background + auto light
+text + in-page WCAG contrast >= 4.5 + chips/meta re-derived), default
+preserved (no data-tinted, no inline properties), durability across
+reload, honest reset; Created/Modified separate blocks + the reminder
+chip on its own row after creating a reminder through the real dialog.
+**Scope:** product feature complete; the release (v1.0.12) follows as
+T-108.

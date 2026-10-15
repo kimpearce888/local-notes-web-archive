@@ -90,6 +90,11 @@ export interface ApiContract {
     payload: { noteId: EntityId; pinned?: boolean; favorite?: boolean };
     result: { note: Note };
   };
+  /** Card colors (T-107): null clears to the default (present condition). */
+  'notes/set-appearance': {
+    payload: { noteId: EntityId; cardBackgroundColor?: string | null; cardForegroundColor?: string | null };
+    result: { note: Note };
+  };
   'notes/restore-revision': {
     payload: { noteId: EntityId; revisionId: EntityId; expectedRevisionId?: EntityId | null };
     result: { note: Note };
