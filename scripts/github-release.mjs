@@ -103,9 +103,35 @@ Chrome 120+ required. Everything stays on your device.
 - Full gate matrix and measured numbers: [\`docs/RELEASE_VERIFICATION.md\`](https://github.com/${slug}/blob/main/docs/RELEASE_VERIFICATION.md)
 - File inventory: **RELEASE_MANIFEST.txt** below (byte-for-byte with the zip contents)
 - Integrity: **${zipName}.sha256** below
-- Automated acceptance: unit 932/932, Playwright E2E 84/84 over the real
+- Automated acceptance: unit 970/970, Playwright E2E 86/86 over the real
   unpacked build, including a dedicated extract-zip-and-load acceptance suite
   (the artifact in this release is the exact folder layout that was tested)
+
+## What's new in v1.0.12 — card colors + a cleaner card layout
+
+A maintainer request: it should be easy to spot a special note on the
+dashboard, and every fact on a card should read as its own block.
+v1.0.12 delivers exactly that — every note can now carry its own card
+background and text color, chosen from a curated palette (or any custom
+color), and the card layout separates every metadata fact. No existing
+behavior changes; notes without a chosen color look exactly as before.
+
+- **Every card can have its own colors**: open a note in the editor and
+  use the new **Card color** button — pick a background from the curated
+  palette or any custom color. Default keeps the standard look; the
+  curated palette was chosen so text always reads at AA-level contrast
+- **Text adapts automatically**: when you set a background but no text
+  color, the text (and the subtitle, dates, tags, categories and
+  reminder chips) re-derive from the background so everything stays
+  clearly visible — an overdue reminder even inverts for maximum
+  visibility. Set an explicit text color and it is honored exactly
+- **Created date, modified date, tags, categories and reminders each
+  on their own block**: nothing is inline anymore — the old single
+  "Created X · Modified Y" line is now two separate rows, and the
+  reminder chip moved to its own row below the link indicators
+- **Colors survive everything**: they are durable note data — they
+  persist across reloads, ride along when a note is duplicated, and
+  round-trip through backup/restore
 
 ## What's new in v1.0.11 — one scrollbar in the Settings pop-up
 

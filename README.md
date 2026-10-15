@@ -10,7 +10,7 @@ Everything stays on your device.
 [![Chrome 120+](https://img.shields.io/badge/Chrome-120%2B-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-34A853)](https://developer.chrome.com/docs/extensions/reference/manifest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-2ea44f)](./LICENSE)
-[![Unit tests](https://img.shields.io/badge/vitest-932%20passing-brightgreen)](#quality-and-verification)
+[![Unit tests](https://img.shields.io/badge/vitest-970%20passing-brightgreen)](#quality-and-verification)
 [![E2E tests](https://img.shields.io/badge/Playwright-82%20passing-brightgreen)](#quality-and-verification)
 [![Audit](https://img.shields.io/badge/audit-0%20vulnerabilities-success)](./docs/REPOSITORY_AUDIT.md)
 [![Network](https://img.shields.io/badge/network-loopback%20only-blueviolet)](./PRIVACY.md)
@@ -60,8 +60,8 @@ Retina captures (2880 px wide); the social banner is 1280x640 for link previews.
 
 The published package is fully built and tested — nothing to compile:
 
-1. Download `local-notes-web-archive-1.0.11.zip` from the
-   [v1.0.11 release](https://github.com/kimpearce888/local-notes-web-archive/releases/tag/v1.0.11).
+1. Download `local-notes-web-archive-1.0.12.zip` from the
+   [v1.0.12 release](https://github.com/kimpearce888/local-notes-web-archive/releases/tag/v1.0.12).
 2. Extract the ZIP anywhere on your machine.
 3. Open `chrome://extensions` and enable **Developer mode**.
 4. Click **Load unpacked** and select the **extracted** folder.
@@ -157,8 +157,8 @@ change.
 
 | Gate | Result |
 |---|---|
-| Unit + integration tests (Vitest) | **932/932 passing** |
-| End-to-end tests (Playwright, real Chromium, unpacked build) | **84/84 passing** |
+| Unit + integration tests (Vitest) | **970/970 passing** |
+| End-to-end tests (Playwright, real Chromium, unpacked build) | **86/86 passing** |
 | Performance budget (search p95 < 500 ms over 10,000 notes) | PASS |
 | Secrets scan (worktree + full git history) | 0 findings |
 | `npm audit` (production and full graphs) | 0 vulnerabilities |

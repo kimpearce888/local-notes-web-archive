@@ -22,7 +22,11 @@ import { unzipSync } from 'fflate';
  * left-aligned column in the EXTRACTED build too. Since v1.0.11 it also
  * carries the T-105 single-scrollbar ground truth: the settings dialog
  * renders exactly ONE scrollbar — the content box's — and the dialog
- * element itself never scrolls.
+ * element itself never scrolls. Since v1.0.12 it also carries the T-107
+ * card-color ground truth: a note tinted through the real Card color
+ * panel renders its chosen background with the auto-contrast text (the
+ * card's metadata blocks stay separated), and a default note keeps the
+ * untinted standard look.
  *
  * Honest surface mapping (no popup, no declared content scripts by design,
  * PRD §8): the manifest's action opens the dashboard through the service
@@ -314,6 +318,72 @@ test('the extracted folder installs and the full stack works with zero build ste
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark', { timeout: 15_000 });
   // Returning user of the extracted build: onboarding stays dismissed.
   await expect(page.locator('dialog.dialog--onboarding')).not.toBeVisible();
+
+  // T-107 (shipped in this artifact since v1.0.12): the card-color ground
+  // truth belongs in the acceptance suite — the EXTRACTED package must
+  // tint a card through the real Card color panel, keep the auto-contrast
+  // text at WCAG AA, keep Created/Modified on separate blocks, and keep
+  // DEFAULT notes untinted.
+  const noteCard = page.locator('.card', { hasText: 'Extracted Package Note' }).first();
+  const beforeTint = await noteCard.evaluate((el) => ({
+    tinted: el.dataset['tinted'] ?? null,
+    inlineBg: el.style.getPropertyValue('--card-bg'),
+  }));
+  expect(beforeTint.tinted, 'a default note must render untinted').toBeNull();
+  expect(beforeTint.inlineBg).toBe('');
+
+  await page.getByRole('button', { name: 'Open Extracted Package Note for editing' }).click();
+  await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'Card color' }).click();
+  const colorPanel = page.locator('.card-color-panel');
+  await expect(colorPanel).toBeVisible({ timeout: 10_000 });
+  await colorPanel.getByRole('button', { name: 'Background: Teal' }).click();
+  await expect(page.locator('#live-region')).toContainText('Card background set to #0e7490.', {
+    timeout: 10_000,
+  });
+  await colorPanel.getByRole('button', { name: 'Close card color' }).click();
+  await page.getByRole('button', { name: 'Back to notes' }).click();
+
+  const tintedNoteCard = page.locator('.card', { hasText: 'Extracted Package Note' }).first();
+  await expect(tintedNoteCard).toBeVisible({ timeout: 15_000 });
+  const tintedGeom = await tintedNoteCard.evaluate((el) => {
+    const metaRows = el.querySelector('.card__meta-rows');
+    const channel = (value: number): number => {
+      const x = value / 255;
+      return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+    };
+    const parse = (value: string): number[] | null => {
+      const match = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(value);
+      return match ? [Number(match[1]), Number(match[2]), Number(match[3])] : null;
+    };
+    const luminance = (c: number[]): number =>
+      0.2126 * channel(c[0] ?? 0) + 0.7152 * channel(c[1] ?? 0) + 0.0722 * channel(c[2] ?? 0);
+    const bg = parse(getComputedStyle(el).backgroundColor);
+    const fg = parse(getComputedStyle(el).color);
+    let contrast = 0;
+    if (bg && fg) {
+      const l1 = Math.max(luminance(bg), luminance(fg));
+      const l2 = Math.min(luminance(bg), luminance(fg));
+      contrast = (l1 + 0.05) / (l2 + 0.05);
+    }
+    return {
+      tinted: el.dataset['tinted'] ?? null,
+      bg: getComputedStyle(el).backgroundColor,
+      fg: getComputedStyle(el).color,
+      contrast,
+      metaRowTexts: metaRows ? [...metaRows.children].map((row) => row.textContent ?? '') : [],
+    };
+  });
+  expect(tintedGeom.tinted).toBe('true');
+  expect(tintedGeom.bg).toBe('rgb(14, 116, 144)');
+  expect(tintedGeom.fg).toBe('rgb(242, 243, 247)');
+  expect(
+    tintedGeom.contrast,
+    'the auto text color must reach WCAG AA in the extracted build',
+  ).toBeGreaterThanOrEqual(4.5);
+  expect(tintedGeom.metaRowTexts).toHaveLength(2);
+  expect(tintedGeom.metaRowTexts[0]).toMatch(/^Created \d{4}-\d{2}-\d{2}$/);
+  expect(tintedGeom.metaRowTexts[1]).toMatch(/^Modified \d{4}-\d{2}-\d{2}$/);
 });
 
 test('the extracted build runs clean: no errors, no external requests', () => {
