@@ -1413,3 +1413,74 @@ against the v1.0.11 artifact — 84/84; the tag was initially auto-created
 at a210684 because publish ran before the push — re-pointed to the
 release commit 054c2a2 and the draft re-published, final state verified
 by all 9 checks).
+
+## §Y — Card colors + fully separated metadata blocks (maintainer request, 2026-10-15)
+
+Maintainer request: every note card should carry its own background/card
+color and text color so a special note is easy to spot on the dashboard;
+by default the present condition is preserved; when a background color is
+selected and the user does not set explicit colors, the text and every
+other card item must change color automatically based on the background;
+created date, modified date, tags, categories and reminders must each
+render in its own separated block — nothing inline; everything on a
+colored card must stay visible, standout and clearly noticeable.
+
+Design decisions (audit of the best implementation path):
+
+1. DATA — two nullable fields on the `Note` record
+   (`cardBackgroundColor`, `cardForegroundColor`), validated and stored as
+   lowercase `#rrggbb` hex. null = present condition (exactly today's
+   styling). IndexedDB object stores are schemaless, so old records
+   simply lack the fields and normalize to null at read — SCHEMA_VERSION
+   stays 2, no migration. `duplicateNote` copies colors via the existing
+   record spread; backup/restore round-trips full Note records so colors
+   ride along automatically; colors are not searchable, so the update is
+   setFlags-style (transaction + updatedAt bump, NO reindex).
+2. RPC — new `notes/set-appearance` (noteId + optional
+   cardBackgroundColor/cardForegroundColor, explicit null clears).
+   Server-side strict hex validation (PayloadValidationError otherwise —
+   never trust the client); audit event with changed fields; typed in
+   contract.ts.
+3. AUTO-CONTRAST — new pure module `src/dashboard/views/card-colors.ts`
+   (WCAG relative luminance + contrast ratio, fully unit-tested): when a
+   background is set and no explicit text color, the foreground picks
+   dark `#17181d` vs light `#f2f3f7` by the HIGHER contrast ratio;
+   muted/faint variants are fg→bg mixes so subtitle/meta/chips stay
+   legible on ANY background; the overdue reminder chip INVERTS (solid
+   fg background + bg text) for maximum standout; all colored-card
+   styling flows through CSS custom properties
+   (`--card-bg/--card-fg/--card-fg-muted/--card-fg-faint`) set inline on
+   the card element + a `data-tinted` attribute; default cards keep the
+   exact current rules (data-tinted absent → not one existing selector
+   changes).
+4. SEPARATED BLOCKS — the meta line `Created X · Modified Y` splits into
+   `.card__meta-rows` with one row per fact; the reminder chip moves out
+   of the link-indicators row into its OWN `.card__chips--reminders`
+   row; tags and categories rows are already separate (T-060) and stay.
+   Empty rows are still omitted entirely.
+5. EDITOR UI — a "Card color" button in the editor header actions group
+   (Pin/Favorite/Trash row) opens a pop-out panel under the header (the
+   T-085 pattern: own Close control + Escape via registerPanelCloser):
+   background palette (Default + curated swatches + native color input)
+   and text palette (Auto + swatches + native input). Every pick applies
+   IMMEDIATELY through the RPC (the pin/favorite/meta-bar pattern —
+   never deferred to autosave) with honest announce on failure.
+6. TESTS — new card-colors.test.ts (color math + CSS-injection
+   rejection), cards.test.ts realigned to the separated-block structure
+   + tinted rendering, notes repo setAppearance tests, handlers
+   set-appearance validation tests, card-color-css.test.ts CSS guards,
+   E2E regressions (color set → data-tinted + computed background +
+   in-page WCAG contrast >= 4.5; default → no data-tinted; every
+   metadata fact on its own block), existing card-order E2E realigned.
+7. RELEASE — v1.0.12 cut after full gates (maintainer pre-authorized
+   "once done publish a new release"), the T-100/T-102/T-104/T-106
+   two-commit pattern.
+
+### T-107 Card colors with auto-contrast + separated metadata blocks
+Note record fields + setAppearance repo + notes/set-appearance RPC +
+contract; card-colors.ts pure module; CardViewModel carries colors,
+renderCard applies data-tinted + custom properties and restructures the
+meta/reminder rows; styles.css [data-tinted] block + meta-row/reminder
+CSS; editor Card color pop-out panel + controller wiring; unit + CSS
+guard + E2E regressions; full gates before completed.md per rule.md
+§7/§8.
