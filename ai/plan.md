@@ -1296,3 +1296,30 @@ DONE (17431be + this fix commit; 924/924 units incl. 7 CSS-guard
 regressions, 82/82 E2E incl. the 4 alignment ground-truth tests at
 wide/rail/strip widths; pixel-verified: sidebar actions 13px flush
 left, settings actions shrink-to-fit at panel-left 0).
+
+## §V — v1.0.10 release: bring the option-alignment fix to users (maintainer go-ahead, 2026-10-15)
+
+The live v1.0.9 zip predates T-103: users still see centered sidebar
+action buttons (Import note…/Settings/Diagnostics, plus New Note and
+Save a web page…) and full-width centered Settings/Diagnostics panel
+actions — the 2026-10-15 user report with two screenshots ("fix settings
+pop-up and make these options left aligned"). T-103 is complete on main
+(22407b4, 924/924 units, 82/82 E2E) but unreleased. v1.0.10 ships it.
+
+### T-104 Cut and publish v1.0.10 (the T-100/T-102 two-commit pattern)
+Five-place version bump (package.json, public/manifest.json,
+src/core/version.ts, DEPENDENCIES.json/THIRD_PARTY_NOTICES.md via the
+release pipeline's deps regeneration) + unit pins (types,
+diagnostics-api); release notes section mapping the T-103 fix for
+users; README install path → v1.0.10 and the stale E2E count made
+honest (77/77 → 82/82 in badge + quality table + docs.test.ts pin);
+zip-acceptance spec realigned with the T-103 alignment ground truth
+(sidebar actions flush-left, settings panel actions shrink-to-fit)
+against THIS artifact; full gates (tsc both configs, eslint, vitest,
+Playwright E2E incl zip acceptance against the v1.0.10 zip, perf);
+npm run release → zip + sha256 + RELEASE_MANIFEST; GitHub Release
+v1.0.10 published + API-verified (digest, tag, download
+byte-identical); RELEASE_VERIFICATION.md regenerated with fresh
+measurements; REPOSITORY_AUDIT.md re-run; verification record archived
+to task-deliverables/release-verification/; docs pins moved to the
+1.0.10 artifact; governance files updated in-commit per rule.md §7/§8.
