@@ -1101,3 +1101,35 @@ permanent-delete counts 8→4 (the burst no longer makes five notes);
 zip-acceptance honestly keeps the v1.0.8 zip's pre-fix flow with a
 realignment note for the next release. README badge/table and the
 docs.test.ts pin moved 913 → 917.
+
+### T-102 — v1.0.9 release: bring the New Note navigation fix to users (plan §T)
+
+**Completed:** 2026-10-15 05:55 UTC
+**Commits:** ce7c4d0 (queue) · b61117f (release) · this audit commit
+**Validation:** tsc clean (both configs) · eslint clean · vitest 917/917 · Playwright 78/78 (incl. zip acceptance against the v1.0.9 zip, realigned to the T-101 flow) · perf p95 118 ms overall @ 10k notes (< 500 ms budget; p50 70, p99 321, max 383)
+
+The live v1.0.8 zip predates T-101: users activating New Note while a
+note is open (or spamming the button) still got background-stacked
+"Untitled" notes with no navigation. v1.0.9 ships exactly that fix —
+creation lands in the fresh note, the in-flight guard stops stacking,
+the save-state resets honestly when switching notes.
+
+Five-place version bump (package.json, public/manifest.json,
+src/core/version.ts, DEPENDENCIES.json + THIRD_PARTY_NOTICES.md via
+npm run deps) + unit pins (types, diagnostics-api); release notes
+section telling the user-report story with per-behavior regression
+pointers; README install path → v1.0.9; zip-acceptance realigned to the
+T-101 flow against THIS artifact (the intermediate card step and the
+honest pre-fix note retired with v1.0.9); dependency docs regenerated
+by the gates.
+
+GitHub Release v1.0.9 published (id 413460392) and API-verified: tag ==
+HEAD b61117f, zip asset digest sha256:afd1ba45… matches, download-back
+byte-identical — 8/8 checks PASS, record archived to
+task-deliverables/release-verification/v109-verified.txt (170 files).
+RELEASE_VERIFICATION.md regenerated with fresh measurements (cold
+458/212 ms, warm median 133 ms, search p95 118 ms @10k with the full
+per-shape table); REPOSITORY_AUDIT.md re-run 12/12 PASS incl the live
+GitHub cross-check against release id 413460392; docs pins moved to
+the 1.0.9 artifact. **Scope:** product code unchanged since T-101
+(pure release + docs); queue EMPTY.

@@ -120,7 +120,7 @@ describe('release verification report (T-043, PRD §13)', () => {
     expect(report).toContain('< 1,500 ms');
     expect(report).toMatch(/p95.*< 500 ms → PASS|PASS.*p95 < 500 ms/);
     // The release artifact is identified with name and checksum.
-    expect(report).toContain('local-notes-web-archive-1.0.8.zip');
+    expect(report).toContain('local-notes-web-archive-1.0.9.zip');
     expect(report).toMatch(/[0-9a-f]{64}/);
     // Environment honesty is documented, not concealed.
     expect(report).toContain('Environment honesty');
@@ -158,7 +158,7 @@ describe('repository audit report (T-049)', () => {
     expect(report).toContain('(full graph incl. dev tooling): **0 vulnerabilities**');
     // Release integrity: artifact identified with name and checksum, and the
     // GitHub Release API cross-check agrees with the local artifact.
-    expect(report).toContain('local-notes-web-archive-1.0.8.zip');
+    expect(report).toContain('local-notes-web-archive-1.0.9.zip');
     expect(report).toMatch(/[0-9a-f]{64}/);
     expect(report).toContain('digest');
     // Reproducibility: the generating script and honest environment note.

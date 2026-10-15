@@ -1254,3 +1254,7 @@ tag, download byte-identical); RELEASE_VERIFICATION.md regenerated with
 fresh measurements; REPOSITORY_AUDIT.md re-run; verification record archived
 to task-deliverables/release-verification/; docs pins moved to the 1.0.9
 artifact; governance files updated in-commit per rule.md §7/§8.
+DONE (ce7c4d0 + b61117f + the audit commit; release id 413460392,
+sha256 afd1ba45…, 8/8 API checks PASS, v109-verified.txt archived —
+170 files; E2E realigned with the T-101 flow against the v1.0.9
+artifact — 78/78).

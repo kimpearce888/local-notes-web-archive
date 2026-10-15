@@ -1,0 +1,13 @@
+v1.0.9 release verification — 2026-10-15T05:50:47.501Z
+HEAD b61117f0051f0c890d606b3280a947956ec112a7
+sha256 afd1ba4534a131851e3653290ddbc17f610fbb538b4ca237386c31c75daa0e00
+PASS release exists (id 413460392)
+PASS not draft (false)
+PASS not prerelease (false)
+PASS tag is v1.0.9 (v1.0.9)
+PASS tag == local HEAD (tag b61117f vs HEAD b61117f)
+PASS zip asset present (local-notes-web-archive-1.0.9.zip 3231507 bytes)
+PASS zip size matches (3231507 vs 3231507)
+PASS asset digest matches local sha256 (sha256:afd1ba4534a13185 vs sha256:afd1ba4534a131851e36532)
+PASS download-back byte-identical (afd1ba4534a13185 vs afd1ba4534a13185)
+VERDICT: VERIFIED
