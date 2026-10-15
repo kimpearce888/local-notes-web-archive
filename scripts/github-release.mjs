@@ -103,9 +103,35 @@ Chrome 120+ required. Everything stays on your device.
 - Full gate matrix and measured numbers: [\`docs/RELEASE_VERIFICATION.md\`](https://github.com/${slug}/blob/main/docs/RELEASE_VERIFICATION.md)
 - File inventory: **RELEASE_MANIFEST.txt** below (byte-for-byte with the zip contents)
 - Integrity: **${zipName}.sha256** below
-- Automated acceptance: unit 924/924, Playwright E2E 82/82 over the real
+- Automated acceptance: unit 932/932, Playwright E2E 84/84 over the real
   unpacked build, including a dedicated extract-zip-and-load acceptance suite
   (the artifact in this release is the exact folder layout that was tested)
+
+## What's new in v1.0.11 — one scrollbar in the Settings pop-up
+
+A user reported it right after v1.0.10 with a screenshot: the Settings
+pop-up still rendered **two nested vertical scrollbars** — the dialog's
+own scrollbar next to the settings list's, where the outer one ate
+layout space, pushed the content box off-center and, when dragged,
+scrolled the pinned heading and the Save/Reset/Close actions out of
+view to reveal phantom empty space. v1.0.11 fixes exactly that — a
+Chromium UA rule gives every modal dialog its own scrollability, and
+the settings panel's layout extent leaked into the dialog's scroll
+region — with pixel-level regression tests behind each behavior. No
+features were added or removed.
+
+- **Exactly one scrollbar per dialog**: the Settings, Diagnostics and
+  restore-review dialogs are now fixed sheets — the heading and the
+  action row stay pinned in place and only the settings list itself
+  scrolls, with its own single scrollbar
+- **More settings visible at once**: dropping the old height caps, the
+  visible settings area grew (451 -> 562px at the reporting user's
+  window size) — the list now uses the space the double scrollbar and
+  the phantom region used to waste
+- **Bug fixes while fixing the bug**: a closed dialog now provably
+  hides (the new sheet layout could defeat the browser's closed-state
+  rule) and the Diagnostics dialog got the same single-scrollbar
+  guarantee before any user could hit it there
 
 ## What's new in v1.0.10 — every option reads as one left-aligned column
 

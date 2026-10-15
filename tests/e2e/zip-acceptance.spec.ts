@@ -19,7 +19,10 @@ import { unzipSync } from 'fflate';
  * console/page errors and zero non-loopback network requests. Since v1.0.10
  * the suite also carries the T-103 alignment ground truth: the sidebar
  * actions and the settings dialog's direct panel actions read as one
- * left-aligned column in the EXTRACTED build too.
+ * left-aligned column in the EXTRACTED build too. Since v1.0.11 it also
+ * carries the T-105 single-scrollbar ground truth: the settings dialog
+ * renders exactly ONE scrollbar — the content box's — and the dialog
+ * element itself never scrolls.
  *
  * Honest surface mapping (no popup, no declared content scripts by design,
  * PRD §8): the manifest's action opens the dashboard through the service
@@ -263,6 +266,45 @@ test('the extracted folder installs and the full stack works with zero build ste
       `${action.text} must shrink to its content (was stretched full-width centered)`,
     ).toBeLessThan(action.panelWidth * 0.6);
   }
+
+  // T-105 (shipped in this artifact since v1.0.11): the single-scrollbar
+  // ground truth belongs in the acceptance suite too — the extracted
+  // package must render exactly ONE scrollbar in the settings dialog:
+  // the dialog element itself never scrolls (its own-scrollbar width is
+  // exactly its border widths) and the content box owns the classic
+  // scrollbar and still scrolls the settings panel.
+  const dialogGeometry = await dialog.evaluate((root: HTMLElement) => {
+    const content = root.querySelector('.settings__content') as HTMLElement;
+    const h2 = root.querySelector('h2') as HTMLElement;
+    const actions = root.querySelector('.settings__actions') as HTMLElement;
+    const box = root.getBoundingClientRect();
+    const border =
+      parseFloat(getComputedStyle(root).borderLeftWidth) +
+      parseFloat(getComputedStyle(root).borderRightWidth);
+    return {
+      dialogOverflowY: getComputedStyle(root).overflowY,
+      dialogOwnScrollbar: root.offsetWidth - root.clientWidth,
+      dialogBorderWidth: border,
+      contentOwnScrollbar: content.offsetWidth - content.clientWidth,
+      contentScrolls: content.scrollHeight > content.clientHeight + 1,
+      headingPinned: Math.round(h2.getBoundingClientRect().top - box.top),
+      actionsPinnedToBottom: Math.round(box.bottom - actions.getBoundingClientRect().bottom),
+    };
+  });
+  expect(dialogGeometry.dialogOverflowY, 'the dialog must never scroll').toBe('hidden');
+  expect(
+    dialogGeometry.dialogOwnScrollbar,
+    'the dialog owns no scrollbar (borders only — was the second, outer bar)',
+  ).toBe(dialogGeometry.dialogBorderWidth);
+  expect(
+    dialogGeometry.contentOwnScrollbar,
+    'the content box owns the single scrollbar',
+  ).toBeGreaterThanOrEqual(15);
+  expect(dialogGeometry.contentScrolls, 'the settings panel must remain scrollable').toBe(true);
+  expect(dialogGeometry.headingPinned, 'the heading stays pinned at the top').toBeLessThan(30);
+  expect(dialogGeometry.actionsPinnedToBottom, 'the actions stay pinned at the bottom').toBeLessThan(30);
+  expect(dialogGeometry.actionsPinnedToBottom).toBeGreaterThan(0);
+
   await dialog.getByRole('radio', { name: 'Dark' }).check();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await dialog.getByRole('button', { name: /Save changes/ }).click();
