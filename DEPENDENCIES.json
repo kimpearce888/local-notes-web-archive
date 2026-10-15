@@ -1,7 +1,7 @@
 {
   "format": "lnwa-dependencies",
   "version": 1,
-  "generatedAt": "2026-10-15T01:54:22.811Z",
+  "generatedAt": "2026-10-15T05:33:26.317Z",
   "source": "package-lock.json (exact pinned versions)",
   "runtime": {
     "bundled": true,

@@ -103,9 +103,32 @@ Chrome 120+ required. Everything stays on your device.
 - Full gate matrix and measured numbers: [\`docs/RELEASE_VERIFICATION.md\`](https://github.com/${slug}/blob/main/docs/RELEASE_VERIFICATION.md)
 - File inventory: **RELEASE_MANIFEST.txt** below (byte-for-byte with the zip contents)
 - Integrity: **${zipName}.sha256** below
-- Automated acceptance: unit 913/913, Playwright E2E 77/77 over the real
+- Automated acceptance: unit 917/917, Playwright E2E 78/78 over the real
   unpacked build, including a dedicated extract-zip-and-load acceptance suite
   (the artifact in this release is the exact folder layout that was tested)
+
+## What's new in v1.0.9 — New Note finally takes you to the new note
+
+A user reported it right after v1.0.8: activating **New Note** while you
+are already editing something (or while doing anything else in the app)
+created the note silently in the background — the app stayed wherever it
+was, nothing navigated, and because nothing happened on screen you could
+keep clicking and stack an unlimited pile of empty "Untitled" notes
+without ever seeing them being born. v1.0.9 fixes exactly that, with a
+regression test behind each behavior. No features were added or removed.
+
+- **Creating a note now lands you in it**: every New Note entry point
+  (sidebar button, empty-library button, onboarding primary action,
+  command palette, Alt+Shift+C) navigates straight into the fresh note so
+  you can start typing immediately — the note you were editing before is
+  safely flushed by autosave on the way in, nothing is lost
+- **Rapid clicking can no longer stack background notes**: while a
+  creation is in flight, further activations of New Note are ignored —
+  one click means one note, spamming the button (or the keyboard
+  shortcut) produces a single fresh note, not a pile of them
+- **Honest save indicator when switching notes**: the header's save-state
+  used to keep showing the previous note's "Saved" after you opened
+  another note; it now resets honestly while the newly opened note loads
 
 ## What's new in v1.0.8 — the human-QA program (9 defects fixed)
 

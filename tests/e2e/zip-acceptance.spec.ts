@@ -182,11 +182,8 @@ test('the extracted folder installs and the full stack works with zero build ste
 
   // Advertised feature: notes — create, edit, durable autosave.
   await page.getByRole('button', { name: 'New Note' }).click();
-  // T-101 note: this spec drives the RELEASED zip (v1.0.8), which predates
-  // the New Note navigation fix — creation stays on the list there, so the
-  // card round-trip is still the real behavior of this artifact. Realign
-  // with the T-101 flow when the next release ships the fix.
-  await page.getByRole('button', { name: 'Open Untitled for editing' }).first().click();
+  // T-101 (shipped in this artifact since v1.0.9): creation navigates
+  // straight into the fresh note's editor.
   await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
   await page.locator('.editor-panel__title').fill('Extracted Package Note');
   await page.locator('.ProseMirror').first().click();

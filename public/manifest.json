@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Local Notes & Web Archive",
   "short_name": "Notes & Archive",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Local-first notes, web page archiving (MHTML + full-page PNG), reminders and optional local AI. All data stays on this device.",
   "minimum_chrome_version": "120",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2va8YZgEa2VDdJCrZKBceX0kLaq4A/AmHl9UpDau3kqlLsuwCLWaloalwI5/cXqfjlPtYBb3dhZJqf7s1ebj+VbSIT+vO7Zo5/cEkHKwce+fIUPBd9GRfeWkpOXaMe+/9cXadDQdYq29D8WIBFr9yi5XJG9lsTg88zvr9DqufHhYspgH7+S594Q//VfjAHmRLO0tDgz2IM5niNH7KzWYWwQQkhHniVaqkJPYNrA3pnEA5SGC8xACP01KamS5IOgI5JjgZcqnEB5P+4MM5xRFIEK85MLLrQBIAYAQyNqqFZnrWyaRwQDosh53ZnIiaDzPs983H6o3hIUTJh4eEBenoQIDAQAB",
