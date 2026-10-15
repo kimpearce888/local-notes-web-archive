@@ -1349,3 +1349,39 @@ reload, honest reset; Created/Modified separate blocks + the reminder
 chip on its own row after creating a reminder through the real dialog.
 **Scope:** product feature complete; the release (v1.0.12) follows as
 T-108.
+
+### T-108 — v1.0.12 release: bring card colors + separated blocks to users (plan §Z)
+
+**Completed:** 2026-10-15 12:10 UTC
+**Commits:** 58aa775 (queue) · 21f9a33 (release) · this audit commit
+**Validation:** tsc clean (both configs) · eslint clean · vitest 970/970 · Playwright 86/86 (incl. zip acceptance against the v1.0.12 zip, realigned with the T-107 ground truth: the extracted package tints a card through the real Card color panel and asserts data-tinted + computed teal background + auto light text with in-page WCAG ratio >= 4.5 + separated Created/Modified blocks, while the default note stays untinted) · perf p95 123 ms overall @ 10k notes (< 500 ms budget; p50 74, p99 297, max 378)
+
+The live v1.0.11 zip predates T-107: users could not tint cards and
+still saw the inline Created · Modified meta line. v1.0.12 ships
+exactly the maintainer's requested feature — every note can carry its
+own background/text color (curated AA-clean palette + custom), text
+auto-derives at WCAG contrast when unset, every metadata fact renders
+on its own block.
+
+Five-place version bump (package.json, public/manifest.json,
+src/core/version.ts, DEPENDENCIES.json + THIRD_PARTY_NOTICES.md via
+the release pipeline) + unit pins (types, diagnostics-api); release
+notes section telling the maintainer-request story with the honest
+acceptance numbers (970/970 units, 86/86 E2E); README install path →
+v1.0.12 and the test counts made honest (932/84 → 970/86 in badge +
+quality table + docs.test.ts README pins); zip-acceptance realigned
+with the T-107 ground truth against THIS artifact.
+
+GitHub Release v1.0.12 published (id 413683194) and API-verified: tag
+== HEAD 21f9a33 (the v1.0.11 lesson applied — the release commit was
+PUSHED BEFORE publish, so the auto-created tag landed on the release
+commit correctly this time), zip asset digest sha256:7da6c959…
+matches, download-back byte-identical — 9/9 checks PASS, record
+archived to task-deliverables/release-verification/v1012-verified.txt
+(173 files). RELEASE_VERIFICATION.md regenerated with fresh
+measurements (cold 470/161 ms, warm median 122 ms, search p95 123 ms
+@10k with the full per-shape table, index rebuild ~123 s);
+REPOSITORY_AUDIT.md re-run 12/12 PASS incl the live GitHub cross-check
+against release id 413683194; docs pins moved to the 1.0.12 artifact.
+**Scope:** product code unchanged since T-107 (pure release + docs);
+queue EMPTY.

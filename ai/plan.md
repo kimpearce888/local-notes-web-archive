@@ -1515,3 +1515,10 @@ byte-identical); RELEASE_VERIFICATION.md regenerated with fresh
 measurements; REPOSITORY_AUDIT.md re-run; verification record archived
 to task-deliverables/release-verification/; docs pins moved to the
 1.0.12 artifact; governance files updated in-commit per rule.md §7/§8.
+DONE (58aa775 + 21f9a33 + the audit commit; release id 413683194,
+sha256 7da6c959…, 9/9 API checks PASS, v1012-verified.txt archived —
+173 files; the release commit was pushed BEFORE publish so the tag
+landed on 21f9a33 correctly — the v1.0.11 tag-repair lesson applied;
+E2E realigned with the T-107 card-color ground truth against the
+v1.0.12 artifact — 86/86; README test counts made honest 932/84 →
+970/86).
