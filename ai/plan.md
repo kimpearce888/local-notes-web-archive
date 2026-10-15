@@ -1378,3 +1378,31 @@ at 798x752: exactly one scrollbar strip remains (was two), heading and
 Save/Reset/Close pinned at the dialog's 25px padding edges, content area
 grew 451 -> 562px; the closed-state display:none guard added after the
 probe caught author display:flex defeating the UA closed-state rule).
+
+## §X — v1.0.11 release: bring the single-scrollbar fix to users (maintainer go-ahead, 2026-10-15)
+
+The live v1.0.10 zip predates T-105: users still see the Settings pop-up
+render TWO nested vertical scrollbars — the 2026-10-15 user report with a
+screenshot ("settings popup still has double scrollbar"), where the outer
+(dialog-level) bar eats layout space, pushes the content box off its
+symmetric spot and scrolls the pinned heading and Save/Reset/Close actions
+away over phantom empty space. T-105 is complete on main (a210684, 932/932
+units, 84/84 E2E) but unreleased. v1.0.11 ships it.
+
+### T-106 Cut and publish v1.0.11 (the T-100/T-102/T-104 two-commit pattern)
+Five-place version bump (package.json, public/manifest.json,
+src/core/version.ts, DEPENDENCIES.json/THIRD_PARTY_NOTICES.md via the
+release pipeline's deps regeneration) + unit pins (types,
+diagnostics-api); release notes section mapping the T-105 fix for users;
+README install path → v1.0.11; zip-acceptance spec realigned with the
+T-105 single-scrollbar ground truth (the dialog owns no scrollbar —
+offsetWidth − clientWidth == border widths — and the content box owns
+exactly one and still scrolls) against THIS artifact; full gates (tsc
+both configs, eslint, vitest, Playwright E2E incl zip acceptance against
+the v1.0.11 zip, perf); npm run release → zip + sha256 +
+RELEASE_MANIFEST; GitHub Release v1.0.11 published + API-verified
+(digest, tag, download byte-identical); RELEASE_VERIFICATION.md
+regenerated with fresh measurements; REPOSITORY_AUDIT.md re-run;
+verification record archived to task-deliverables/release-verification/;
+docs pins moved to the 1.0.11 artifact; governance files updated
+in-commit per rule.md §7/§8.
