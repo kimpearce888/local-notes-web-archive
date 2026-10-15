@@ -1199,4 +1199,7 @@ acceptance, perf); npm run release → zip + sha256 + RELEASE_MANIFEST; GitHub
 Release v1.0.8 published + API-verified (digest, tag); RELEASE_VERIFICATION.md
 regenerated with fresh measurements; REPOSITORY_AUDIT.md re-run; verification
 record archived to task-deliverables/release-verification/; governance files
-updated in-commit per rule.md §7/§8.
+updated in-commit per rule.md §7/§8. DONE (b77697b + c812cf4 + the audit commit; release id 413356676,
+sha256 0e120666…, 8/8 API checks PASS, v108-verified.txt archived;
+E2E aligned with the QA-fixed behaviours incl. the new seeded end-to-end
+capture test — 78/78).

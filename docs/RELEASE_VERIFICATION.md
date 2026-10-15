@@ -1,12 +1,11 @@
 # Release Verification Report
 
 **Task:** T-043 Release verification gate (plan.md; PRD §11, §13) — re-verified for
-v1.0.7 by T-090 (release packaging the T-084 lost-user register fixes, plan.md §N /
-T-085..T-089: universal disclosure dismissal, HEIC photo support, editor tag/category
-bar, the visible save-a-web-page entry point, product-first onboarding, the inline
-empty-state create action and the plain-language copy pass)
-**Version verified:** 1.0.7
-**Date:** 2026-10-14
+v1.0.8 by T-100 (release shipping the nine human-QA defect fixes QA-D01..QA-D09,
+plan.md §R: the v1.0.7 zip was cut before the fixes landed on main; evidence in
+`artifacts/human-qa/`)
+**Version verified:** 1.0.8
+**Date:** 2026-10-15
 **Verdict:** **PASS** — every gate green; the artifact is releasable.
 
 ## Verification environment
@@ -31,10 +30,10 @@ assertions are the production ones.
 | # | Gate | Result |
 |---|---|---|
 | 1 | Build (`vite build`) | PASS — 17 files, 0 warnings blocking, `theme-hint.js` external (CSP-safe); `heic-decoder-worker.js` emitted once (3.1 MB) with a 1.7 kB lazy wrapper chunk |
-| 2 | Static release scan (`release.mjs`) | PASS — 6 shipped JS files scanned: no remote runtime URLs, no `eval`/`new Function`; inert literal allowlist (W3C namespace URIs, dependency doc links) only. The new save-page dialog's copy was written scheme-less precisely so this gate needed NO new allowlist entries |
-| 3 | Manifest scan (`verify-release.mjs`) | PASS — MV3, Chrome ≥ 120, stable `key`; CSP unchanged `script-src 'self'` / `object-src 'self'` / `connect-src 'self' + loopback` (the HEIC decoder is asm.js with no dynamic evaluation — no CSP additions anywhere); 6 manifest/html-referenced assets present; icons are real PNGs; permissions match PERMISSIONS.md exactly (8 API, 2 required host, 2 optional host — unchanged) |
-| 4 | Unit tests | PASS — 896/896 (`vitest run`; +56 since v1.0.6: T-085 dismissal matrix, T-086 HEIC detection/orchestration/extraction contracts + real-channel session tests, T-087 metadata-bar contract + real-channel session tests, T-088 humanize mapper + disclosure structure, T-089 save-page dialog + product-first onboarding, plus refreshed docs pins) |
-| 5 | E2E smoke + verification | PASS — 77/77 in real Chromium over the unpacked `dist/` and the extracted zip (functional smoke incl. the command-palette spec, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance against this artifact, the screenshot suite, the user-report regression suite, the audit-defect regression suite, and the new T-084 register-fixes suite: every popped-out bar closes, a REAL iPhone HEIC photo decodes locally and inserts as a visible 1440×960 image under the strict extension CSP, tags are created from the editor, and Save-a-web-page runs end-to-end) |
+| 2 | Static release scan (`release.mjs`) | PASS — 6 shipped JS files scanned: no remote runtime URLs, no `eval`/`new Function`; inert literal allowlist (W3C namespace URIs, dependency doc links) only |
+| 3 | Manifest scan (`verify-release.mjs`) | PASS — MV3, Chrome ≥ 120, stable `key`; CSP unchanged `script-src 'self'` / `object-src 'self'` / `connect-src 'self' + loopback`; 6 manifest/html-referenced assets present; icons are real PNGs; permissions match PERMISSIONS.md exactly (8 API, 2 required host, 2 optional host — unchanged from v1.0.7) |
+| 4 | Unit tests | PASS — 913/913 (`vitest run`; +17 since v1.0.7: the human-QA program's regression tests — D01/D02 search engine + controller, D03 settings-reach, D04 dialog staging, D05/D06 capture queue + grant, D07 retry rows, D08 rich-document find/replace, D09 recapture chaining — plus refreshed docs pins) |
+| 5 | E2E smoke + verification | PASS — 78/78 in real Chromium over the unpacked `dist/` and the extracted zip (functional smoke incl. the command-palette spec, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance against this artifact, the screenshot suite, the user-report regression suite, the audit-defect regression suite, the T-084 register-fixes suite, and the v1.0.8 alignment: the insert-image tests follow the QA-D04 stage-then-Insert flow, UX-13 asserts the honest permission-required park + Grant-access affordance, and a NEW seeded-profile test proves the save-page capture completes end-to-end through the real pipeline) |
 | 6 | Performance (PRD §11) | PASS — see measurements below |
 | 7 | Accessibility keyboard pass | PASS — see below |
 | 8 | Release artifacts | PASS — see below |
@@ -46,8 +45,8 @@ assertions are the production ones.
 
 | Measurement | Observed | Target | Result |
 |---|---|---|---|
-| Cold, clean profile (first load) | 482 ms / 199 ms (two runs) | < 1,500 ms | PASS |
-| Warm reloads, data present | 115–134 ms per load, median 126 ms | < 1,500 ms | PASS |
+| Cold, clean profile (first load) | 421 ms / 179 ms (two runs) | < 1,500 ms | PASS |
+| Warm reloads, data present | 116–148 ms per load, median 133 ms | < 1,500 ms | PASS |
 
 Method: `page.goto` (commit) until heading + "New Note" + search input are
 present in the real extension page, timed in the persistent Chromium context
@@ -63,22 +62,22 @@ one authoritative index build:
 
 | Statistic | Value |
 |---|---|
-| p50 | 75 ms |
-| **p95** | **122 ms** |
-| p99 | 322 ms |
-| max | 362 ms |
+| p50 | 76 ms |
+| **p95** | **118 ms** |
+| p99 | 304 ms |
+| max | 375 ms |
 
-Per-shape p95: common term 71 ms, two-term 143 ms, phrase 129 ms,
-title-scoped 131 ms, flag filter + term 107 ms, filter-only 75 ms,
-term + title sort 152 ms, fuzzy 94 ms. **PRD budget: p95 < 500 ms → PASS**
+Per-shape p95: common term 63 ms, two-term 161 ms, phrase 122 ms,
+title-scoped 94 ms, flag filter + term 66 ms, filter-only 62 ms,
+term + title sort 93 ms, fuzzy 117 ms. **PRD budget: p95 < 500 ms → PASS**
 (asserted in `tests/perf/search-p95.test.ts`, runnable via
 `npm run test:perf`).
 
 Documented observation: a full index **rebuild** of the 10k corpus took
-~125 s under Node + fake-indexeddb. Rebuild is the rare recovery path
+~112 s under Node + fake-indexeddb. Rebuild is the rare recovery path
 (corruption/migration); production indexing is incremental per save. Users
 should expect a one-time longer rebuild on very large corpora after a
-corruption recovery. The new HEIC decode adds ~1.4 s to image insertion on
+corruption recovery. The HEIC decode adds ~1.4 s to image insertion on
 first use only (worker warm-up), and nothing to note load: the 3.1 MB
 decoder ships as a separate file the dashboard never fetches until a HEIC
 photo is inserted.
@@ -105,6 +104,10 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
   modal dialog is open); the Filters bar additionally closes on Apply;
   Revisions honors Escape (asserted in
   `tests/e2e/t084-register-fixes.spec.ts`).
+- **Image insertion (v1.0.8, QA-D04):** the insert-image dialog stages the
+  chosen file with an honest "Ready to insert" status; alt text and caption
+  typed after the pick are honored on the explicit Insert action; keyboard
+  and pointer paths are equivalent.
 - **QA-audit defect regressions (v1.0.5):** the
   `audit-defect-regressions` suite drives the audit's exact repros in the
   real browser — a real file attaches through the panel and downloads with
@@ -131,26 +134,26 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
 
 | Artifact | Value |
 |---|---|
-| Zip | `release/local-notes-web-archive-1.0.7.zip` (3,222,503 bytes) |
-| SHA-256 | `bfb88efebe1e1d622ad2654302f1783723802a722b6dcf70810945e962db28fd` |
+| Zip | `release/local-notes-web-archive-1.0.8.zip` (3,230,932 bytes) |
+| SHA-256 | `0e1206668b3795d472790a1bfc680fc644be277413b53390523dc415b89df16a` |
 | Inventory | `release/RELEASE_MANIFEST.txt` (file list + sizes) |
-| GitHub cross-check | Release id 412494481, tag == HEAD, asset digest matches, download-back byte-identical (verified by `scripts/verify-v107-release.mjs`) |
+| GitHub cross-check | Release id 413356676, tag == HEAD (c812cf4), asset digest matches, download-back byte-identical (verified by `scripts/t100-verify-release.mjs`, all 8 checks PASS) |
 | Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). |
 
-The v1.0.7 artifact supersedes v1.0.6: it fixes 16 of the 17 findings in
-the T-084 lost-user register (a maintainer-reported comprehensive UX audit
-of v1.0.6, evidence in `task-deliverables/t084-ux-audit/`) — every
-popped-out bar now carries its own Close control plus Escape (UX-01..05,
-09), iPhone photos (HEIC) insert from the PC through a local decoder with
-the data:image "blobs" ask removed (UX-06, 07, 15), tags and categories are
-editable in the note editor itself (UX-08), saving a web page has a visible
-entry point (UX-13), onboarding teaches the product (UX-14), the empty
-library offers an inline create button (UX-16), and user-facing copy speaks
-plain language (UX-10, 11, 12). UX-17 (diagnostics vocabulary) was accepted
-as-is per the register's own judgment. The artifact grows by ~1.7 MB over
-v1.0.6 because the HEIC decoder (libheif + libde265 compiled to asm.js)
-ships inside the extension for fully offline photo insertion — nothing is
-downloaded, ever.
+The v1.0.8 artifact supersedes v1.0.7: it ships the nine defects found by
+the full human-QA program (206 actions, 22 workflows, 15 interactions —
+`artifacts/human-qa/final-report.md`): exclusion-only and invalid-syntax
+search behave per FR-SEARCH-04 with inline errors (QA-D01/D02), saved
+settings reach new editor sessions without a reload (QA-D03), the
+insert-image dialog honors alt/caption typed after the pick (QA-D04),
+save-page and context-menu captures actually queue and run (QA-D05), the
+permission flow is reachable through the Grant-access affordance (QA-D06),
+failed captures are retryable from the snapshots panel (QA-D07), find &
+replace preserves rich-document structure and images through autosave
+(QA-D08), and same-link recapture chains revisions so the Compare dialog
+is reachable (QA-D09). No features were added or removed — v1.0.8 is the
+repaired v1.0.7, byte-for-byte the same shape (the zip grows by ~8 KB of
+version strings and fixed bundle hashes).
 
 The zip and checksums are regenerable via `npm run release`; the manifest
 scan is enforced inside that pipeline (`scripts/verify-release.mjs`) and
@@ -160,8 +163,8 @@ a remote URL, dynamic code, missing asset or undocumented permission.
 ## Verification commands
 
 ```bash
-npm run verify          # lint + tsc strict + 896 unit tests
+npm run verify          # lint + tsc strict + 913 unit tests
 npm run test:perf       # 10k-note search p95 benchmark (< 500 ms budget)
-npm run test:e2e        # 77 Playwright tests over the built extension
+npm run test:e2e        # 78 Playwright tests over the built extension
 npm run release         # build + static gate + manifest scan + zip + sha256
 ```

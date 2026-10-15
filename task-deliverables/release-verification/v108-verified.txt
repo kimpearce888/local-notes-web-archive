@@ -1,0 +1,13 @@
+v1.0.8 release verification — 2026-10-15T02:31:46.000Z
+HEAD c812cf4fb1e1e02c47371bf05089bf0d2224b983
+sha256 0e1206668b3795d472790a1bfc680fc644be277413b53390523dc415b89df16a
+PASS release exists via API — id 413356676
+PASS release name + published — 2026-10-15T02:25:01Z
+PASS tag exists
+PASS tag == local HEAD — c812cf4fb1 vs c812cf4fb1
+PASS zip asset present + size — 3230932 bytes
+PASS sha256 + manifest assets present
+PASS download byte-identical to local zip — 0e1206668b3795d4…
+PASS checksum file matches artifact — 0e1206668b3795d4…
+ALL CHECKS PASS — release: https://github.com/kimpearce888/local-notes-web-archive/releases/tag/v1.0.8
+VERDICT: VERIFIED
