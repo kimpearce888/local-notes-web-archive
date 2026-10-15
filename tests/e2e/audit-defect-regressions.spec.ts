@@ -76,7 +76,7 @@ test.beforeAll(async () => {
 
   // One note to attach to and to carry through the backup round-trip.
   await page.getByRole('button', { name: 'New Note' }).click();
-  await page.getByRole('button', { name: 'Open Untitled for editing' }).click();
+  // T-101: creation navigates straight into the editor.
   const title = page.locator('.editor-panel__title');
   await expect(title).toBeVisible({ timeout: 15_000 });
   await title.fill('T-063 Transport Note');
@@ -321,7 +321,7 @@ test('D-03: sort direction control sorts ascending (FR-SEARCH-06)', async () => 
 
   // A second note so ordering is observable.
   await page.getByRole('button', { name: 'New Note' }).click();
-  await page.getByRole('button', { name: 'Open Untitled for editing' }).click();
+  // T-101: creation navigates straight into the editor.
   const title = page.locator('.editor-panel__title');
   await expect(title).toBeVisible({ timeout: 15_000 });
   await title.fill('AAA Audit Alpha');
@@ -377,6 +377,9 @@ test('D-08: a search issued during the creation storm keeps its results', async 
   // sequencing, so a stale in-flight requery (the creation storm's queued
   // refreshes) resolved AFTER a newer search and overwrote the view with
   // the full unfiltered list while the input still held the query.
+  // T-101 note: the in-flight guard collapses each burst to one creation
+  // (the storm no longer stacks 30 notes), but every landing still requeries
+  // — the overlapping-refresh stress the sequencing guard exists for.
   const newNote = page.getByRole('button', { name: 'New Note' });
   for (let batch = 0; batch < 3; batch++) {
     await Promise.all([
@@ -385,6 +388,10 @@ test('D-08: a search issued during the creation storm keeps its results', async 
     ]);
     await page.waitForTimeout(250);
   }
+
+  // Leave the storm's last editor and return to the list view (T-101 makes
+  // creation navigate into the editor).
+  await page.getByRole('button', { name: 'Back to notes' }).click();
 
   // Search immediately — while the storm's requeries are still draining.
   const search = page.locator('#search-input');

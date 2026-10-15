@@ -159,6 +159,12 @@ export function createDashboardController(options: {
   /* --------------------------- editor route -------------------------- */
 
   let editorSession: EditorSession | null = null;
+  /**
+   * In-flight creation guard (T-101, user report): while one New Note
+   * activation is pending, further activations are ignored — repeated
+   * clicks must not stack background "Untitled" notes.
+   */
+  let createInFlight = false;
   /** Whether the persisted default sort was applied to this session yet. */
   let sortSeeded = false;
   const editorMount = document.createElement('div');
@@ -522,65 +528,82 @@ export function createDashboardController(options: {
   }
 
   async function createNote(): Promise<EntityId | null> {
-    // Optimistic placeholder entry — replaced by the persisted note, or
-    // rolled back truthfully on failure. T-068 (audit D-07): when the page
-    // slice is already full, prepending would break the page-1 invariant
-    // (the audit saw 52 cards on "Page 1 of 2"), so the placeholder is
-    // skipped and the persisted note arrives through a paginated requery
-    // instead — at its honest sorted position.
-    const pageWasFull = store.getState().notes.length >= store.getState().pageSize;
-    const optimistic: Note = {
-      id: `optimistic-${Date.now()}` as EntityId,
-      title: 'Untitled',
-      subtitle: '',
-      editorDoc: null,
-      plainText: '',
-      createdAt: nowIso() as Note['createdAt'],
-      updatedAt: nowIso() as Note['updatedAt'],
-      state: 'active',
-      pinned: false,
-      favorite: false,
-      trashedAt: null,
-      archivedAt: null,
-      revisionId: null,
-      duplicatedFrom: null,
-    };
-    if (pageWasFull) {
-      // Full page: no placeholder (the invariant holds), only the honest
-      // total bump until the requery lands.
-      store.setState({ total: store.getState().total + 1 });
-    } else {
-      store.setState({ notes: [optimistic, ...store.getState().notes], total: store.getState().total + 1 });
-    }
+    // T-101 (user report): New Note navigates to the freshly created note
+    // (openEditor below), and while one creation is pending any further
+    // activation is ignored. The previous behavior never opened the editor,
+    // so notes piled up invisibly in the background — one per click — while
+    // the user kept working elsewhere in the app.
+    if (createInFlight) return null;
+    createInFlight = true;
     try {
-      const { note } = await client.request('notes/create', { title: 'Untitled' });
-      if (disposed) return null;
+      // Optimistic placeholder entry — replaced by the persisted note, or
+      // rolled back truthfully on failure. T-068 (audit D-07): when the page
+      // slice is already full, prepending would break the page-1 invariant
+      // (the audit saw 52 cards on "Page 1 of 2"), so the placeholder is
+      // skipped and the persisted note arrives through a paginated requery
+      // instead — at its honest sorted position.
+      const pageWasFull = store.getState().notes.length >= store.getState().pageSize;
+      const optimistic: Note = {
+        id: `optimistic-${Date.now()}` as EntityId,
+        title: 'Untitled',
+        subtitle: '',
+        editorDoc: null,
+        plainText: '',
+        createdAt: nowIso() as Note['createdAt'],
+        updatedAt: nowIso() as Note['updatedAt'],
+        state: 'active',
+        pinned: false,
+        favorite: false,
+        trashedAt: null,
+        archivedAt: null,
+        revisionId: null,
+        duplicatedFrom: null,
+      };
       if (pageWasFull) {
-        // The paginated window stays truthful: the new note enters at its
-        // sorted position, the slice never exceeds pageSize, and the
-        // pagination chrome stays consistent with the rendered cards.
-        await requery();
+        // Full page: no placeholder (the invariant holds), only the honest
+        // total bump until the requery lands.
+        store.setState({ total: store.getState().total + 1 });
       } else {
-        store.setState({
-          notes: [note, ...store.getState().notes.filter((n) => n.id !== optimistic.id)],
-        });
+        store.setState({ notes: [optimistic, ...store.getState().notes], total: store.getState().total + 1 });
       }
-      shell.announce('Note created.');
-      return note.id;
-    } catch (error) {
-      if (disposed) return null;
-      if (pageWasFull) {
-        store.setState({ total: store.getState().total - 1 });
-      } else {
-        store.setState({
-          notes: store.getState().notes.filter((n) => n.id !== optimistic.id),
-          total: store.getState().total - 1,
-        });
+      try {
+        const { note } = await client.request('notes/create', { title: 'Untitled' });
+        if (disposed) return null;
+        if (pageWasFull) {
+          // The paginated window stays truthful: the new note enters at its
+          // sorted position, the slice never exceeds pageSize, and the
+          // pagination chrome stays consistent with the rendered cards.
+          await requery();
+        } else {
+          store.setState({
+            notes: [note, ...store.getState().notes.filter((n) => n.id !== optimistic.id)],
+          });
+        }
+        // T-101: creating a note TAKES the user to it — the exact navigation
+        // the import flow already performs. openEditor closes any note being
+        // edited first (its close path flushes pending autosave edits), then
+        // mounts the fresh note's session and switches the view, so nothing
+        // is lost and nothing is created invisibly in the background.
+        await openEditor(note.id);
+        shell.announce('Note created.');
+        return note.id;
+      } catch (error) {
+        if (disposed) return null;
+        if (pageWasFull) {
+          store.setState({ total: store.getState().total - 1 });
+        } else {
+          store.setState({
+            notes: store.getState().notes.filter((n) => n.id !== optimistic.id),
+            total: store.getState().total - 1,
+          });
+        }
+        shell.announce(
+          `Creating the note failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+        );
+        return null;
       }
-      shell.announce(
-        `Creating the note failed: ${error instanceof Error ? error.message : 'unknown error'}`,
-      );
-      return null;
+    } finally {
+      createInFlight = false;
     }
   }
 
@@ -878,7 +901,10 @@ export function createDashboardController(options: {
         },
       });
       showView('editor');
-      store.setState({ editingNoteId: noteId });
+      // T-101 (stale-indicator defect surfaced by the navigation flow): a
+      // freshly opened session has nothing saved or pending — the header's
+      // save-state must not keep showing the PREVIOUS note's "Saved".
+      store.setState({ editingNoteId: noteId, saveState: 'idle' });
       shell.announce(`Editing ${note.title.trim().length > 0 ? note.title : 'untitled note'}.`);
     } catch (error) {
       shell.announce(

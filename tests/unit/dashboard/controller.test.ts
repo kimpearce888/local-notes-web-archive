@@ -158,6 +158,127 @@ describe('New Note (optimistic with truthful rollback)', () => {
     expect(root.querySelector('.state--empty')).not.toBeNull();
     await flush();
     expect(shell.elements.liveRegion.textContent).toContain('failed');
+    // The failed attempt left no editor open and released the guard — the
+    // next activation works (the failure path must not wedge New Note).
+    interceptor = null;
+    const retried = await controller!.createNote();
+    expect(retried).not.toBeNull();
+    expect(controller!.store.getState().editingNoteId).toBe(retried);
+  });
+
+  it('T-101: creating a note navigates to it (editor opens on the fresh note)', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    const noteId = await controller!.createNote();
+
+    // The user lands IN the new note — the exact reported requirement.
+    const state = controller!.store.getState();
+    expect(state.editingNoteId).toBe(noteId);
+    expect(state.view).toBe('editor');
+    // The editor view replaced the list view (shell chrome truthfully
+    // hidden; the editor mount owns the surface).
+    expect(shell.elements.resultsRegion.hidden).toBe(true);
+    expect(root.querySelector('.editor-mount')?.hasAttribute('hidden')).toBe(false);
+    // A live ProseMirror session is mounted for the fresh note.
+    expect(root.querySelector('.editor-mount .ProseMirror')).not.toBeNull();
+
+    // The settled live-region announcement is the creation message
+    // (delivered after the navigation, mirroring the import flow's order).
+    await flush();
+    expect(shell.elements.liveRegion.textContent).toContain('Note created.');
+
+    // Going back to the list keeps the durable truth: one card, persisted id.
+    await controller!.closeEditor();
+    const after = controller!.store.getState();
+    expect(after.view).toBe('list');
+    expect(after.editingNoteId).toBeNull();
+    expect(after.notes).toHaveLength(1);
+    expect(after.notes[0]?.id).toBe(noteId);
+    expect(after.notes[0]?.title).toBe('Untitled');
+  });
+
+  it('T-101: New Note while editing switches to the fresh note without losing the open one', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    const first = await controller!.createNote();
+    await waitFor(() => controller!.store.getState().editingNoteId === first);
+
+    // The user edits the first note (durable save, like a real session).
+    const savedFirst = await controller!.saveNote({
+      noteId: first!,
+      title: 'Original note',
+      subtitle: '',
+      editorDoc: null,
+      plainText: 'content the user wrote',
+      expectedRevisionId: controller!.store.getState().notes[0]?.revisionId ?? null,
+      changeSummary: 'edit',
+    });
+    expect(savedFirst).not.toBeNull();
+
+    // New Note while the editor is open: the fresh note takes over…
+    const second = await controller!.createNote();
+    expect(second).not.toBeNull();
+    expect(second).not.toBe(first);
+    expect(controller!.store.getState().editingNoteId).toBe(second);
+    expect(controller!.store.getState().view).toBe('editor');
+    // …and the header's save-state honestly reset for the fresh session
+    // (T-101 stale-indicator fix: the first note's "Saved" must not leak
+    // into the new note's session).
+    expect(controller!.store.getState().saveState).toBe('idle');
+    expect(shell.elements.saveState.textContent).toBe('');
+
+    // …and the first note's saved content survived the switch.
+    const client = createApiClient(transport);
+    const { note: reread } = await client.request('notes/get', { noteId: first! });
+    expect(reread.title).toBe('Original note');
+    expect(reread.plainText).toBe('content the user wrote');
+
+    // The list honestly carries BOTH notes after returning.
+    await controller!.closeEditor();
+    expect(controller!.store.getState().notes).toHaveLength(2);
+  });
+
+  it('T-101: activations while a creation is pending are ignored (no background stack)', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+
+    // The reported repro: the user clicks New Note repeatedly while doing
+    // other things. One creation is in flight (the RPC + editor mount are
+    // pending); every further activation in that window is a no-op.
+    const first = controller!.createNote();
+    const second = controller!.createNote();
+    const third = controller!.createNote();
+    const firstId = await first;
+    expect(await second).toBeNull();
+    expect(await third).toBeNull();
+
+    // Exactly ONE note exists — nothing stacked in the background.
+    const state = controller!.store.getState();
+    expect(state.total).toBe(1);
+    expect(state.notes).toHaveLength(1);
+    expect(state.notes[0]?.id).toBe(firstId);
+    expect(state.editingNoteId).toBe(firstId);
+
+    // The guard released after the flight landed: the next activation
+    // creates the NEXT note (normal, visible, one at a time).
+    const next = await controller!.createNote();
+    expect(next).not.toBeNull();
+    expect(next).not.toBe(firstId);
+    expect(controller!.store.getState().editingNoteId).toBe(next);
+    expect(controller!.store.getState().total).toBe(2);
+  });
+
+  it('T-101: the shell New Note button drives the same guarded navigation', async () => {
+    await waitFor(() => controller!.store.getState().status === 'ready');
+    // A rapid triple-fire on the real button: the first dispatch enters the
+    // flight synchronously (guard set before the first await), the rest are
+    // no-ops while it is pending — exactly the reported infinite-click repro.
+    shell.elements.newNoteButton.click();
+    shell.elements.newNoteButton.click();
+    shell.elements.newNoteButton.click();
+    await waitFor(() => controller!.store.getState().editingNoteId !== null);
+    expect(controller!.store.getState().view).toBe('editor');
+    expect(controller!.store.getState().total).toBe(1);
+    expect(controller!.store.getState().notes).toHaveLength(1);
+    await flush();
+    expect(shell.elements.liveRegion.textContent).toContain('Note created.');
   });
 });
 

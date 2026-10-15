@@ -163,7 +163,7 @@ test('sidebar: the active smart-list button is readable under the default system
 
 test('reminder dialog: fields render at natural height and the zone field is visible', async () => {
   await page.getByRole('button', { name: 'New Note' }).click();
-  await page.getByRole('button', { name: 'Open Untitled for editing' }).first().click();
+  // T-101: creation navigates straight into the editor.
   await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
 
   // Open the reminders panel from the editor header.
@@ -213,7 +213,7 @@ test('editor: pin toggles the note and the card shows the Pinned badge', async (
   const title = page.locator('.editor-panel__title');
   // Create a dedicated note through the real UI.
   await page.getByRole('button', { name: 'New Note' }).click();
-  await page.getByRole('button', { name: 'Open Untitled for editing' }).first().click();
+  // T-101: creation navigates straight into the editor.
   await expect(title).toBeVisible({ timeout: 15_000 });
   await title.fill('Pin trash target');
   await page.locator('.ProseMirror').first().click();
@@ -274,7 +274,7 @@ test('note card: title first, then subtitle, body, separate tags and categories 
   // Build a note carrying every card element through the real UI.
   const title = 'Card order check';
   await page.getByRole('button', { name: 'New Note' }).click();
-  await page.getByRole('button', { name: 'Open Untitled for editing' }).first().click();
+  // T-101: creation navigates straight into the editor.
   await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
   await page.locator('.editor-panel__title').fill(title);
   await page.locator('.editor-panel__subtitle').fill('Order proof subtitle');

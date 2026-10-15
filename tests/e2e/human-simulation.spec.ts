@@ -147,24 +147,33 @@ test('new user: first run shows onboarding and it is dismissible', async () => {
   await expect(onboarding).not.toBeVisible({ timeout: 10_000 });
 });
 
-test('power user: five rapid New Note clicks create five notes without breaking', async () => {
-  const newNote = page.getByRole('button', { name: 'New Note' });
-  // Real users double-fire: click as fast as the event loop allows.
-  await Promise.all([
-    newNote.click(),
-    newNote.click(),
-    newNote.click(),
-    newNote.click(),
-    newNote.click(),
-  ]);
+test('power user: five rapid New Note clicks land in ONE new note (T-101 guard)', async () => {
+  // Real users double-fire: click as fast as the event loop allows. The
+  // five dispatches are delivered synchronously (one JS turn — the fastest
+  // a user could ever click), so all five land inside the first creation's
+  // in-flight window. The T-101 guard ignores the four extras; the app ends
+  // up in exactly one fresh note — never the old background-stack behavior.
+  await page.locator('.sidebar__new-note').evaluate((el) => {
+    for (let i = 0; i < 5; i += 1) (el as HTMLElement).click();
+  });
+
+  // The user is IN the new note — creation navigates to it.
+  await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
+  await page.locator('.editor-panel__title').fill('Rapid click note');
+  await expect(page.locator('#save-state')).toHaveText('Saved', { timeout: 20_000 });
+
+  // Exactly one note exists after the burst — nothing stacked behind.
+  await page.getByRole('button', { name: 'Back to notes' }).click();
   await expect
-    .poll(async () => page.getByRole('button', { name: 'Open Untitled for editing' }).count())
-    .toBe(5);
+    .poll(async () => page.getByRole('button', { name: 'Open Rapid click note for editing' }).count())
+    .toBe(1);
+  await expect(page.locator('.card')).toHaveCount(1);
 });
 
 test('invalid user: empty title and empty body still save; empty search shows everything', async () => {
   await page.getByRole('button', { name: 'New Note' }).click();
-  await page.getByRole('button', { name: 'Open Untitled for editing' }).first().click();
+  // T-101: creation navigates straight into the editor.
+  await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
 
   // Touch nothing: the untouched note reports the honest idle state (the note
   // itself was already durably created by the New Note click).
@@ -180,8 +189,11 @@ test('invalid user: empty title and empty body still save; empty search shows ev
   await page.locator('#search-input').fill('');
   await page.keyboard.press('Enter');
   await expect
+    .poll(async () => page.locator('.card').count())
+    .toBeGreaterThanOrEqual(2);
+  await expect
     .poll(async () => page.getByRole('button', { name: 'Open Untitled for editing' }).count())
-    .toBeGreaterThanOrEqual(6);
+    .toBeGreaterThanOrEqual(1);
 });
 
 test('settings: garbage numeric input is excluded, save still succeeds, theme persists', async () => {
@@ -214,10 +226,10 @@ test('settings: garbage numeric input is excluded, save still succeeds, theme pe
 
 test('malicious user: an XSS payload in the title never executes', async () => {
   await page.getByRole('button', { name: 'New Note' }).click();
-  await page.getByRole('button', { name: 'Open Untitled for editing' }).first().click();
+  // T-101: creation navigates straight into the editor.
+  await expect(page.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
 
   const title = page.locator('.editor-panel__title');
-  await expect(title).toBeVisible({ timeout: 15_000 });
   await title.fill('<img src=x onerror="window.__xssTitle=1">XSS Title');
   await page.locator('.ProseMirror').first().click();
   await page.keyboard.type('harmless body text');
@@ -322,7 +334,7 @@ test('multiple tabs: a second dashboard tab stays consistent with the first', as
   await expect(page2.locator('dialog.dialog--onboarding')).not.toBeVisible();
 
   await page2.getByRole('button', { name: 'New Note' }).click();
-  await page2.getByRole('button', { name: 'Open Untitled for editing' }).first().click();
+  // T-101: creation navigates straight into the editor.
   await expect(page2.locator('.editor-panel__title')).toBeVisible({ timeout: 15_000 });
   await page2.locator('.editor-panel__title').fill('Tab Two Note');
   await expect(page2.locator('#save-state')).toHaveText('Saved', { timeout: 20_000 });
@@ -379,9 +391,11 @@ test('navigation sweep across every smart list keeps the shell healthy', async (
 });
 
 test('permanent delete from Trash requires confirmation and actually deletes', async () => {
-  // Exact counts first — the library holds exactly the 6 Untitled notes plus
-  // the XSS-titled and Tab Two survivors (no mid-render races after this).
-  await expect(page.locator('.card')).toHaveCount(8, { timeout: 10_000 });
+  // Exact counts first — the library holds exactly the Rapid click and
+  // Untitled notes plus the XSS-titled and Tab Two survivors (no mid-render
+  // races after this). T-101: the rapid-click burst now yields ONE note, so
+  // the library carries 4 notes where it used to carry 8.
+  await expect(page.locator('.card')).toHaveCount(4, { timeout: 10_000 });
 
   // Power-user bulk trash: select everything on the page, then spare the two
   // named survivors by unchecking their cards.
@@ -401,11 +415,14 @@ test('permanent delete from Trash requires confirmation and actually deletes', a
   await expect(page.locator('.card').filter({ hasText: 'Untitled' })).toHaveCount(0, {
     timeout: 10_000,
   });
+  await expect(page.locator('.card', { hasText: 'Rapid click note' })).toHaveCount(0, {
+    timeout: 10_000,
+  });
 
   // Permanently delete from Trash — the destructive step stays behind a
   // confirmation dialog (data-loss honesty, PRD §4.2).
   await smartNav(page).getByRole('button', { name: 'Trash', exact: true }).click();
-  await expect(page.locator('.card')).toHaveCount(6, { timeout: 10_000 });
+  await expect(page.locator('.card')).toHaveCount(2, { timeout: 10_000 });
   await page.getByLabel('Select all notes on this page').check();
   await bulkBar(page).getByRole('button', { name: 'Delete permanently…' }).click();
   await page

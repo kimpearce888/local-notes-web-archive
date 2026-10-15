@@ -96,12 +96,7 @@ test('dashboard loads the full shell over the real RPC channel', async () => {
 
 test('create a note and edit it with bold, heading, list and link', async () => {
   await page.getByRole('button', { name: 'New Note' }).click();
-  // New Note creates the card; opening it mounts the editor session.
-  await expect(
-    page.getByRole('button', { name: 'Open Untitled for editing' }),
-  ).toBeVisible({ timeout: 15_000 });
-  await page.getByRole('button', { name: 'Open Untitled for editing' }).click();
-
+  // T-101: New Note navigates straight into the fresh note's editor.
   const title = page.locator('.editor-panel__title');
   await expect(title).toBeVisible({ timeout: 15_000 });
   await title.fill('E2E Smoke Note');
@@ -243,7 +238,7 @@ test('notes, search and export keep working fully offline', async () => {
   await context.setOffline(true);
   try {
     await page.getByRole('button', { name: 'New Note' }).click();
-    await page.getByRole('button', { name: 'Open Untitled for editing' }).first().click();
+    // T-101: creation lands in the editor immediately — also fully offline.
     const title = page.locator('.editor-panel__title');
     await expect(title).toBeVisible({ timeout: 15_000 });
     await title.fill('Offline Note');
@@ -271,7 +266,7 @@ test('a blocked URL pasted into the editor surfaces a graceful message', async (
   // are recorded on the live region because the save announcement can
   // replace the refusal faster than polling sees it.
   await page.getByRole('button', { name: 'New Note' }).click();
-  await page.getByRole('button', { name: 'Open Untitled for editing' }).first().click();
+  // T-101: creation navigates into the editor; no card round-trip.
   const title = page.locator('.editor-panel__title');
   await expect(title).toBeVisible({ timeout: 15_000 });
   await title.fill('Blocked capture note');

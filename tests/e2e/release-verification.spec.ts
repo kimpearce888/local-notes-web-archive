@@ -123,16 +123,9 @@ test('keyboard-only note creation with bold formatting and autosave', async () =
   const newNoteTabs = await tabUntil(async () => (await activeName()) === 'New Note');
   expect(newNoteTabs, 'New Note button reachable by Tab').toBeGreaterThanOrEqual(0);
   await page.keyboard.press('Enter');
-  await expect(
-    page.getByRole('button', { name: 'Open Untitled for editing' }),
-  ).toBeVisible({ timeout: 15_000 });
 
-  const openTabs = await tabUntil(
-    async () => (await activeName()) === 'Open Untitled for editing',
-  );
-  expect(openTabs, 'note open button reachable by Tab').toBeGreaterThanOrEqual(0);
-  await page.keyboard.press('Enter');
-
+  // T-101: the activation navigates straight into the fresh note's editor —
+  // the title field is the next keyboard stop inside the editor surface.
   const titleTabs = await tabUntil(async () =>
     page.evaluate(() => document.activeElement?.classList.contains('editor-panel__title') === true),
   );

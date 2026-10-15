@@ -126,11 +126,8 @@ test('first run: onboarding teaches the product (UX-14) and the empty state crea
   await expect(emptyState).toBeVisible({ timeout: 15_000 });
   await expect(emptyState).toContainText('No notes yet');
   await emptyState.getByRole('button', { name: 'Create your first note' }).click();
-  // Same semantics as New Note: the note is created and the list shows it;
-  // entering the editor is the card's own action, exactly like a real user.
-  const firstCard = page.locator('.card', { hasText: 'Untitled' }).first();
-  await expect(firstCard).toBeVisible({ timeout: 15_000 });
-  await firstCard.getByRole('button', { name: /^Open Untitled for editing/ }).click();
+  // T-101: creating a note navigates straight into it — the empty-state
+  // button shares the New Note semantics (guarded, editor-opening).
   const titleField = page.locator('.editor-panel__title');
   await expect(titleField).toBeVisible({ timeout: 15_000 });
   await titleField.fill('First inline note');
@@ -142,10 +139,8 @@ test('first run: onboarding teaches the product (UX-14) and the empty state crea
 
 async function openFreshNote(title: string): Promise<void> {
   await page.getByRole('button', { name: 'New Note' }).click();
-  // New Note creates the note and stays on the list (most-recently-modified
-  // first); entering the editor is the card's own action, exactly like a
-  // real user.
-  await page.getByRole('button', { name: /^Open Untitled for editing/ }).first().click();
+  // T-101: New Note navigates straight into the fresh note's editor —
+  // nothing is created in the background and no card round-trip is needed.
   const titleField = page.locator('.editor-panel__title');
   await expect(titleField).toBeVisible({ timeout: 15_000 });
   await titleField.fill(title);

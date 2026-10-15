@@ -1227,4 +1227,8 @@ to the new behavior (the intermediate "Open Untitled for editing" card step
 disappears after every New Note activation; the five-rapid-clicks test now
 asserts ONE note + the editor view; the D-08 storm comment reflects the
 guard). Full gates (tsc, eslint, vitest, Playwright) before the task moves
-to completed.md per rule.md §7/§8.
+to completed.md per rule.md §7/§8. DONE (tsc both configs clean, eslint
+clean, 917/917 units incl. the four new T-101 regressions, 78/78 E2E —
+zip acceptance honestly kept on the live v1.0.8 zip's pre-fix behavior —
+perf p95 170 ms worst shape; the navigation also surfaced and fixed the
+stale "Saved" indicator via an idle reset in openEditor).

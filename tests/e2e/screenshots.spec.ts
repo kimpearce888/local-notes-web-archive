@@ -274,7 +274,8 @@ test('seed a realistic library through the real UI', async () => {
 
   for (const note of SEED_NOTES) {
     await page.getByRole('button', { name: 'New Note' }).click();
-    await page.getByRole('button', { name: 'Open Untitled for editing' }).first().click();
+    // T-101: creation navigates straight into the editor — the seed loop
+    // authors each note immediately, no card round-trip needed.
     const title = page.locator('.editor-panel__title');
     await expect(title).toBeVisible({ timeout: 15_000 });
     await title.fill(note.title);
