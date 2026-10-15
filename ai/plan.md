@@ -1328,3 +1328,46 @@ sha256 206d3cd0…, 9/9 API checks PASS, v1010-verified.txt archived —
 171 files; E2E realigned with the T-103 alignment ground truth
 against the v1.0.10 artifact — 82/82; README E2E count made honest
 77 → 82).
+
+## §W — Settings pop-up double scrollbar (user report, 2026-10-15)
+
+User report (screenshot, 798x752): "settings popup still has double
+scrollbar." Pixel forensics + live probes in the real extension (scripts
+t105-* probes, viewports 798x752 / 1280x800 / 1891x991) confirmed and
+root-caused: TWO nested vertical scrollbars render side by side — an inner
+one on `.settings__content` (its own `max-height: min(60vh, 34rem)` +
+`overflow-y: auto`) and an outer ~15px one ON the `<dialog>` element itself,
+which eats layout space and pushes the content box off its symmetric spot.
+Ground truth: Chromium's UA stylesheet gives every `dialog:modal`
+`overflow-y: auto` + `max-height: calc(100% - 6px - 2rem)` (verified against
+a bare dialog with zero author CSS), and the dialog's scrollHeight is
+inflated to 2532px while its visible children sum to ~700px — Chromium leaks
+the settings panel's layout extent (a flex column whose clipped overflow
+lives inside the content box) into the dialog's own scrollable overflow
+region (bisect: hiding the "Permission mode" row collapses scrollHeight
+2532 → 637). The outer scrollbar therefore scrolls the pinned heading and
+the Save/Reset/Close actions out of view to reveal phantom empty space —
+while the inner scrollbar scrolls the settings themselves. The Diagnostics
+dialog (`.diagnostics__content`, identical `min(60vh, 34rem)` pattern) and
+the restore review sub-dialog (`.diagnostics__review` `max-height: 50vh`)
+carry the same landmine; diagnostics doesn't leak today (no flex wrapper)
+but double-scrolls on short viewports once heading+intro+content+actions
+exceed the UA cap.
+
+### T-105 One scrollbar per dialog: dialog never scrolls, content does
+CSS: `.dialog--settings`, `.dialog--diagnostics` and `.dialog--review`
+become flex-column sheets with `overflow: hidden` (the dialog element never
+scrolls — kills the UA's outer scrollbar and contains the phantom region);
+their scroll bodies (`.settings__content`, `.diagnostics__content`,
+`.diagnostics__review`) become the SINGLE scroll container each:
+`flex: 1 1 auto; min-height: 0; overflow-y: auto`, dropping the
+`min(60vh, 34rem)`/`50vh` caps (the flex track inside the UA-capped dialog
+now sizes them — and grows them to use the available height: measured
+content 480 → 610px at 1280x800). Heading/intro and action rows stay pinned
+(flex items). Unit CSS-guard tests pin the new rules (rename detector); E2E
+regression asserts the ground truth in the real UI: dialog owns NO
+scrollbar (`offsetWidth - clientWidth` == border widths), the content box
+owns exactly one (`scrollHeight > clientHeight`, own scrollbar > 0), and
+the actions row sits pinned at the dialog's bottom padding edge at tall,
+short and user-screenshot viewports. Full gates before completed.md per
+rule.md §7/§8.
