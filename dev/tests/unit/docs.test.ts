@@ -162,7 +162,7 @@ describe('repository audit report (T-049)', () => {
     expect(report).toMatch(/[0-9a-f]{64}/);
     expect(report).toContain('digest');
     // Reproducibility: the generating script and honest environment note.
-    expect(report).toContain('scripts/audit.mjs');
+    expect(report).toContain('dev/scripts/audit.mjs');
     expect(report).toContain('Environment honesty');
   });
 });
