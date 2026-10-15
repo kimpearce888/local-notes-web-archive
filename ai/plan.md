@@ -1522,3 +1522,55 @@ landed on 21f9a33 correctly — the v1.0.11 tag-repair lesson applied;
 E2E realigned with the T-107 card-color ground truth against the
 v1.0.12 artifact — 86/86; README test counts made honest 932/84 →
 970/86).
+
+## §AA — Repository housekeeping: one professional root, one dev folder (maintainer request, 2026-10-15)
+
+Maintainer request: "check the git repo thoroughly, keep only those files
+and folders that is needed to build the app... move all the unnecessary
+files and folders to a single folder. let's clean the house and make the
+repo professional."
+
+Audit result (git ls-files, 866 tracked files): the essentials drown in
+evidence — artifacts/human-qa/ alone carries 420 files (213 videos, 130
+screenshots, 67 logs), task-deliverables/ 174, tests/ 91, ai/ 5; plus
+dev-only root files (PRD.md, Dockerfile.test, docker-compose.yml,
+.env.example) and the four test-tooling configs sitting beside the build
+inputs. What a visitor actually needs — src/, public/, dashboard.html
+(the vite entry), package.json, vite.config.ts, tsconfigs, the §14
+product docs, README/LICENSE, docs/ and the release pipeline — is a
+small, well-defined set.
+
+Decision: the root keeps ONLY the build + product face (source, build
+inputs, release pipeline scripts, user-facing documentation); everything
+development-internal moves into ONE folder, dev/:
+
+- dev/ai/ (governance), dev/tests/ (all suites), dev/task-deliverables/
+  (QA evidence archive), dev/artifacts/ (human-QA evidence),
+  dev/scripts/ (audit.mjs + the historical one-off patch script),
+  dev/PRD.md + dev/REDESIGN_QA_REPORT.md (internal specs/reports),
+  dev/Dockerfile.test + dev/docker-compose.yml + dev/.env.example
+  (dev-only harness), dev/vitest.config.ts + dev/vitest.perf.config.ts +
+  dev/playwright.config.ts + dev/eslint.config.js (test tooling), and a
+  dev/README.md explaining the folder.
+
+Compatibility decisions: git mv preserves history; the npm script names
+do not change (they gain --config flags pointing into dev/); the §14
+documentation bundle stays at the root exactly where PRD §14/audit.mjs
+and GitHub community standards expect it; PRD.md itself is internal
+planning material and moves to dev/ with every reference updated
+(audit.mjs requiredDocs, README links, rule.md); the shipped artifact is
+unaffected (dist/ is built from src/ + public/ + dashboard.html only —
+proven by re-running the release pipeline and comparing dist asset
+hashes); REPOSITORY_AUDIT.md is regenerated against the new layout.
+
+### T-109 Housekeeping: minimal professional root + single dev/ folder
+git mv the six groups above; fix every path reference (package.json
+scripts, tsconfig.node.json include, vitest include/setupFiles,
+playwright testDir, eslint ignores, audit.mjs root + requiredDocs +
+regexes, README links + layout section + stale counts, rule.md resume
+paths, docker-compose context, e2e rootDir/distDir, +1-level unit-test
+imports and __dirname roots); add dev/README.md; full gates before
+completed.md per rule.md §7/§8 (verify 970/970 incl. eslint still
+covering src/ AND dev/tests, Playwright 86/86, release pipeline with
+content-identical dist, audit 12/12 regenerated). No version bump — the
+v1.0.12 artifact is unchanged.
