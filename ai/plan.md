@@ -1406,3 +1406,10 @@ regenerated with fresh measurements; REPOSITORY_AUDIT.md re-run;
 verification record archived to task-deliverables/release-verification/;
 docs pins moved to the 1.0.11 artifact; governance files updated
 in-commit per rule.md §7/§8.
+DONE (68ae92f + 054c2a2 + the audit commit; release id 413623181,
+sha256 475b960f…, 9/9 API checks PASS, v1011-verified.txt archived —
+172 files; E2E realigned with the T-105 single-scrollbar ground truth
+against the v1.0.11 artifact — 84/84; the tag was initially auto-created
+at a210684 because publish ran before the push — re-pointed to the
+release commit 054c2a2 and the draft re-published, final state verified
+by all 9 checks).
