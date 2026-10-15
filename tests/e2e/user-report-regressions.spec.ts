@@ -32,6 +32,26 @@ import { fileURLToPath } from 'node:url';
  *    chips row. The test builds a note with a subtitle, body, tag AND
  *    category through the real UI and asserts the card's DOM reading
  *    order with tags and categories on separate rows.
+ *
+ * T-103 regressions for the user-reported defects (2026-10-15, two
+ * screenshots: "fix settings pop-up and make these options left
+ * aligned"):
+ *
+ * 5. Every full-width sidebar action ("New Note", "Save a web page…",
+ *    "Import note…", "Settings", "Diagnostics") centered its icon+label
+ *    group — `.btn`'s `justify-content: center` is authored later in
+ *    styles.css than `.sidebar__footer-button`'s flex-start with equal
+ *    specificity, so it won the cascade while the smart lists read
+ *    left-aligned. These tests assert the REAL computed styles and pixel
+ *    icon positions at wide, rail (≤52rem) and strip (≤40rem) widths —
+ *    including the T-089 omission where the rail rules never listed
+ *    `.sidebar__save-page`, so its label stayed visible and clipped.
+ *
+ * 6. The Settings dialog stretched "Test connection" and "Show the
+ *    introduction again" to the full panel width with centered labels
+ *    (direct children of the flex-column panel); the Diagnostics dialog
+ *    did the same to "Rebuild search index". The tests assert the actions
+ *    now shrink to content and sit flush with the panel's left edge.
  */
 
 const distDir = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', 'dist');
@@ -344,6 +364,136 @@ test('note card: title first, then subtitle, body, separate tags and categories 
   expect(separation.sameRow, 'tags and categories must live on separate rows').toBe(false);
   expect(separation.tagChips).toEqual(['Tag: orderproof']);
   expect(separation.categoryChips).toEqual(['Category: Proofs']);
+});
+
+test('sidebar: every action button reads flush-left like the smart lists (T-103)', async () => {
+  // Ground truth at the default 1440px viewport: the icon of every
+  // full-width sidebar action must start at the same left inset as the
+  // smart-list icons (the pre-fix gaps were equal left/right — centered).
+  const rows = await page.evaluate(() => {
+    const out: Array<Record<string, unknown>> = [];
+    for (const button of document.querySelectorAll('.app-sidebar button')) {
+      const isAction =
+        button.classList.contains('sidebar__new-note') ||
+        button.classList.contains('sidebar__save-page') ||
+        button.classList.contains('sidebar__footer-button');
+      if (!isAction) continue;
+      const box = button.getBoundingClientRect();
+      const icon = button.querySelector('.icon-host, svg');
+      const iconBox = icon ? (icon as SVGElement).getBoundingClientRect() : null;
+      out.push({
+        text: (button.textContent ?? '').trim(),
+        justify: getComputedStyle(button).justifyContent,
+        iconLeftGap: iconBox ? iconBox.left - box.left : null,
+      });
+    }
+    return out;
+  });
+  expect(rows.length, 'expected the five sidebar action buttons').toBe(5);
+  for (const row of rows) {
+    expect(row.justify, `${String(row.text)} must be left-aligned`).toBe('flex-start');
+    expect(
+      row.iconLeftGap as number,
+      `${String(row.text)} icon must sit flush left (was centered pre-fix)`,
+    ).toBeLessThan(20);
+  }
+});
+
+test('settings dialog: direct panel actions shrink to content and align left (T-103)', async () => {
+  await page.getByRole('button', { name: 'Open settings' }).click();
+  const dialog = page.locator('dialog.dialog--settings');
+  await expect(dialog).toBeVisible({ timeout: 15_000 });
+  await page.waitForTimeout(600); // settings load over the real RPC channel
+
+  const actions = await dialog.evaluate((root: HTMLElement) => {
+    const panel = root.querySelector('.settings__panel');
+    if (!panel) throw new Error('settings panel never mounted');
+    const panelLeft = panel.getBoundingClientRect().left;
+    return Array.from(panel.children)
+      .filter((child): child is HTMLElement => child.tagName === 'BUTTON')
+      .map((button) => ({
+        text: (button.textContent ?? '').trim(),
+        width: Math.round(button.getBoundingClientRect().width),
+        panelWidth: Math.round(panel.getBoundingClientRect().width),
+        leftGap: Math.round(button.getBoundingClientRect().left - panelLeft),
+        justify: getComputedStyle(button).justifyContent,
+      }));
+  });
+
+  // "Test connection" and "Show the introduction again" — the two direct
+  // panel actions (all other buttons live inside rows).
+  expect(actions.map((a) => a.text)).toEqual(['Test connection', 'Show the introduction again']);
+  for (const action of actions) {
+    expect(
+      action.width,
+      `${action.text} must shrink to its content (was stretched to the full panel width)`,
+    ).toBeLessThan(action.panelWidth * 0.6);
+    expect(action.leftGap, `${action.text} must sit flush with the panel's left edge`).toBe(0);
+    expect(action.justify).toBe('flex-start');
+  }
+
+  await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(dialog).not.toBeVisible({ timeout: 10_000 });
+});
+
+test('rail mode (≤52rem): every sidebar label hides, including Save a web page… (T-103)', async () => {
+  // The T-089 save-page button was never listed in the rail rules, so its
+  // label stayed visible and clipped inside the 59px rail button.
+  await page.setViewportSize({ width: 800, height: 900 });
+  await page.waitForTimeout(300); // reflow
+  const rail = await page.evaluate(() => {
+    const out: Array<Record<string, unknown>> = [];
+    for (const button of document.querySelectorAll('.app-sidebar button')) {
+      const label = button.querySelector('span:not(.icon-host)');
+      const labelBox = label ? (label as HTMLElement).getBoundingClientRect() : null;
+      out.push({
+        text: (button.textContent ?? '').trim(),
+        labelVisible: !!labelBox && labelBox.width > 2,
+        justify: getComputedStyle(button).justifyContent,
+      });
+    }
+    return out;
+  });
+  for (const row of rail) {
+    expect(
+      row.labelVisible,
+      `${String(row.text)} label must be visually hidden in the rail`,
+    ).toBe(false);
+    if (
+      typeof row.text === 'string' &&
+      ['New Note', 'Save a web page…', 'Import note…', 'Settings', 'Diagnostics'].includes(row.text)
+    ) {
+      expect(row.justify, `${String(row.text)} icon must center in the rail`).toBe('center');
+    }
+  }
+});
+
+test('strip mode (≤40rem): every sidebar label returns, left-aligned (T-103)', async () => {
+  await page.setViewportSize({ width: 500, height: 900 });
+  await page.waitForTimeout(300); // reflow
+  const strip = await page.evaluate(() => {
+    const out: Array<Record<string, unknown>> = [];
+    for (const button of document.querySelectorAll('.app-sidebar button')) {
+      const label = button.querySelector('span:not(.icon-host)');
+      const labelBox = label ? (label as HTMLElement).getBoundingClientRect() : null;
+      out.push({
+        text: (button.textContent ?? '').trim(),
+        labelVisible: !!labelBox && labelBox.width > 2,
+        justify: getComputedStyle(button).justifyContent,
+      });
+    }
+    return out;
+  });
+  const actionTexts = ['New Note', 'Save a web page…', 'Import note…', 'Settings', 'Diagnostics'];
+  for (const row of strip) {
+    if (typeof row.text === 'string' && actionTexts.includes(row.text)) {
+      expect(row.labelVisible, `${String(row.text)} label must return in the strip`).toBe(true);
+      expect(row.justify, `${String(row.text)} must left-align in the strip`).toBe('flex-start');
+    }
+  }
+  // Restore the suite's default viewport for the remaining tests.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForTimeout(300);
 });
 
 test('session hygiene: zero page errors, console errors or external requests', async () => {

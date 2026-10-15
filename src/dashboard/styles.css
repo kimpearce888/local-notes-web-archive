@@ -373,6 +373,18 @@ img {
   color: var(--color-text);
 }
 
+/* T-103 (user report 2026-10-15): the sidebar reads as ONE left-aligned
+   column. `.btn`'s `justify-content: center` is authored later in this
+   file with equal (single-class) specificity, so it silently defeated the
+   flex-start intent above and centered the icon+label group of every
+   full-width sidebar action while the smart lists read left-aligned.
+   Parent-qualified selectors win the cascade regardless of source order. */
+.app-sidebar .sidebar__new-note,
+.app-sidebar .sidebar__save-page,
+.app-sidebar .sidebar__footer-button {
+  justify-content: flex-start;
+}
+
 /* --------------------------- Content column -------------------------- */
 
 .app-content {
@@ -1019,6 +1031,7 @@ dialog::backdrop {
 
   .app-title__text,
   .sidebar__new-note span:not(.icon-host),
+  .sidebar__save-page span:not(.icon-host),
   .smart-nav__label,
   .sidebar__footer-button span:not(.icon-host) {
     position: absolute !important;
@@ -1033,9 +1046,10 @@ dialog::backdrop {
     white-space: nowrap;
   }
 
-  .sidebar__new-note,
-  .smart-nav__button,
-  .sidebar__footer-button {
+  .app-sidebar .sidebar__new-note,
+  .app-sidebar .sidebar__save-page,
+  .app-sidebar .smart-nav__button,
+  .app-sidebar .sidebar__footer-button {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;
@@ -1075,6 +1089,7 @@ dialog::backdrop {
 
   .app-title__text,
   .sidebar__new-note span:not(.icon-host),
+  .sidebar__save-page span:not(.icon-host),
   .smart-nav__label,
   .sidebar__footer-button span:not(.icon-host) {
     position: static !important;
@@ -1087,9 +1102,10 @@ dialog::backdrop {
     white-space: normal;
   }
 
-  .sidebar__new-note,
-  .smart-nav__button,
-  .sidebar__footer-button {
+  .app-sidebar .sidebar__new-note,
+  .app-sidebar .sidebar__save-page,
+  .app-sidebar .smart-nav__button,
+  .app-sidebar .sidebar__footer-button {
     justify-content: flex-start;
     padding: var(--space-1) var(--space-3);
   }
@@ -2860,6 +2876,15 @@ surface, hairline border, heading row, consistent rows. */
   gap: var(--space-2);
 }
 
+/* T-103 (user report 2026-10-15): actions appended directly to the panel
+   ("Rebuild search index", "Test connection") shrink to their content and
+   align left like every sibling row control, instead of stretching to the
+   full panel width with a centered label. */
+.diagnostics__panel > .btn {
+  align-self: flex-start;
+  justify-content: flex-start;
+}
+
 .diagnostics__section-title {
   font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
@@ -3234,6 +3259,16 @@ surface, hairline border, heading row, consistent rows. */
 
 .settings__actions {
   flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+/* T-103 (user report 2026-10-15): actions appended directly to the panel
+   ("Test connection", "Show the introduction again") shrink to their
+   content and align left like every sibling control ("Load models",
+   "Export backup now"), instead of stretching to the full panel width
+   with a centered label. */
+.settings__panel > .btn {
+  align-self: flex-start;
   justify-content: flex-start;
 }
 

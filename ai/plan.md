@@ -1292,3 +1292,7 @@ Unit CSS-guard tests pin the new rules (rename detector); E2E regression
 asserts computed styles + pixel gaps in the real UI (sidebar buttons
 flush-left ≤ 20px gap, settings actions not stretched, rail label hidden).
 Full gates before completed.md per rule.md §7/§8.
+DONE (17431be + this fix commit; 924/924 units incl. 7 CSS-guard
+regressions, 82/82 E2E incl. the 4 alignment ground-truth tests at
+wide/rail/strip widths; pixel-verified: sidebar actions 13px flush
+left, settings actions shrink-to-fit at panel-left 0).
