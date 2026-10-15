@@ -1323,3 +1323,8 @@ byte-identical); RELEASE_VERIFICATION.md regenerated with fresh
 measurements; REPOSITORY_AUDIT.md re-run; verification record archived
 to task-deliverables/release-verification/; docs pins moved to the
 1.0.10 artifact; governance files updated in-commit per rule.md §7/§8.
+DONE (76ba833 + 7c1be96 + the audit commit; release id 413539535,
+sha256 206d3cd0…, 9/9 API checks PASS, v1010-verified.txt archived —
+171 files; E2E realigned with the T-103 alignment ground truth
+against the v1.0.10 artifact — 82/82; README E2E count made honest
+77 → 82).

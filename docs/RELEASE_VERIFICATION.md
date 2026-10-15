@@ -1,10 +1,10 @@
 # Release Verification Report
 
 **Task:** T-043 Release verification gate (plan.md; PRD §11, §13) — re-verified for
-v1.0.9 by T-102 (release shipping the T-101 New Note navigation fix, plan.md
-§T: the v1.0.8 zip was cut before the fix landed on main; user report
+v1.0.10 by T-104 (release shipping the T-103 option-alignment fix, plan.md
+§V: the v1.0.9 zip was cut before the fix landed on main; user report
 2026-10-15)
-**Version verified:** 1.0.9
+**Version verified:** 1.0.10
 **Date:** 2026-10-15
 **Verdict:** **PASS** — every gate green; the artifact is releasable.
 
@@ -31,9 +31,9 @@ assertions are the production ones.
 |---|---|---|
 | 1 | Build (`vite build`) | PASS — 17 files, 0 warnings blocking, `theme-hint.js` external (CSP-safe); `heic-decoder-worker.js` emitted once (3.1 MB) with a 1.7 kB lazy wrapper chunk |
 | 2 | Static release scan (`release.mjs`) | PASS — 6 shipped JS files scanned: no remote runtime URLs, no `eval`/`new Function`; inert literal allowlist (W3C namespace URIs, dependency doc links) only |
-| 3 | Manifest scan (`verify-release.mjs`) | PASS — MV3, Chrome ≥ 120, stable `key`; CSP unchanged `script-src 'self'` / `object-src 'self'` / `connect-src 'self' + loopback`; 6 manifest/html-referenced assets present; icons are real PNGs; permissions match PERMISSIONS.md exactly (8 API, 2 required host, 2 optional host — unchanged from v1.0.8) |
-| 4 | Unit tests | PASS — 917/917 (`vitest run`; +4 since v1.0.8: the T-101 regressions — navigation + back-to-list truth, concurrent-activation guard, switching-from-an-open-note content survival, failure-retry releases the guard — plus the save-state idle reset) |
-| 5 | E2E smoke + verification | PASS — 78/78 in real Chromium over the unpacked `dist/` and the extracted zip (functional smoke incl. the command-palette spec, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance against this artifact, the screenshot suite, the user-report regression suite, the audit-defect regression suite, the T-084 register-fixes suite, and the v1.0.9 alignment: the zip-acceptance spec drives the T-101 flow directly — New Note lands in the fresh note's editor with no intermediate card step — matching the shipped behavior of this artifact) |
+| 3 | Manifest scan (`verify-release.mjs`) | PASS — MV3, Chrome ≥ 120, stable `key`; CSP unchanged `script-src 'self'` / `object-src 'self'` / `connect-src 'self' + loopback`; 6 manifest/html-referenced assets present; icons are real PNGs; permissions match PERMISSIONS.md exactly (8 API, 2 required host, 2 optional host — unchanged from v1.0.9) |
+| 4 | Unit tests | PASS — 924/924 (`vitest run`; +7 since v1.0.9: the T-103 CSS-guard regressions pinning every alignment selector — the parent-qualified sidebar flex-start rules, the rail/strip media-query blocks incl. the save-page extension, the settings/diagnostics shrink-to-fit rules — plus rename detectors) |
+| 5 | E2E smoke + verification | PASS — 82/82 in real Chromium over the unpacked `dist/` and the extracted zip (functional smoke incl. the command-palette spec, release verification incl. keyboard pass, human-simulation personas, ZIP extract-and-load acceptance against this artifact, the screenshot suite, the user-report regression suite, the audit-defect regression suite, the T-084 register-fixes suite, and the v1.0.10 alignment: 4 T-103 ground-truth tests assert computed styles + pixel gaps at wide/rail/strip widths — sidebar actions flush-left, settings panel actions shrink-to-fit — and the zip-acceptance spec carries the same alignment assertions against the EXTRACTED package, matching the shipped behavior of this artifact) |
 | 6 | Performance (PRD §11) | PASS — see measurements below |
 | 7 | Accessibility keyboard pass | PASS — see below |
 | 8 | Release artifacts | PASS — see below |
@@ -45,12 +45,12 @@ assertions are the production ones.
 
 | Measurement | Observed | Target | Result |
 |---|---|---|---|
-| Cold, clean profile (first load) | 458 ms / 212 ms (two runs) | < 1,500 ms | PASS |
-| Warm reloads, data present | 126–150 ms per load, median 133 ms | < 1,500 ms | PASS |
+| Cold, clean profile (first load) | 428 ms / 433 ms (two runs) | < 1,500 ms | PASS |
+| Warm reloads, data present | 210–362 ms per load, medians 297 ms / 273 ms | < 1,500 ms | PASS |
 
 Method: `page.goto` (commit) until heading + "New Note" + search input are
 present in the real extension page, timed in the persistent Chromium context
-(5 warm samples with one note present). The E2E regression guards assert
+(3 warm samples per run with one note present). The E2E regression guards assert
 < 3,000 ms (cold) / < 2,000 ms (warm) with headroom for shared CI hardware.
 
 ### Search over 10,000 notes + 2,000 indexed snapshots
@@ -62,19 +62,19 @@ one authoritative index build:
 
 | Statistic | Value |
 |---|---|
-| p50 | 70 ms |
-| **p95** | **118 ms** |
-| p99 | 321 ms |
-| max | 383 ms |
+| p50 | 76 ms |
+| **p95** | **126 ms** |
+| p99 | 309 ms |
+| max | 394 ms |
 
-Per-shape p95: common term 69 ms, two-term 113 ms, phrase 131 ms,
-title-scoped 87 ms, flag filter + term 76 ms, filter-only 121 ms,
-term + title sort 123 ms, fuzzy 81 ms. **PRD budget: p95 < 500 ms → PASS**
+Per-shape p95: common term 69 ms, two-term 161 ms, phrase 141 ms,
+title-scoped 77 ms, flag filter + term 105 ms, filter-only 67 ms,
+term + title sort 117 ms, fuzzy 124 ms. **PRD budget: p95 < 500 ms → PASS**
 (asserted in `tests/perf/search-p95.test.ts`, runnable via
 `npm run test:perf`).
 
 Documented observation: a full index **rebuild** of the 10k corpus took
-~115 s under Node + fake-indexeddb. Rebuild is the rare recovery path
+~109 s under Node + fake-indexeddb. Rebuild is the rare recovery path
 (corruption/migration); production indexing is incremental per save. Users
 should expect a one-time longer rebuild on very large corpora after a
 corruption recovery. The HEIC decode adds ~1.4 s to image insertion on
@@ -94,6 +94,15 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
   are all reachable by Tab through the full toolbar chain; text typed,
   `Ctrl+A` + `Ctrl+B` bold applied (`<strong>` present), autosave reached
   the durable "Saved" state — no pointer input anywhere.
+- **Option alignment (v1.0.10, T-103):** every sidebar action button
+  (New Note, Save a web page…, Import note…, Settings, Diagnostics) reads
+  flush-left in one column with the smart lists at every width — wide,
+  collapsed icon rail and narrow strip — and the Settings/Diagnostics
+  dialogs' direct panel actions (Test connection, Show the introduction
+  again, Rebuild search index) shrink to their content and align left
+  like every sibling control (asserted via computed styles + pixel gaps
+  in `tests/e2e/user-report-regressions.spec.ts` and, against the
+  extracted package, in `tests/e2e/zip-acceptance.spec.ts`).
 - **New Note navigation (v1.0.9, T-101):** every New Note activation —
   button, palette command or Alt+Shift+C — lands the user in the fresh
   note's editor immediately (asserted across the E2E suites and the
@@ -140,22 +149,24 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
 
 | Artifact | Value |
 |---|---|
-| Zip | `release/local-notes-web-archive-1.0.9.zip` (3,231,507 bytes) |
-| SHA-256 | `afd1ba4534a131851e3653290ddbc17f610fbb538b4ca237386c31c75daa0e00` |
+| Zip | `release/local-notes-web-archive-1.0.10.zip` (3,231,557 bytes) |
+| SHA-256 | `206d3cd0caac42f051f23f0b1547b4da45f40d0d5a5df1ec16931abdb84e67ad` |
 | Inventory | `release/RELEASE_MANIFEST.txt` (file list + sizes) |
-| GitHub cross-check | Release id 413460392, tag == HEAD (b61117f), asset digest matches, download-back byte-identical — all 8 checks PASS, record archived at `task-deliverables/release-verification/v109-verified.txt` |
+| GitHub cross-check | Release id 413539535, tag == HEAD (7c1be96), asset digest matches, download-back byte-identical — all 9 checks PASS, record archived at `task-deliverables/release-verification/v1010-verified.txt` |
 | Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). |
 
-The v1.0.9 artifact supersedes v1.0.8: it ships the T-101 New Note
-navigation fix (user report 2026-10-15) — every New Note activation from
-all five entry points (sidebar button, empty-library button, onboarding
-primary action, command palette, Alt+Shift+C) now navigates straight into
-the fresh note's editor, an in-flight guard ignores further activations
-while a creation is pending so rapid clicking can no longer stack
-background "Untitled" notes, and the header save-state resets honestly
-when switching notes. No features were added or removed — v1.0.9 is the
-repaired v1.0.8 (the zip stays byte-for-byte the same shape; the size
-delta vs v1.0.8 is version strings and bundle hashes).
+The v1.0.10 artifact supersedes v1.0.9: it ships the T-103 option-alignment
+fix (user report 2026-10-15, two screenshots) — the sidebar's action buttons
+(New Note, Save a web page…, Import note…, Settings, Diagnostics) now read
+flush-left in one column with the smart lists at every width (a CSS cascade
+bug had the generic button rule's `justify-content: center` silently defeat
+the sidebar's left-align intent), the Settings and Diagnostics dialogs' direct
+panel actions shrink to their content and align left instead of stretching
+full-width centered, and the collapsed icon rail no longer clips the
+"Save a web page…" label. No features were added or removed — v1.0.10 is
+the repaired v1.0.9 (the zip stays byte-for-byte the same shape; the size
+delta vs v1.0.9 is version strings, release-notes CSS hashes and bundle
+hashes).
 
 The zip and checksums are regenerable via `npm run release`; the manifest
 scan is enforced inside that pipeline (`scripts/verify-release.mjs`) and
@@ -165,8 +176,8 @@ remote URL, dynamic code, missing asset or undocumented permission.
 ## Verification commands
 
 ```bash
-npm run verify          # lint + tsc strict + 917 unit tests
+npm run verify          # lint + tsc strict + 924 unit tests
 npm run test:perf       # 10k-note search p95 benchmark (< 500 ms budget)
-npm run test:e2e        # 78 Playwright tests over the built extension
+npm run test:e2e        # 82 Playwright tests over the built extension
 npm run release         # build + static gate + manifest scan + zip + sha256
 ```
