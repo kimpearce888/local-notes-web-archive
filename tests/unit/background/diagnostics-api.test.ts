@@ -64,7 +64,7 @@ describe('diagnostics/overview', () => {
     const overview = result['overview'] as DiagnosticsOverview;
 
     expect(overview.app.name).toBe('Local Notes & Web Archive');
-    expect(overview.app.version).toBe('1.0.7');
+    expect(overview.app.version).toBe('1.0.8');
     expect(overview.app.schemaVersion).toBe(2);
     expect(overview.app.databaseName).toBe(DB_NAME);
     // Node test host: honest null, never a fabricated Chrome version.

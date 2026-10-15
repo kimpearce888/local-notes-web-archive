@@ -103,9 +103,48 @@ Chrome 120+ required. Everything stays on your device.
 - Full gate matrix and measured numbers: [\`docs/RELEASE_VERIFICATION.md\`](https://github.com/${slug}/blob/main/docs/RELEASE_VERIFICATION.md)
 - File inventory: **RELEASE_MANIFEST.txt** below (byte-for-byte with the zip contents)
 - Integrity: **${zipName}.sha256** below
-- Automated acceptance: unit 896/896, Playwright E2E 77/77 over the real
+- Automated acceptance: unit 913/913, Playwright E2E 77/77 over the real
   unpacked build, including a dedicated extract-zip-and-load acceptance suite
   (the artifact in this release is the exact folder layout that was tested)
+
+## What's new in v1.0.8 — the human-QA program (9 defects fixed)
+
+A full human-behavior QA program (206 individual actions, 22 complete
+workflows, 15 interaction combinations, edge/visual sweeps — every one
+driven through the real UI with screenshots, session videos and logs on
+file in the repo under artifacts/human-qa/)
+found nine defects. All nine are fixed in this release, each with a
+regression test and real-UI re-verification. No features were added or
+removed — v1.0.8 is purely the repaired v1.0.7.
+
+- **Find & Replace no longer destroys rich notes (critical)**: Replace all
+  rebuilt the entire note as plain paragraphs — every heading, list, table
+  and code block was silently flattened and images were deleted outright,
+  then autosaved. Replacements now edit text in place inside the document
+  structure; a single Ctrl+Z still restores everything (one transaction)
+- **Exclusion-only searches returned nothing**: \`-sourdough\` (documented
+  "everything except" syntax) silently emptied the list instead of showing
+  the notes that do not match; and invalid syntax like \`is:zebra\` now
+  surfaces an inline explanation instead of a bare "no matching notes"
+- **Saved settings now apply without a reload**: toolbar-group
+  preferences set in Settings previously needed a page reload before new
+  editor sessions picked them up
+- **Image dialog honors text typed after picking the file**: alt text and
+  captions filled in after choosing an image were silently dropped; the
+  dialog now stages the file with a real Insert button
+- **Save-a-web-page and context-menu captures actually run**: saves from
+  the dialog left links parked as "detected" forever while reporting
+  success; they now queue and complete the capture
+- **The permission flow is reachable**: captures on un-granted sites now
+  show a **Grant access** button in the snapshots panel that requests the
+  permission and resumes the capture
+- **Failed captures are retryable**: the card tooltip always said "open
+  the note to retry from its snapshots panel" — the panel had no retry
+  button. It has one now, and it works
+- **Compare snapshots is finally reachable**: re-capturing a captured link
+  (for a second revision to compare) had no UI entry point, making the
+  Compare dialog permanently unreachable; captured links now offer
+  "Capture fresh copy" and the chain builds revisions you can diff
 
 ## What's new in v1.0.7 — the lost-user register (17 UX findings fixed)
 
