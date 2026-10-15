@@ -70,7 +70,7 @@ one authoritative index build:
 Per-shape p95: common term 74 ms, two-term 161 ms, phrase 128 ms,
 title-scoped 64 ms, flag filter + term 103 ms, filter-only 66 ms,
 term + title sort 147 ms, fuzzy 96 ms. **PRD budget: p95 < 500 ms → PASS**
-(asserted in `tests/perf/search-p95.test.ts`, runnable via
+(asserted in `dev/tests/perf/search-p95.test.ts`, runnable via
 `npm run test:perf`).
 
 Documented observation: a full index **rebuild** of the 10k corpus took
@@ -84,7 +84,7 @@ photo is inserted.
 
 ## Accessibility keyboard pass
 
-Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
+Verified in real Chromium (`dev/tests/e2e/release-verification.spec.ts`):
 
 - First-run onboarding dialog: focus is contained while open (native
   `<dialog>` modal), dismissable with keyboard Enter on "Skip for now";
@@ -104,8 +104,8 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
   notes keep the standard look byte-identically; Created and Modified
   render as separate blocks and the reminder chip sits on its own row —
   asserted through the real panel flow in
-  `tests/e2e/user-report-regressions.spec.ts` and, against the extracted
-  package, in `tests/e2e/zip-acceptance.spec.ts`.
+  `dev/tests/e2e/user-report-regressions.spec.ts` and, against the extracted
+  package, in `dev/tests/e2e/zip-acceptance.spec.ts`.
 - **Single scrollbar per dialog (v1.0.11, T-105):** the Settings,
   Diagnostics and restore-review dialogs render exactly ONE scrollbar —
   the content box's; the dialog element itself never scrolls (its
@@ -114,8 +114,8 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
   scrolls, and a closed dialog provably hides (the sheet layout must not
   defeat the UA closed-state rule) — asserted at the reporting user's
   798x752 viewport and a short 1280x600 viewport in
-  `tests/e2e/user-report-regressions.spec.ts` and, against the extracted
-  package, in `tests/e2e/zip-acceptance.spec.ts`.
+  `dev/tests/e2e/user-report-regressions.spec.ts` and, against the extracted
+  package, in `dev/tests/e2e/zip-acceptance.spec.ts`.
 - **Option alignment (v1.0.10, T-103):** every sidebar action button
   (New Note, Save a web page…, Import note…, Settings, Diagnostics) reads
   flush-left in one column with the smart lists at every width — wide,
@@ -123,8 +123,8 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
   dialogs' direct panel actions (Test connection, Show the introduction
   again, Rebuild search index) shrink to their content and align left
   like every sibling control (asserted via computed styles + pixel gaps
-  in `tests/e2e/user-report-regressions.spec.ts` and, against the
-  extracted package, in `tests/e2e/zip-acceptance.spec.ts`).
+  in `dev/tests/e2e/user-report-regressions.spec.ts` and, against the
+  extracted package, in `dev/tests/e2e/zip-acceptance.spec.ts`).
 - **New Note navigation (v1.0.9, T-101):** every New Note activation —
   button, palette command or Alt+Shift+C — lands the user in the fresh
   note's editor immediately (asserted across the E2E suites and the
@@ -134,13 +134,13 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
 - **Command palette (v1.0.3):** Ctrl+K opens it, typing filters,
   ArrowDown/Enter run commands, Escape closes, a no-match query shows an
   honest empty state where Enter is a no-op (asserted in
-  `tests/e2e/extension.spec.ts`).
+  `dev/tests/e2e/extension.spec.ts`).
 - **Universal dismissal (v1.0.7, T-085):** every popped-out bar —
   attachments, snapshots, reminders, AI, filters — closes via its own
   in-surface Close control and via Escape (LIFO stack, guarded while a
   modal dialog is open); the Filters bar additionally closes on Apply;
   Revisions honors Escape (asserted in
-  `tests/e2e/t084-register-fixes.spec.ts`).
+  `dev/tests/e2e/t084-register-fixes.spec.ts`).
 - **Image insertion (v1.0.8, QA-D04):** the insert-image dialog stages the
   chosen file with an honest "Ready to insert" status; alt text and caption
   typed after the pick are honored on the explicit Insert action; keyboard
@@ -158,7 +158,7 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
   accent-soft pill with a computed WCAG contrast ≥ 4.5:1, and note cards
   read title → subtitle → body → tags row → categories row → indicators →
   meta with tags/categories on separate rows (asserted in
-  `tests/e2e/user-report-regressions.spec.ts`).
+  `dev/tests/e2e/user-report-regressions.spec.ts`).
 - Settings dialog: 12 consecutive Tabs never leave the dialog (focus trap);
   Escape closes it; focus returns to page.
 - Visible focus: keyboard-focused search input renders the `:focus-visible`
@@ -174,7 +174,7 @@ Verified in real Chromium (`tests/e2e/release-verification.spec.ts`):
 | Zip | `release/local-notes-web-archive-1.0.12.zip` (3,245,476 bytes) |
 | SHA-256 | `7da6c9599a1bc185107ec65508045c427137940b07c61b24a16c98b58108cdb6` |
 | Inventory | `release/RELEASE_MANIFEST.txt` (file list + sizes) |
-| GitHub cross-check | Release id 413683194, tag == HEAD (21f9a33 — the release commit was pushed BEFORE publish so the auto-created tag landed correctly), asset digest matches, download-back byte-identical — all 9 checks PASS, record archived at `task-deliverables/release-verification/v1012-verified.txt` |
+| GitHub cross-check | Release id 413683194, tag == HEAD (21f9a33 — the release commit was pushed BEFORE publish so the auto-created tag landed correctly), asset digest matches, download-back byte-identical — all 9 checks PASS, record archived at `dev/task-deliverables/release-verification/v1012-verified.txt` |
 | Installation | Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select the extracted folder. Nothing else: no Node, no server, no CDN, no download (PRD §13.1). |
 
 The v1.0.12 artifact supersedes v1.0.11: it ships the T-107 card colors +

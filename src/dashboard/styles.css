@@ -3560,8 +3560,8 @@ surface, hairline border, heading row, consistent rows. */
 /* rule above (flex/inline-flex/grid) overrides the UA stylesheet's   */
 /* [hidden] { display: none } and leaks the element on screen. This   */
 /* guard makes the attribute win for every current and future         */
-/* element — asserted by tests/unit/dashboard/css-guard.test.ts and   */
-/* the E2E computed-style regression in tests/e2e/extension.spec.ts.  */
+/* element — asserted by dev/tests/unit/dashboard/css-guard.test.ts and   */
+/* the E2E computed-style regression in dev/tests/e2e/extension.spec.ts.  */
 /* ------------------------------------------------------------------ */
 [hidden] {
   display: none !important;

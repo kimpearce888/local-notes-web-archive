@@ -43,6 +43,6 @@ installed copy's permissions.
 `public/icons/icon-{16,32,48,128}.png` are generated deterministically by
 `node scripts/generate-icons.mjs` (pure geometry, 4x supersampling, no
 randomness). Regeneration produces byte-identical files; the unit suite
-(`tests/unit/manifest.test.ts`) asserts that the committed icons equal the
+(`dev/tests/unit/manifest.test.ts`) asserts that the committed icons equal the
 script output, so a hand-edited icon is a build failure, not a silent
 regression.

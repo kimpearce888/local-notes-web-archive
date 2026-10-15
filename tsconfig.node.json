@@ -3,8 +3,16 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["node", "chrome", "vitest/globals"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "node",
+      "chrome",
+      "vitest/globals"
+    ],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
@@ -19,10 +27,11 @@
   },
   "include": [
     "vite.config.ts",
-    "vitest.config.ts",
-    "playwright.config.ts",
+    "dev/vitest.config.ts",
+    "dev/vitest.perf.config.ts",
+    "dev/playwright.config.ts",
     "scripts/**/*.ts",
     "src/types/**/*.d.ts",
-    "tests/**/*"
+    "dev/tests/**/*"
   ]
 }

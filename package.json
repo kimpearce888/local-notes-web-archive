@@ -10,18 +10,18 @@
   "scripts": {
     "build": "vite build",
     "check": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
-    "lint": "eslint .",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:perf": "vitest run --config vitest.perf.config.ts",
-    "test:e2e": "playwright test",
+    "lint": "eslint . --config dev/eslint.config.js",
+    "test": "vitest run --config dev/vitest.config.ts",
+    "test:watch": "vitest --config dev/vitest.config.ts",
+    "test:perf": "vitest run --config dev/vitest.perf.config.ts",
+    "test:e2e": "playwright test --config dev/playwright.config.ts",
     "release": "node scripts/release.mjs",
     "verify-release": "node scripts/verify-release.mjs",
     "verify": "npm run lint && npm run check && npm run test",
     "deps": "node scripts/generate-dependencies.mjs",
     "publish-release": "node scripts/github-release.mjs",
     "repo-metadata": "node scripts/github-metadata.mjs",
-    "audit:repo": "node scripts/audit.mjs"
+    "audit:repo": "node dev/scripts/audit.mjs"
   },
   "dependencies": {
     "@tiptap/core": "3.31.4",

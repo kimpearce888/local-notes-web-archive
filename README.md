@@ -15,7 +15,7 @@ Everything stays on your device.
 [![Audit](https://img.shields.io/badge/audit-0%20vulnerabilities-success)](./docs/REPOSITORY_AUDIT.md)
 [![Network](https://img.shields.io/badge/network-loopback%20only-blueviolet)](./PRIVACY.md)
 
-The complete product specification is [`PRD.md`](./PRD.md) (v1.0, approved
+The complete product specification is [`dev/PRD.md`](./dev/PRD.md) (v1.0, approved
 architecture baseline). This repository contains the full production source,
 tests, build tooling and the bundled third-party dependency inventory.
 
@@ -40,7 +40,7 @@ tests, build tooling and the bundled third-party dependency inventory.
 ## Screenshots
 
 Real screenshots of the released build, captured by the automated
-screenshot suite ([`tests/e2e/screenshots.spec.ts`](./tests/e2e/screenshots.spec.ts))
+screenshot suite ([`dev/tests/e2e/screenshots.spec.ts`](./dev/tests/e2e/screenshots.spec.ts))
 from the live extension — the demo library was seeded through the real UI
 (notes authored in the rich-text editor, tags and categories assigned
 through the bulk bar, one note pinned).
@@ -179,7 +179,7 @@ product.
 
 | Document | Contents |
 |---|---|
-| [`PRD.md`](./PRD.md) | Product requirements (source of truth) |
+| [`dev/PRD.md`](./dev/PRD.md) | Product requirements (source of truth) |
 | [`PRIVACY.md`](./PRIVACY.md) | What is stored locally, what network calls exist |
 | [`PERMISSIONS.md`](./PERMISSIONS.md) | Every manifest permission, why, how to revoke |
 | [`KNOWN_LIMITATIONS.md`](./KNOWN_LIMITATIONS.md) | Honest limits: MCP, reminders, capture fidelity |
@@ -190,7 +190,7 @@ product.
 | [`docs/EXTENSION_IDENTITY.md`](./docs/EXTENSION_IDENTITY.md) | Stable extension ID and key management |
 | [`docs/RELEASE_VERIFICATION.md`](./docs/RELEASE_VERIFICATION.md) | Release gate results, measured performance, keyboard pass, artifact checksums |
 | [`docs/REPOSITORY_AUDIT.md`](./docs/REPOSITORY_AUDIT.md) | Full repository audit: structure, code metrics, secrets scan, npm audit, release integrity |
-| [`task-deliverables/README.md`](./task-deliverables/README.md) | Archive of every task-program output: QA evidence, reports, verification records (161 files in one separate folder) |
+| [`dev/task-deliverables/README.md`](./dev/task-deliverables/README.md) | Archive of every task-program output: QA evidence, reports, verification records |
 
 ## FAQ
 
@@ -243,9 +243,36 @@ npm run release    # dist/ + versioned zip + SHA-256 checksums
 npm run test:e2e   # Playwright suite (loads dist/ unpacked, real Chromium)
 ```
 
-A dev/test-only `Dockerfile.test` + `docker-compose.yml` reproduce the lint/
-typecheck/unit-test environment. Docker is **never** used at runtime or for
-installation (PRD §1, §7).
+A dev/test-only harness (`dev/Dockerfile.test` + `dev/docker-compose.yml`)
+reproduces the lint/typecheck/unit-test environment. Docker is **never** used
+at runtime or for installation (PRD §1, §7).
+
+## Repository layout
+
+The root holds only what builds and ships the extension; everything
+development-internal lives in **one** folder, [`dev/`](./dev/README.md):
+
+```text
+├── src/               extension source (TypeScript, no runtime framework)
+├── public/            manifest + icons + pre-paint theme hint
+├── dashboard.html     the Vite build entry
+├── scripts/           build & release pipeline (zip, checksums, deps docs)
+├── docs/              user-facing docs + the screenshot gallery
+├── dev/               ALL development material, nothing shipped:
+│   ├── tests/           unit + perf + Playwright E2E suites (with their
+│   │                    configs: vitest, vitest.perf, playwright, eslint)
+│   ├── ai/              task governance records (plan/progress/completed)
+│   ├── task-deliverables/  QA evidence archive (verification records…)
+│   ├── artifacts/       human-QA evidence (videos, screenshots, logs)
+│   ├── scripts/         repository audit + historical one-off tools
+│   └── PRD.md, Dockerfile.test, docker-compose.yml, .env.example
+└── package.json / vite.config.ts / tsconfig.* / README / LICENSE /
+    PRIVACY.md / PERMISSIONS.md / SECURITY.md / … (product face)
+```
+
+Every quality gate keeps working from the root — `npm run verify`,
+`npm run test:e2e`, `npm run release` — the scripts simply point their
+configurations into `dev/`.
 
 ## License & third-party components
 
