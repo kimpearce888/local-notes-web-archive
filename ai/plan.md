@@ -1258,3 +1258,37 @@ DONE (ce7c4d0 + b61117f + the audit commit; release id 413460392,
 sha256 afd1ba45…, 8/8 API checks PASS, v109-verified.txt archived —
 170 files; E2E realigned with the T-101 flow against the v1.0.9
 artifact — 78/78).
+
+## §U — Settings pop-up + sidebar option alignment (user report, 2026-10-15)
+
+User report (two screenshots): the Settings pop-up needs fixing and "these
+options" must be left-aligned. Ground-truth probes reproduced both defects
+in the real extension (1891x991, computed styles + pixel gaps):
+(1) sidebar footer buttons ("Import note…", "Settings", "Diagnostics") and
+the "New Note"/"Save a web page…" actions render CENTERED — `.btn`'s
+`justify-content: center` is defined later in styles.css than
+`.sidebar__footer-button`'s `flex-start` and wins the equal-specificity
+cascade, so every full-width sidebar action centers its icon+label group
+while the smart lists above read left-aligned;
+(2) in the Settings dialog "Test connection" and "Show the introduction
+again" stretch to the full 622px panel width with centered labels (direct
+children of the flex-column `.settings__panel` + the same `.btn` center);
+the Diagnostics dialog's "Rebuild search index"/"Test connection" share the
+identical pattern;
+(3) latent rail-mode bug found by the probe: at ≤52rem the T-089
+"Save a web page…" button keeps its label visible (clipped inside the 59px
+rail button) because the T-089 rail rules never listed `.sidebar__save-page`.
+
+### T-103 Left-align the sidebar and panel action options
+CSS: parent-qualified `.app-sidebar .sidebar__new-note/.save-page/
+.footer-button { justify-content: flex-start }` (wins the cascade over
+`.btn` regardless of source order); rail-mode rules parent-qualified too
+and extended with `.sidebar__save-page` (label hidden + icon centered like
+every other rail button); `.settings__panel > .btn` and
+`.diagnostics__panel > .btn` shrink-to-fit (`align-self: flex-start`) with
+left-aligned content so Test connection / Show the introduction again /
+Rebuild search index read as inline actions like every sibling control.
+Unit CSS-guard tests pin the new rules (rename detector); E2E regression
+asserts computed styles + pixel gaps in the real UI (sidebar buttons
+flush-left ≤ 20px gap, settings actions not stretched, rail label hidden).
+Full gates before completed.md per rule.md §7/§8.
