@@ -1484,3 +1484,34 @@ meta/reminder rows; styles.css [data-tinted] block + meta-row/reminder
 CSS; editor Card color pop-out panel + controller wiring; unit + CSS
 guard + E2E regressions; full gates before completed.md per rule.md
 §7/§8.
+
+## §Z — v1.0.12 release: bring card colors + separated blocks to users (maintainer go-ahead, 2026-10-15)
+
+The live v1.0.11 zip predates T-107: users still see the plain
+single-surface cards and the inline Created · Modified meta line (the
+maintainer's feature request behind T-107). T-107 is complete on main
+(bc5d317, 970/970 units, 86/86 E2E) but unreleased. v1.0.12 ships it —
+the maintainer pre-authorized the release ("once done publish a new
+release").
+
+### T-108 Cut and publish v1.0.12 (the T-100/T-102/T-104/T-106 two-commit pattern)
+Five-place version bump (package.json, public/manifest.json,
+src/core/version.ts, DEPENDENCIES.json/THIRD_PARTY_NOTICES.md via the
+release pipeline's deps regeneration) + unit pins (types,
+diagnostics-api); release notes section mapping the T-107 feature for
+users; README install path → v1.0.12 and the test counts made honest
+(932/84 → 970/86 in badge + quality table + docs.test.ts pins);
+zip-acceptance realigned with the T-107 ground truth (the extracted
+package asserts the tint flow through the real Card color panel: the
+card carries data-tinted + the chosen background + the auto-contrast
+text with in-page WCAG ratio, the default card stays untinted, Created
+and Modified render as separate blocks) against THIS artifact; full
+gates (tsc both configs, eslint, vitest, Playwright E2E incl zip
+acceptance against the v1.0.12 zip, perf); npm run release → zip +
+sha256 + RELEASE_MANIFEST; PUSH the release commit BEFORE publish so
+the auto-created tag points at the release commit (the v1.0.11 lesson);
+GitHub Release v1.0.12 published + API-verified (digest, tag, download
+byte-identical); RELEASE_VERIFICATION.md regenerated with fresh
+measurements; REPOSITORY_AUDIT.md re-run; verification record archived
+to task-deliverables/release-verification/; docs pins moved to the
+1.0.12 artifact; governance files updated in-commit per rule.md §7/§8.
