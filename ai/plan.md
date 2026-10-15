@@ -1182,3 +1182,21 @@ documentation of the actual behaviour (radios fire no 'change' when already
 checked; DOM textContent lacks the plainText block separators; the reminders
 panel footnote mentions the Overdue list; the rename dialog labels its
 field 'Filename').
+
+## §R — v1.0.8 release: ship the nine human-QA defect fixes (maintainer
+## approval, 2026-10-15)
+
+The v1.0.7 GitHub Release zip was cut at 3f7dce8 BEFORE the human-QA program's
+nine defect fixes (QA-D01..QA-D09) landed on main (b72cf20). T-100 cuts and
+publishes v1.0.8 so users receive the repaired product.
+
+### T-100 v1.0.8 release
+Five-place version bump (package.json, public/manifest.json,
+src/core/version.ts, unit pins, release-notes script) + release notes mapping
+all nine QA fixes + README numbers refreshed (913 tests, v1.0.8 install path);
+full gates (tsc both configs, eslint, vitest, Playwright E2E incl zip
+acceptance, perf); npm run release → zip + sha256 + RELEASE_MANIFEST; GitHub
+Release v1.0.8 published + API-verified (digest, tag); RELEASE_VERIFICATION.md
+regenerated with fresh measurements; REPOSITORY_AUDIT.md re-run; verification
+record archived to task-deliverables/release-verification/; governance files
+updated in-commit per rule.md §7/§8.
