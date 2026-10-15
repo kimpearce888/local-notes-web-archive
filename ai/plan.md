@@ -1203,3 +1203,28 @@ updated in-commit per rule.md §7/§8. DONE (b77697b + c812cf4 + the audit commi
 sha256 0e120666…, 8/8 API checks PASS, v108-verified.txt archived;
 E2E aligned with the QA-fixed behaviours incl. the new seeded end-to-end
 capture test — 78/78).
+
+## §S — New Note navigation + in-flight guard (user report, 2026-10-15)
+
+User report after v1.0.8: activating New Note while a note is open (or while
+doing anything else in the app) creates notes silently in the background —
+nothing navigates to the fresh note, and repeated activations stack unlimited
+"Untitled" notes. Five entry points (sidebar button, empty-state button,
+onboarding primary, command palette, Alt+Shift+C ui-intent) all funnel into
+controller.createNote(), which updates the list and returns the id without
+ever opening the editor.
+
+### T-101 New Note navigates to the created note, guarded while in flight
+createNote(): after notes/create succeeds, openEditor(note.id) — the user
+lands in the fresh note (openEditor's close path flushes any note being
+edited, so no edit is lost), the settled live-region message stays
+"Note created." (announced after the navigation, mirroring importNoteFile's
+order). A createInFlight guard ignores activations while a creation is
+pending so rapid clicks cannot stack background notes. New unit tests:
+navigation + editingNoteId/view assertions, concurrent-activation guard,
+switching-from-an-open-note flow; existing suites adapted. E2E specs updated
+to the new behavior (the intermediate "Open Untitled for editing" card step
+disappears after every New Note activation; the five-rapid-clicks test now
+asserts ONE note + the editor view; the D-08 storm comment reflects the
+guard). Full gates (tsc, eslint, vitest, Playwright) before the task moves
+to completed.md per rule.md §7/§8.
