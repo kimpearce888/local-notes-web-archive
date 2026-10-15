@@ -16,7 +16,10 @@ import { unzipSync } from 'fflate';
  * id from the manifest key); the background RPC channel works end to end
  * (dashboard shell, note create → autosave → search, settings dialog with a
  * live theme switch — storage/settings persistence through IndexedDB); no
- * console/page errors and zero non-loopback network requests.
+ * console/page errors and zero non-loopback network requests. Since v1.0.10
+ * the suite also carries the T-103 alignment ground truth: the sidebar
+ * actions and the settings dialog's direct panel actions read as one
+ * left-aligned column in the EXTRACTED build too.
  *
  * Honest surface mapping (no popup, no declared content scripts by design,
  * PRD §8): the manifest's action opens the dashboard through the service
@@ -202,9 +205,64 @@ test('the extracted folder installs and the full stack works with zero build ste
 
   // Advertised feature: settings/storage — a live theme switch persists
   // through IndexedDB in the extracted build.
+  //
+  // T-103 (shipped in this artifact since v1.0.10): the alignment ground
+  // truth belongs in the acceptance suite — the extracted package must read
+  // as ONE left-aligned column, exactly like the unpacked dist/ build the
+  // dedicated regression suite measures pixel by pixel.
+  const sidebarActions = await page.evaluate(() => {
+    const out: Array<{ text: string; justify: string }> = [];
+    for (const button of document.querySelectorAll('.app-sidebar button')) {
+      const isAction =
+        button.classList.contains('sidebar__new-note') ||
+        button.classList.contains('sidebar__save-page') ||
+        button.classList.contains('sidebar__footer-button');
+      if (isAction) {
+        out.push({ text: (button.textContent ?? '').trim(), justify: getComputedStyle(button).justifyContent });
+      }
+    }
+    return out;
+  });
+  expect(sidebarActions.length, 'the five sidebar action buttons').toBe(5);
+  for (const action of sidebarActions) {
+    expect(
+      action.justify,
+      `${action.text} must be left-aligned in the extracted build`,
+    ).toBe('flex-start');
+  }
+
   await page.getByRole('button', { name: 'Open settings' }).click();
   const dialog = page.locator('dialog.dialog--settings');
   await expect(dialog).toBeVisible({ timeout: 15_000 });
+  await dialog.locator('.settings__panel').waitFor({ state: 'visible', timeout: 15_000 });
+  const settingsActions = await dialog.evaluate((root: HTMLElement) => {
+    const panel = root.querySelector('.settings__panel');
+    if (!panel) throw new Error('settings panel never mounted');
+    const panelLeft = panel.getBoundingClientRect().left;
+    return Array.from(panel.children)
+      .filter((child): child is HTMLElement => child.tagName === 'BUTTON')
+      .map((button) => ({
+        text: (button.textContent ?? '').trim(),
+        leftGap: Math.round(button.getBoundingClientRect().left - panelLeft),
+        width: Math.round(button.getBoundingClientRect().width),
+        panelWidth: Math.round(panel.getBoundingClientRect().width),
+        justify: getComputedStyle(button).justifyContent,
+      }));
+  });
+  // "Test connection" and "Show the introduction again" — the two direct
+  // panel actions (all other buttons live inside rows).
+  expect(settingsActions.map((action) => action.text)).toEqual([
+    'Test connection',
+    'Show the introduction again',
+  ]);
+  for (const action of settingsActions) {
+    expect(action.justify, `${action.text} must be left-aligned`).toBe('flex-start');
+    expect(action.leftGap, `${action.text} must sit flush with the panel's left edge`).toBe(0);
+    expect(
+      action.width,
+      `${action.text} must shrink to its content (was stretched full-width centered)`,
+    ).toBeLessThan(action.panelWidth * 0.6);
+  }
   await dialog.getByRole('radio', { name: 'Dark' }).check();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await dialog.getByRole('button', { name: /Save changes/ }).click();

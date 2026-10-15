@@ -103,9 +103,34 @@ Chrome 120+ required. Everything stays on your device.
 - Full gate matrix and measured numbers: [\`docs/RELEASE_VERIFICATION.md\`](https://github.com/${slug}/blob/main/docs/RELEASE_VERIFICATION.md)
 - File inventory: **RELEASE_MANIFEST.txt** below (byte-for-byte with the zip contents)
 - Integrity: **${zipName}.sha256** below
-- Automated acceptance: unit 917/917, Playwright E2E 78/78 over the real
+- Automated acceptance: unit 924/924, Playwright E2E 82/82 over the real
   unpacked build, including a dedicated extract-zip-and-load acceptance suite
   (the artifact in this release is the exact folder layout that was tested)
+
+## What's new in v1.0.10 — every option reads as one left-aligned column
+
+A user reported it right after v1.0.9 with two screenshots: in the
+Settings pop-up, actions like **Test connection** and **Show the
+introduction again** stretched across the whole dialog with centered
+labels, and in the sidebar the action buttons (**Import note…**,
+**Settings**, **Diagnostics**) sat centered while the smart lists above
+them read left-aligned. v1.0.10 fixes exactly that — a CSS cascade bug
+(the generic button rule's \`justify-content: center\` silently overrode
+the sidebar's left-align intent) — with pixel-level regression tests
+behind each behavior. No features were added or removed.
+
+- **Sidebar actions align left like everything else**: New Note, Save a
+  web page…, Import note…, Settings and Diagnostics now sit flush-left
+  in one column with the smart lists — at every width, including the
+  collapsed icon rail and the narrow top strip
+- **Settings and Diagnostics pop-ups align left**: full-width centered
+  buttons are gone — Test connection, Show the introduction again and
+  Rebuild search index shrink to their content and align left like
+  every sibling control
+- **Rail mode no longer clips "Save a web page…"**: when the sidebar
+  collapses to its icon rail, that button's label stayed visible and
+  clipped inside the 59px rail button — it now hides its label exactly
+  like every other rail button
 
 ## What's new in v1.0.9 — New Note finally takes you to the new note
 

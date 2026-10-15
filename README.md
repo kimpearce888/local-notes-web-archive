@@ -11,7 +11,7 @@ Everything stays on your device.
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-34A853)](https://developer.chrome.com/docs/extensions/reference/manifest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-2ea44f)](./LICENSE)
 [![Unit tests](https://img.shields.io/badge/vitest-924%20passing-brightgreen)](#quality-and-verification)
-[![E2E tests](https://img.shields.io/badge/Playwright-77%20passing-brightgreen)](#quality-and-verification)
+[![E2E tests](https://img.shields.io/badge/Playwright-82%20passing-brightgreen)](#quality-and-verification)
 [![Audit](https://img.shields.io/badge/audit-0%20vulnerabilities-success)](./docs/REPOSITORY_AUDIT.md)
 [![Network](https://img.shields.io/badge/network-loopback%20only-blueviolet)](./PRIVACY.md)
 
@@ -60,8 +60,8 @@ Retina captures (2880 px wide); the social banner is 1280x640 for link previews.
 
 The published package is fully built and tested — nothing to compile:
 
-1. Download `local-notes-web-archive-1.0.9.zip` from the
-   [v1.0.9 release](https://github.com/kimpearce888/local-notes-web-archive/releases/tag/v1.0.9).
+1. Download `local-notes-web-archive-1.0.10.zip` from the
+   [v1.0.10 release](https://github.com/kimpearce888/local-notes-web-archive/releases/tag/v1.0.10).
 2. Extract the ZIP anywhere on your machine.
 3. Open `chrome://extensions` and enable **Developer mode**.
 4. Click **Load unpacked** and select the **extracted** folder.
@@ -158,7 +158,7 @@ change.
 | Gate | Result |
 |---|---|
 | Unit + integration tests (Vitest) | **924/924 passing** |
-| End-to-end tests (Playwright, real Chromium, unpacked build) | **77/77 passing** |
+| End-to-end tests (Playwright, real Chromium, unpacked build) | **82/82 passing** |
 | Performance budget (search p95 < 500 ms over 10,000 notes) | PASS |
 | Secrets scan (worktree + full git history) | 0 findings |
 | `npm audit` (production and full graphs) | 0 vulnerabilities |
