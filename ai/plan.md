@@ -1232,3 +1232,25 @@ clean, 917/917 units incl. the four new T-101 regressions, 78/78 E2E —
 zip acceptance honestly kept on the live v1.0.8 zip's pre-fix behavior —
 perf p95 170 ms worst shape; the navigation also surfaced and fixed the
 stale "Saved" indicator via an idle reset in openEditor).
+
+## §T — v1.0.9 release: bring the New Note navigation fix to users (maintainer go-ahead, 2026-10-15)
+
+The live v1.0.8 zip predates T-101: users who activate New Note while a note
+is open (or spam the button) still get background-stacked "Untitled" notes
+with no navigation. T-101 is complete on main (a1ac607, 917/917 units,
+78/78 E2E) but unreleased. v1.0.9 ships it.
+
+### T-102 Cut and publish v1.0.9 (the T-100 two-commit pattern)
+Five-place version bump (package.json, public/manifest.json,
+src/core/version.ts, DEPENDENCIES.json/THIRD_PARTY_NOTICES.md via
+npm run deps) + unit pins (types, diagnostics-api); release notes section
+mapping the T-101 fix for users; README install path → v1.0.9; zip-acceptance
+spec realigned to the T-101 flow (New Note lands in the editor directly —
+the intermediate card step and the honest pre-fix note retire with the new
+artifact); full gates (tsc both configs, eslint, vitest, Playwright E2E incl
+zip acceptance against the v1.0.9 zip, perf); npm run release → zip + sha256
++ RELEASE_MANIFEST; GitHub Release v1.0.9 published + API-verified (digest,
+tag, download byte-identical); RELEASE_VERIFICATION.md regenerated with
+fresh measurements; REPOSITORY_AUDIT.md re-run; verification record archived
+to task-deliverables/release-verification/; docs pins moved to the 1.0.9
+artifact; governance files updated in-commit per rule.md §7/§8.
