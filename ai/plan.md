@@ -1371,3 +1371,10 @@ owns exactly one (`scrollHeight > clientHeight`, own scrollbar > 0), and
 the actions row sits pinned at the dialog's bottom padding edge at tall,
 short and user-screenshot viewports. Full gates before completed.md per
 rule.md §7/§8.
+DONE (2ebae6d + this fix commit; 932/932 units incl 8 CSS-guard
+regressions, 84/84 E2E incl the 2 single-scrollbar ground-truth tests at
+the user's 798x752 viewport and a short 1280x600 viewport; pixel-verified
+at 798x752: exactly one scrollbar strip remains (was two), heading and
+Save/Reset/Close pinned at the dialog's 25px padding edges, content area
+grew 451 -> 562px; the closed-state display:none guard added after the
+probe caught author display:flex defeating the UA closed-state rule).

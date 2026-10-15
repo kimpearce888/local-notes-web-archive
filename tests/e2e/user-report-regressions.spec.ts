@@ -52,6 +52,25 @@ import { fileURLToPath } from 'node:url';
  *    (direct children of the flex-column panel); the Diagnostics dialog
  *    did the same to "Rebuild search index". The tests assert the actions
  *    now shrink to content and sit flush with the panel's left edge.
+ *
+ * T-105 regressions for the user-reported defect (2026-10-15, screenshot:
+ * "settings popup still has double scrollbar"):
+ *
+ * 7. Chromium's UA stylesheet gives every dialog:modal overflow-y:auto +
+ *    max-height calc(100% - 6px - 2rem), and the dialog's scrollHeight is
+ *    inflated far past its visible children by the settings panel's
+ *    layout extent leaking through the capped content box — so the
+ *    Settings dialog rendered its OWN scrollbar next to the inner
+ *    .settings__content one (the screenshot's two side-by-side bars), and
+ *    scrolling the outer bar swept the pinned heading and
+ *    Save/Reset/Close actions away over phantom empty space. These tests
+ *    assert the real-browser ground truth at the user's viewport (798x752)
+ *    and under a short viewport: the dialog owns NO scrollbar
+ *    (offsetWidth - clientWidth == its 2px borders), exactly ONE scroll
+ *    body (.settings__content) owns the 17px classic scrollbar and still
+ *    scrolls, the heading and actions stay pinned to the dialog's
+ *    padding edges, and a closed dialog actually hides (the author
+ *    display:flex must not defeat the UA closed-state display:none).
  */
 
 const distDir = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', 'dist');
@@ -494,6 +513,106 @@ test('strip mode (≤40rem): every sidebar label returns, left-aligned (T-103)',
   // Restore the suite's default viewport for the remaining tests.
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.waitForTimeout(300);
+});
+
+test('settings dialog: exactly one scrollbar — the dialog itself never scrolls (T-105)', async () => {
+  // The user's screenshot viewport: the dialog renders its own UA scrollbar
+  // next to the content box's whenever the phantom scrollHeight leaks — the
+  // double scrollbar. The single-scroller invariant must hold here AND under
+  // a short viewport where the UA max-height caps the dialog.
+  for (const size of [
+    { width: 798, height: 752 }, // the user's screenshot
+    { width: 1280, height: 600 }, // short: the UA cap bites
+  ]) {
+    await page.setViewportSize(size);
+    await page.waitForTimeout(300); // reflow
+    await page.getByRole('button', { name: 'Open settings' }).click();
+    const dialog = page.locator('dialog.dialog--settings');
+    await expect(dialog).toBeVisible({ timeout: 15_000 });
+    await page.waitForTimeout(600); // settings load over the real RPC channel
+
+    const geom = await dialog.evaluate((root: HTMLElement) => {
+      const content = root.querySelector('.settings__content') as HTMLElement;
+      const h2 = root.querySelector('h2') as HTMLElement;
+      const actions = root.querySelector('.settings__actions') as HTMLElement;
+      const box = root.getBoundingClientRect();
+      const border =
+        parseFloat(getComputedStyle(root).borderLeftWidth) +
+        parseFloat(getComputedStyle(root).borderRightWidth);
+      return {
+        viewport: `${window.innerWidth}x${window.innerHeight}`,
+        dialogOverflowY: getComputedStyle(root).overflowY,
+        dialogOwnScrollbar: root.offsetWidth - root.clientWidth, // borders only
+        dialogBorderWidth: border,
+        contentOwnScrollbar: content.offsetWidth - content.clientWidth,
+        contentScrolls: content.scrollHeight > content.clientHeight + 1,
+        headingPinned: h2.getBoundingClientRect().top - box.top,
+        actionsPinnedToBottom: box.bottom - actions.getBoundingClientRect().bottom,
+      };
+    });
+
+    // The dialog element itself must NEVER own a scrollbar: its classic
+    // scrollbar width must equal exactly its border widths (2px) — not 15+
+    // as in the user's screenshot.
+    expect(
+      geom.dialogOwnScrollbar,
+      `the dialog must own no scrollbar at ${geom.viewport} (borders only)`,
+    ).toBe(geom.dialogBorderWidth);
+    expect(geom.dialogOverflowY).toBe('hidden');
+
+    // Exactly ONE scroll body: the content box owns the classic scrollbar
+    // and still scrolls the settings panel.
+    expect(geom.contentOwnScrollbar, 'the content box must own the scrollbar').toBeGreaterThanOrEqual(
+      15,
+    );
+    expect(geom.contentScrolls, 'the settings panel must remain scrollable').toBe(true);
+
+    // The heading and the action row stay pinned inside the dialog frame
+    // (the outer scrollbar used to sweep them away).
+    expect(geom.headingPinned).toBeLessThan(30);
+    expect(geom.actionsPinnedToBottom).toBeLessThan(30);
+    expect(geom.actionsPinnedToBottom).toBeGreaterThan(0);
+
+    // A closed dialog must actually hide: the author display:flex on the
+    // flex-sheet dialogs must not defeat the UA closed-state display:none.
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(dialog).not.toBeVisible({ timeout: 10_000 });
+  }
+
+  // Restore the suite's default viewport for the remaining tests.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForTimeout(300);
+});
+
+test('diagnostics dialog: exactly one scrollbar, the content box owns it (T-105)', async () => {
+  await page.getByRole('button', { name: 'Diagnostics' }).click();
+  const diag = page.locator('dialog.dialog--diagnostics');
+  await expect(diag).toBeVisible({ timeout: 15_000 });
+  await page.waitForTimeout(1200); // diagnostics load + self-test rows
+
+  const geom = await diag.evaluate((root: HTMLElement) => {
+    const content = root.querySelector('.diagnostics__content') as HTMLElement;
+    const border =
+      parseFloat(getComputedStyle(root).borderLeftWidth) +
+      parseFloat(getComputedStyle(root).borderRightWidth);
+    return {
+      dialogOverflowY: getComputedStyle(root).overflowY,
+      dialogOwnScrollbar: root.offsetWidth - root.clientWidth,
+      dialogBorderWidth: border,
+      contentOwnScrollbar: content.offsetWidth - content.clientWidth,
+      contentScrolls: content.scrollHeight > content.clientHeight + 1,
+    };
+  });
+
+  expect(geom.dialogOverflowY).toBe('hidden');
+  expect(geom.dialogOwnScrollbar, 'the diagnostics dialog must own no scrollbar').toBe(
+    geom.dialogBorderWidth,
+  );
+  expect(geom.contentOwnScrollbar).toBeGreaterThanOrEqual(15);
+  expect(geom.contentScrolls, 'the diagnostics panel must remain scrollable').toBe(true);
+
+  await diag.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(diag).not.toBeVisible({ timeout: 10_000 });
 });
 
 test('session hygiene: zero page errors, console errors or external requests', async () => {

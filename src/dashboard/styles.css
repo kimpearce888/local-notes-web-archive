@@ -869,6 +869,16 @@ dialog::backdrop {
   backdrop-filter: blur(2px);
 }
 
+/* T-105: the dialogs we turn into flex sheets (.dialog--settings,
+   .dialog--diagnostics, .dialog--review) set author `display: flex`, which
+   would defeat the UA stylesheet's closed-state rule
+   `dialog:not([open]) { display: none }` (author rules beat UA rules
+   regardless of specificity) — a closed dialog would stay visible. Restore
+   the closed state explicitly for every dialog. */
+dialog:not([open]) {
+  display: none;
+}
+
 /* --------------------------- Command palette -------------------------- */
 
 .dialog--command-palette {
@@ -2833,8 +2843,14 @@ surface, hairline border, heading row, consistent rows. */
 
 /* ------------------------ Diagnostics panel --------------------------- */
 
+/* T-105: flex-column sheet + single scroll body — see the .dialog--settings
+   comment for the double-scrollbar root cause. */
+
 .dialog--diagnostics {
   max-width: 46rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .diagnostics__intro {
@@ -2858,7 +2874,8 @@ surface, hairline border, heading row, consistent rows. */
 }
 
 .diagnostics__content {
-  max-height: min(60vh, 34rem);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -3048,14 +3065,20 @@ surface, hairline border, heading row, consistent rows. */
   justify-content: flex-start;
 }
 
-/* Export review step (FR-LOG-05) */
+/* Export review step (FR-LOG-05) — T-105: flex-column sheet, the pre is
+   the single scroll body (see the .dialog--settings comment for the
+   double-scrollbar root cause). */
 
 .dialog--review {
   max-width: 52rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .diagnostics__review {
-  max-height: 50vh;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
   margin: var(--space-2) 0 0 0;
   padding: var(--space-3);
@@ -3070,12 +3093,32 @@ surface, hairline border, heading row, consistent rows. */
 
 /* ------------------------- Settings panel ----------------------------- */
 
+/* T-105 (user report 2026-10-15, "settings popup still has double
+   scrollbar"): Chromium's UA stylesheet gives every dialog:modal
+   `overflow-y: auto` + `max-height: calc(100% - 6px - 2rem)`, and the
+   dialog's scrollHeight is inflated far past its visible children by the
+   settings panel's layout extent leaking through the capped content box
+   (measured 2532px against ~700px of children) — so the dialog rendered
+   its OWN scrollbar next to the content box's, and scrolling it swept the
+   pinned heading and Save/Reset/Close actions away over phantom space.
+   The fix is the standard single-scroller modal: the dialog is a
+   flex-column sheet that itself NEVER scrolls (overflow: hidden contains
+   the phantom region), the heading and action row stay pinned as flex
+   items, and exactly ONE scroll body fills the remaining track. The same
+   pattern applies to .dialog--diagnostics/.diagnostics__content and
+   .dialog--review/.diagnostics__review, which carry the identical
+   inner-scorer + UA-cap landmine. */
+
 .dialog--settings {
   max-width: 46rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .settings__content {
-  max-height: min(60vh, 34rem);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);

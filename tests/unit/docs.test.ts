@@ -237,8 +237,8 @@ describe('marketing README (T-051)', () => {
 
   it('states the measured quality numbers from the audit', () => {
     const readme = readDoc('README.md');
-    expect(readme).toContain('924/924');
-    expect(readme).toContain('82/82');
+    expect(readme).toContain('932/932');
+    expect(readme).toContain('84/84');
     expect(readme).toContain('0 vulnerabilities');
     expect(readme).toContain('docs/REPOSITORY_AUDIT.md');
     expect(readme).toContain('docs/RELEASE_VERIFICATION.md');

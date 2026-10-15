@@ -1211,3 +1211,45 @@ full per-shape table, index rebuild ~109 s); REPOSITORY_AUDIT.md re-run
 413539535; docs pins moved to the 1.0.10 artifact. **Scope:** product
 code unchanged since T-103 (pure release + docs; the shipped CSS is
 the T-103 fix byte-identical); queue EMPTY.
+
+## T-105 — Settings pop-up double scrollbar: COMPLETE
+
+User report (2026-10-15, screenshot 798x752): "settings popup still has
+double scrollbar." Root cause (probes scripts/t105-*, viewports
+798x752/1280x800/1891x991 + a bare-dialog UA check): Chromium's UA
+stylesheet gives every dialog:modal `overflow-y: auto` + `max-height:
+calc(100% - 6px - 2rem)`, and the dialog's scrollHeight is inflated far
+past its visible children (~700px) up to 2532px by the settings panel's
+layout extent leaking through the capped `.settings__content` box (bisect:
+hiding the "Permission mode" row collapses it 2532 -> 637) — so the
+Settings dialog rendered its OWN 17px scrollbar beside the content box's,
+and scrolling the outer bar swept the pinned heading and
+Save/Reset/Close actions away over phantom empty space.
+
+Fix (src/dashboard/styles.css): `.dialog--settings`, `.dialog--diagnostics`
+and `.dialog--review` become flex-column sheets with `overflow: hidden`
+(the dialog element itself never scrolls — the single-scroller modal
+pattern); their scroll bodies (`.settings__content`, `.diagnostics__content`,
+`.diagnostics__review`) become the single scroll container each via
+`flex: 1 1 auto; min-height: 0`, dropping the `min(60vh, 34rem)`/`50vh`
+caps — the flex track inside the UA-capped dialog now sizes them and the
+visible settings area GREW 451 -> 562px at the user's 798x752 viewport.
+A `dialog:not([open]) { display: none }` guard restores the UA closed
+state that the author `display: flex` would otherwise defeat (the evidence
+probe caught a closed settings dialog staying visible before the guard).
+
+Verification: pixel scan at 798x752 shows exactly one scrollbar strip (was
+two side-by-side); heading and actions pinned at the dialog's 25px padding
+edges; +8 unit CSS-guard regressions (tests/unit/dashboard/
+dialog-scrollbar-css.test.ts, incl the closed-state guard and the
+dropped-caps negative pins) and +2 E2E ground-truth regressions
+(user-report-regressions.spec.ts: dialog owns no scrollbar —
+offsetWidth-clientWidth == border widths — content box owns the classic
+scrollbar and still scrolls, closed dialog hides; at 798x752 and
+1280x600; plus the Diagnostics dialog variant). Gates: verify 932/932
+(77 files), Playwright 84/84 (1.7m) incl regenerated screenshot gallery
+and zip acceptance against the live v1.0.10 artifact; README badge/table
++ docs.test.ts pins made honest 924/82 -> 932/84. **Scope:** CSS-only
+product change (six blocks + the closed-state guard); the fix is on main
+but NOT yet in a release (the live v1.0.10 zip predates it) — a v1.0.11
+cut would ship it; queue EMPTY.
